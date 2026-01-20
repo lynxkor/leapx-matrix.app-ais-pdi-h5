@@ -1,4 +1,4 @@
 [submodule "src/libs"]
- path = src/libs
- url = http://git-external.leapmotor.com/business-front/webx/lxp-front-matrix/app-ais-com-h5.git
+	path = src/libs
+	url = http://git-external.leapmotor.com/business-front/webx/lxp-front-matrix/app-ais-com-h5.git
  branch = develop
