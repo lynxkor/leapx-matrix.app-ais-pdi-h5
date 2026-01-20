@@ -3,7 +3,7 @@ import { useGlobalStore } from '@/stores/global'
 import HomeView from '../views/HomeView.vue'
 
 const router = createRouter({
-  history: createWebHistory(`${import.meta.env.BASE_URL}pdi`),
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/',
