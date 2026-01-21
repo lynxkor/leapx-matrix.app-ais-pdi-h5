@@ -10,6 +10,12 @@ This template should help get you started developing with Vue 3 in Vite.
 
 See [Vite Configuration Reference](https://vite.dev/config/).
 
+## Project Clone
+
+```sh
+git clone --recurse-submodules http://git-external.leapmotor.com/business-front/webx/lxp-front-matrix/app-ais-pdi-h5.git
+```
+
 ## Project Setup
 
 ```sh
