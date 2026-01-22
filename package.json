@@ -8,7 +8,7 @@
   },
   "scripts": {
     "prepare": "husky",
-    "dev": "vite",
+    "dev": "vite --host",
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint . --fix",
