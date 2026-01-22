@@ -35,6 +35,21 @@ const router = createRouter({
         title: 'Demo-商品详情',
       },
     },
+    {
+      path: '/',
+      name: 'baseLayout',
+      component: () => import('../layout/baseLayout.vue'),
+      children: [
+        {
+          path: '/pdi/list',
+          name: 'pdiList',
+          component: () => import('../views/pdi/ListView.vue'),
+          meta: {
+            title: '门店整车PDI'
+          }
+        }
+      ]
+    }
   ],
 })
 
