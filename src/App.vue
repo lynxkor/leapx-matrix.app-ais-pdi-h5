@@ -1,21 +1,9 @@
 <script setup>
 import { RouterView } from 'vue-router'
-// import { useGlobalStore } from '@/stores/global'
-// import { goBack } from './utils/app'
-
-// const globalStore = useGlobalStore()
 
 </script>
 
 <template>
-  <!-- <header>
-    <van-nav-bar
-      :title="globalStore.title"
-      left-arrow
-      @click-left="goBack"
-    />
-  </header> -->
-
   <RouterView />
 </template>
 
