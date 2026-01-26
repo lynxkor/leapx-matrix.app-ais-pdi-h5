@@ -1,6 +1,6 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
-import { List, Cell, Search, NavBar, PullRefresh, Image as VanImage, Lazyload, Swipe, SwipeItem, ActionSheet, ActionBar, ActionBarButton, Button, Form, Field, CellGroup, Icon, Dialog } from 'vant'
+import { List, Cell, Search, NavBar, PullRefresh, Image as VanImage, Lazyload, Swipe, SwipeItem, ActionSheet, ActionBar, ActionBarButton, Button, Form, Field, CellGroup, Icon, Dialog, Popup, DatePicker, TimePicker  } from 'vant'
 
 import App from './App.vue'
 import router from './router'
@@ -8,6 +8,15 @@ import router from './router'
 import 'vant/lib/index.css'
 // 必须写在vant样式后，覆盖vant样式
 import './assets/main.css'
+
+const setHtmlFontsize = () => {
+  var htmlWidth = document.documentElement.clientWidth || document.body.clientWidth
+  console.log('width：', htmlWidth)
+  var htmlDom = document.getElementsByTagName('html')[0]
+  htmlDom.style.fontSize = (htmlWidth / 37.5) + 'px'
+}
+window.onresize = setHtmlFontsize
+setHtmlFontsize()
 
 const app = createApp(App)
 
@@ -30,6 +39,9 @@ app.use(Field)
 app.use(CellGroup)
 app.use(Icon)
 app.use(Dialog)
+app.use(Popup)
+app.use(DatePicker)
+app.use(TimePicker)
 
 // 注册时可以配置额外的选项
 app.use(Lazyload, {
