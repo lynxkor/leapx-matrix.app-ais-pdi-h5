@@ -2,7 +2,7 @@
 import axios from 'axios'
 import { showConfirmDialog } from 'vant'
 import { useUserStore } from '@/stores/user'
-import { outWebview } from '@/utils/app'
+import { outWebview } from '@/libs/utils/app'
 
 // 创建axios实例
 const service = axios.create({

@@ -7,13 +7,15 @@
         :showSort="true"
     />
     <div class="common-scroll-content">
-        <div v-for="(_, index) in 100" :key="index" style="height: 4rem;">pdi列表</div>
+        <!-- <div v-for="(_, index) in 100" :key="index" style="height: 4rem;">pdi列表</div> -->
+        <refresh-list></refresh-list>
     </div>
 </template>
 
 <script setup>
   import { ref } from 'vue'
   import FilterHeader from '@/libs/components/FilterHeader.vue'
+  import RefreshList from '@/libs/components/RefreshList.vue'
 
   const headerPlaceholder = ref('请输入vin')
   const searchList = ref([
