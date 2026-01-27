@@ -17,7 +17,7 @@
   import FilterHeader from '@/libs/components/FilterHeader.vue'
   import RefreshList from '@/libs/components/RefreshList.vue'
 
-  const headerPlaceholder = ref('请输入vin')
+  const headerPlaceholder = ref('搜索')
   const searchList = ref([
     {
         title: '检查状态',
@@ -52,8 +52,7 @@
             { label: '去年', value: 'year01' },
             { label: '今年', value: 'year02' },
             { label: '明年', value: 'year03' }
-        ],
-        text: '选择年'
+        ]
     },
     {
         title: '月',
@@ -66,8 +65,7 @@
             { label: '上个月', value: 'month01' },
             { label: '当月', value: 'month02' },
             { label: '下个月', value: 'month03' }
-        ],
-        text: '选择年月'
+        ]
     },
     {
         title: '日',
@@ -80,8 +78,7 @@
             { label: '昨天', value: 'day01' },
             { label: '今天', value: 'day02' },
             { label: '明天', value: 'day03' }
-        ],
-        text: '选择年月'
+        ]
     },
     {
         title: '小时分钟',
@@ -90,8 +87,7 @@
         nodeType: 'hour',
         columnsType: ['hour', 'minute'],
         list: [
-        ],
-        text: '小时分钟'
+        ]
     },
     {
         title: '分钟秒',
@@ -100,8 +96,7 @@
         nodeType: 'minute',
         columnsType: ['minute', 'second'],
         list: [
-        ],
-        text: '分钟秒'
+        ]
     },
     {
         title: '时分秒',
@@ -110,8 +105,7 @@
         nodeType: 'second',
         columnsType: ['hour', 'minute', 'second'],
         list: [
-        ],
-        text: '时分秒'
+        ]
     }
   ])
 
