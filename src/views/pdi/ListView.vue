@@ -4,10 +4,12 @@
         @search="headerSearch"
         :searchList="searchList"
         @filterSearch="filterSearch"
-        :showSort="true"
+        :showSort="false"
     />
     <div class="common-scroll-content">
-        <refresh-list></refresh-list>
+      <refresh-list @setData="setData">
+        <list-item v-for="(item, index) in dataList" :key="index" :dataItem="item"></list-item>
+      </refresh-list>
     </div>
 </template>
 
@@ -15,6 +17,7 @@
 import { ref } from 'vue'
 import FilterHeader from '@/libs/components/FilterHeader.vue'
 import RefreshList from '@/libs/components/RefreshList.vue'
+import ListItem from '@/components/ListItem.vue'
 
 const headerPlaceholder = ref('搜索')
 const searchList = ref([
@@ -120,6 +123,7 @@ const searchList = ref([
     ]
   }
 ])
+const dataList = ref([])
 
 const headerSearch = (row) => {
   console.log(row)
@@ -143,6 +147,10 @@ const changeList = (res) => {
       { label: '车系6', value: '06' }
     ]
   }
+}
+
+const setData = res => {
+  dataList.value = res
 }
 
 </script>
