@@ -7,7 +7,6 @@
         :showSort="true"
     />
     <div class="common-scroll-content">
-        <!-- <div v-for="(_, index) in 100" :key="index" style="height: 4rem;">pdi列表</div> -->
         <refresh-list></refresh-list>
     </div>
 </template>
@@ -31,14 +30,27 @@ const searchList = ref([
     ]
   },
   {
-    title: '状态多选',
+    title: '车型',
     key: 'pdiResultMultiple',
     default: ['10', '11'],
     nodeType: 'multiple',
     options: [
-      { label: '多选1', value: '10' },
-      { label: '多选2', value: '11' },
-      { label: '多选3', value: '12' }
+      { label: '车型1', value: '01' },
+      { label: '车型2', value: '02' },
+      { label: '车型3', value: '03' }
+    ],
+    callBack: (res) => changeList(res),
+    resetDic: { 'carSeries': [] }
+  },
+  {
+    title: '车系',
+    key: 'carSeries',
+    default: [],
+    nodeType: 'multiple',
+    options: [
+      // { label: '车系1', value: '10' },
+      // { label: '车系2', value: '11' },
+      // { label: '车系3', value: '12' }
     ]
   },
   {
@@ -92,7 +104,7 @@ const searchList = ref([
   {
     title: '分钟秒',
     key: 'minuteTime',
-    default: [['11','11'], ['52','46']],
+    default: [['11', '11'], ['52', '46']],
     nodeType: 'minute',
     columnsType: ['minute', 'second'],
     list: [
@@ -101,7 +113,7 @@ const searchList = ref([
   {
     title: '时分秒',
     key: 'secondTime',
-    default: [['01','11','11'], ['22','12','46']],
+    default: [['01', '11', '11'], ['22', '12', '46']],
     nodeType: 'second',
     columnsType: ['hour', 'minute', 'second'],
     list: [
@@ -112,9 +124,25 @@ const searchList = ref([
 const headerSearch = (row) => {
   console.log(row)
 }
-  
+
 const filterSearch = (obj) => {
   console.log(obj)
+}
+
+const changeList = (res) => {
+  if (res.includes('01')) {
+    searchList.value[2].options = [
+      { label: '车系1', value: '01' },
+      { label: '车系2', value: '02' },
+      { label: '车系3', value: '03' }
+    ]
+  } else {
+    searchList.value[2].options = [
+      { label: '车系4', value: '04' },
+      { label: '车系5', value: '05' },
+      { label: '车系6', value: '06' }
+    ]
+  }
 }
 
 </script>
