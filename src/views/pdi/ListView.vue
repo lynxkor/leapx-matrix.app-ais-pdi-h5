@@ -6,18 +6,28 @@
         @filterSearch="filterSearch"
         :showSort="false"
     />
+    <div class="tab-content">
+        <van-tabs v-model:active="active" sticky >
+          <van-tab v-for="(item, index) in tabList" :title="item" :key="index"></van-tab>
+        </van-tabs>
+      </div>
     <div class="common-scroll-content">
       <refresh-list @setData="setData">
-        <list-item v-for="(item, index) in dataList" :key="index" :dataItem="item"></list-item>
+        <list-item v-for="(item, index) in dataList" :key="index" :dataItem="item">
+          <ais-button type="primary" plain round @click="PDIBtnClick(item, index)">PDI录入</ais-button>
+        </list-item>
       </refresh-list>
     </div>
+    <ais-dialog :showDialog="showDialog" :dialogObj="dialogObj"/>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import FilterHeader from '@/libs/components/FilterHeader.vue'
 import RefreshList from '@/libs/components/RefreshList.vue'
 import ListItem from '@/components/ListItem.vue'
+import AisButton from '@/components/AisButton.vue'
+import AisDialog from '@/libs/components/AisDialog.vue'
 
 const headerPlaceholder = ref('搜索')
 const searchList = ref([
@@ -123,7 +133,25 @@ const searchList = ref([
     ]
   }
 ])
+const tabList = ['入库PDI', 'PDI异常车辆', '在库PDI']
 const dataList = ref([])
+
+const active = ref(0)
+const showDialog = ref(false)
+const dialogObj = {
+  index: '',
+  title: '注意事项',
+  default: `
+    <p>1、检查时请不要插拔任何高压线束；</p>
+    <p>2、对“制动性”和“行驶性”的检查可以在车辆移动中进行；</p>
+    <p>3、车辆到店需检查是否需要更新车机版本，如需升级，先完成OTA再入库；</p>
+    <p>4、车辆PDI过程中需通过诊断仪完成“交付模式”退出</p>
+  `,
+  submitText: '确定',
+  cancelText: '取消',
+  submitFn: () => dialogSubmitFn(),
+  cancelFn: () => dialogCancelFn()
+}
 
 const headerSearch = (row) => {
   console.log(row)
@@ -153,11 +181,40 @@ const setData = res => {
   dataList.value = res
 }
 
+const PDIBtnClick = (item, index) => {
+  showDialog.value = true
+  console.log(index)
+  dialogObj.index = index
+}
+
+const dialogSubmitFn = () => {
+  // 跳转到详情页
+  showDialog.value = false
+  console.log('index', dialogObj.index)
+}
+
+const dialogCancelFn = () => {
+  showDialog.value = false
+}
+
+watch(
+  () => active.value,
+  newVal => {
+    console.log('tab类型变化，需要重新加载', newVal)
+  }
+)
+
 </script>
 
 <style lang="scss" scoped>
-    .common-scroll-content{
-        flex: 1;
-        overflow-y: auto;
+  .common-scroll-content{
+    flex: 1;
+    overflow-y: auto;
+    .tab-content{
+      width: 100%;
+      overflow-x: auto;
+      height: 42px;
+      overflow-y: hidden;
     }
+  }
 </style>

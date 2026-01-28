@@ -21,14 +21,13 @@
       </van-col>
     </van-row>
     <div class="btn-content">
-      <ais-button type="primary" plain round>PDI录入</ais-button>
+      <slot></slot>
     </div>
   </div>
 </template>
 
 <script setup>
 import { defineProps } from 'vue'
-import AisButton from './AisButton.vue'
 
 const props = defineProps({
   dataItem: {

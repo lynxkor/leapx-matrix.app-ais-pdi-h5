@@ -13,7 +13,7 @@ const props = defineProps({
   },
   plain: {
     type: Boolean,
-    default: true
+    default: false
   },
   round: {
     type: Boolean,
