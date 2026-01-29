@@ -28,11 +28,14 @@
 
 <script setup>
 import { ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import FilterHeader from '@/libs/components/FilterHeader.vue'
 import RefreshList from '@/libs/components/RefreshList.vue'
 import ListItem from '@/components/ListItem.vue'
 import AisButton from '@/components/AisButton.vue'
 import AisDialog from '@/libs/components/AisDialog.vue'
+
+const router = useRouter()
 
 const headerPlaceholder = ref('搜索')
 const searchList = ref([
@@ -190,6 +193,13 @@ const dialogSubmitFn = () => {
   // 跳转到详情页
   showDialog.value = false
   console.log('index', dialogObj.index)
+  router.push({
+    path: '/pdi/detail',
+    query: {
+      index: dialogObj.index,
+      name: 'name111'
+    }
+  })
 }
 
 const dialogCancelFn = () => {

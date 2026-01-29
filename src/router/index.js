@@ -38,13 +38,20 @@ const router = createRouter({
     {
       path: '/',
       name: 'baseLayout',
-      // component: () => import('../layout/baseLayout.vue'),
       component: () => import('@/libs/layout/baseLayout.vue'),
       children: [
         {
           path: '/pdi/list',
           name: 'pdiList',
           component: () => import('../views/pdi/ListView.vue'),
+          meta: {
+            title: '门店整车PDI'
+          }
+        },
+        {
+          path: '/pdi/detail',
+          name: 'pdiDetail',
+          component: () => import('../views/pdi/DetailView.vue'),
           meta: {
             title: '门店整车PDI'
           }
