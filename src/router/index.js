@@ -42,7 +42,7 @@ const router = createRouter({
       children: [
         {
           path: '/pdi/list',
-          name: 'pdiList',
+          name: 'PdiListView',
           component: () => import('../views/pdi/ListView.vue'),
           meta: {
             title: '门店整车PDI',
@@ -51,10 +51,11 @@ const router = createRouter({
         },
         {
           path: '/pdi/detail',
-          name: 'pdiDetail',
+          name: 'PdiDetailView',
           component: () => import('../views/pdi/DetailView.vue'),
           meta: {
-            title: '门店整车PDI'
+            title: '门店整车PDI',
+            keepAlive: true
           }
         }
       ]
