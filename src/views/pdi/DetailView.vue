@@ -40,6 +40,12 @@
 </template>
 
 <script setup>
+import { defineOptions } from 'vue'
+
+defineOptions({
+  name: 'PdiDetailView'
+})
+
 import { ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useGlobalStore } from '@/stores/global'

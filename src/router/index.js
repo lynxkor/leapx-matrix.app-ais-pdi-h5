@@ -45,7 +45,8 @@ const router = createRouter({
           name: 'pdiList',
           component: () => import('../views/pdi/ListView.vue'),
           meta: {
-            title: '门店整车PDI'
+            title: '门店整车PDI',
+            keepAlive: true
           }
         },
         {

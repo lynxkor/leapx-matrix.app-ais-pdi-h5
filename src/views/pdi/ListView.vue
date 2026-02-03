@@ -12,6 +12,7 @@
         </van-tabs>
       </div>
     <div class="common-scroll-content">
+      <input/>
       <refresh-list @setData="setData">
         <list-item v-for="(item, index) in dataList" :key="index" :dataItem="item">
           <ais-button type="primary" plain round @click="PDIBtnClick(item, index)">PDI录入</ais-button>
@@ -27,6 +28,25 @@
 </template>
 
 <script setup>
+import { defineOptions, onActivated, onDeactivated, onMounted } from 'vue'
+
+defineOptions({
+  name: 'PdiListView'
+})
+
+onMounted(() => {
+  console.log('初始化')
+})
+
+// 组件激活时（从缓存中恢复）调用
+onActivated(() => {
+  console.log('PdiListView activated from cache')
+})
+
+// 组件失活时（进入缓存）调用
+onDeactivated(() => {
+  console.log('PdiListView deactivated to cache')
+})
 import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import FilterHeader from '@/libs/components/FilterHeader.vue'
@@ -192,14 +212,23 @@ const PDIBtnClick = (item, index) => {
 const dialogSubmitFn = () => {
   // 跳转到详情页
   showDialog.value = false
+  setTimeout(() => {
+    router.push({
+      path: '/pdi/detail',
+      query: {
+        index: dialogObj.index,
+        name: 'name111'
+      }
+    })
+  }, 2000)
   console.log('index', dialogObj.index)
-  router.push({
-    path: '/pdi/detail',
-    query: {
-      index: dialogObj.index,
-      name: 'name111'
-    }
-  })
+  // router.push({
+  //   path: '/pdi/detail',
+  //   query: {
+  //     index: dialogObj.index,
+  //     name: 'name111'
+  //   }
+  // })
 }
 
 const dialogCancelFn = () => {
