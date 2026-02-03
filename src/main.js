@@ -1,6 +1,6 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
-import { List, Cell, Search, NavBar, PullRefresh, Image as VanImage, Lazyload, Swipe, SwipeItem, ActionSheet, ActionBar, ActionBarButton, Button, Form, Field, CellGroup, Icon, Dialog, Popup, DatePicker, TimePicker, Col, Row, Tab, Tabs } from 'vant'
+import { List, Cell, Search, NavBar, PullRefresh, Image as VanImage, Lazyload, Swipe, SwipeItem, ActionSheet, ActionBar, ActionBarButton, Button, Form, Field, CellGroup, Icon, Dialog, Popup, DatePicker, TimePicker, Col, Row, Tab, Tabs, Switch, Collapse, CollapseItem } from 'vant'
 
 import App from './App.vue'
 import router from './router'
@@ -46,6 +46,9 @@ app.use(Col)
 app.use(Row)
 app.use(Tab)
 app.use(Tabs)
+app.use(Switch)
+app.use(Collapse)
+app.use(CollapseItem)
 
 // 注册时可以配置额外的选项
 app.use(Lazyload, {

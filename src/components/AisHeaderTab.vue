@@ -2,13 +2,15 @@
   <div class="header-tab-line" :class="{ 'center-tabs': !shouldScroll }" ref="headerLineRef">
     <div class="header-item" v-for="(tab, index) in tabList" :key="index">
       <span :class="index <= currentIndex ? 'header-item-text header-item-text-hl' : 'header-item-text'">{{ tab }}</span>
-      <img class="header-item-img" src="../assets/logo.svg" v-if="index !== tabList.length - 1" />
+      <img class="header-item-img" :src="index <= currentIndex ? progressHlIcon : progressIcon" />
     </div>
   </div>
 </template>
 
 <script setup>
 import { defineProps, ref, nextTick, onMounted, watch } from 'vue'
+import progressIcon from '../assets/img/progress.png'
+import progressHlIcon from '../assets/img/progress_hl.png'
 
 const props = defineProps({
   tabList: {

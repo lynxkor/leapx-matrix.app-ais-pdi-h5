@@ -1,10 +1,10 @@
 <template>
-  <div class="btn-item" :style="getStyle()" v-html="renderText()">
+  <div class="btn-item" :style="getStyle()" v-html="renderText()" @click="onClick">
   </div>
 </template>
 
 <script setup>
-import { defineProps, reactive, useSlots } from 'vue'
+import { defineProps, reactive, useSlots, defineEmits } from 'vue'
 
 const props = defineProps({
   type: {
@@ -33,6 +33,8 @@ const props = defineProps({
   }
 })
 
+const emit = defineEmits(['click'])
+
 const slots = useSlots()
 
 const style = reactive({})
@@ -54,6 +56,13 @@ const getStyle = () => {
     style.opacity = 0.6
   }
   return style
+}
+
+const onClick = (event) => {
+  if (props.loading || props.disabled) {
+    return false
+  }
+  emit('click', event)
 }
 
 const renderText = () => {
@@ -80,8 +89,10 @@ const renderText = () => {
     font-size: 12px;
     min-width: 60px;
     height: 28px;
-    line-height: 28px;
     box-sizing: border-box;
     text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 </style>
