@@ -11,7 +11,6 @@
         <van-tab v-for="(item, index) in tabList" :title="item" :key="index"></van-tab>
       </van-tabs>
     </div>
-    {{ showDialog }}
     <div class="common-scroll-content">
       <refresh-list @setData="setData">
         <list-item v-for="(item, index) in dataList" :key="index" :dataItem="item">
@@ -19,7 +18,7 @@
         </list-item>
       </refresh-list>
     </div>
-    <ais-dialog :showDialog="showDialog" :dialogObj="dialogObj">
+    <ais-dialog v-if="showDialog" :showDialog="showDialog" :dialogObj="dialogObj">
       <p class="dialog-line-text">1、检查时请不要插拔任何高压线束；</p>
       <p class="dialog-line-text">2、对“制动性”和“行驶性”的检查可以在车辆移动中进行；</p>
       <p class="dialog-line-text">3、车辆到店需检查是否需要更新车机版本，如需升级，先完成OTA再入库；</p>
@@ -38,17 +37,6 @@ onMounted(() => {
   console.log('初始化')
 })
 
-// 组件激活时（从缓存中恢复）调用
-onActivated(() => {
-  console.log('PdiListView activated from cache')
-  console.log('showDialog', showDialog.value)
-})
-
-// 组件失活时（进入缓存）调用
-onDeactivated(() => {
-  console.log('PdiListView deactivated to cache')
-  console.log('showDialog', showDialog.value)
-})
 import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import FilterHeader from '@/libs/components/FilterHeader.vue'
@@ -177,6 +165,23 @@ const dialogObj = {
   cancelFn: () => dialogCancelFn()
 }
 
+// 组件激活时（从缓存中恢复）调用
+onActivated(() => {
+  console.log('PdiListView activated from cache')
+  console.log('showDialog', showDialog.value)
+  // 当组件从缓存中激活时，重置对话框状态以防止其显示
+  showDialog.value = false
+  console.log(showDialog.value)
+})
+
+// 组件失活时（进入缓存）调用
+onDeactivated(() => {
+  console.log('PdiListView deactivated to cache')
+  console.log('showDialog', showDialog.value)
+  showDialog.value = false
+  console.log(showDialog.value)
+})
+
 const headerSearch = (row) => {
   console.log(row)
 }
@@ -221,7 +226,6 @@ const dialogSubmitFn = () => {
       name: 'name111'
     }
   })
-  showDialog.value = false
 }
 
 const dialogCancelFn = () => {
