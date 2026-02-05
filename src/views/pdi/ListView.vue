@@ -12,29 +12,25 @@
       </van-tabs>
     </div>
     <div class="common-scroll-content">
-      <refresh-list @setData="setData">
+      <refresh-list :requestData="requestData" :needRefresh="needRefresh" @setData="setData">
         <list-item v-for="(item, index) in dataList" :key="index" :dataItem="item">
-          <ais-button type="primary" plain round @click="PDIBtnClick(item, index)">PDI录入</ais-button>
+          <ais-button type="primary" plain round @click="PDIBtnClick(item)">{{ active === 1 ? '异常修复确认' : 'PDI录入' }}</ais-button>
         </list-item>
       </refresh-list>
     </div>
-    <ais-dialog v-if="showDialog" :showDialog="showDialog" :dialogObj="dialogObj">
+    <ais-dialog :key="dialogKey" :showDialog="showDialog" :dialogObj="dialogObj">
       <p class="dialog-line-text">1、检查时请不要插拔任何高压线束；</p>
-      <p class="dialog-line-text">2、对“制动性”和“行驶性”的检查可以在车辆移动中进行；</p>
+      <p class="dialog-line-text">2、对"制动性"和"行驶性"的检查可以在车辆移动中进行；</p>
       <p class="dialog-line-text">3、车辆到店需检查是否需要更新车机版本，如需升级，先完成OTA再入库；</p>
-      <p class="dialog-line-text">4、车辆PDI过程中需通过诊断仪完成“交付模式”退出</p>
+      <p class="dialog-line-text">4、车辆PDI过程中需通过诊断仪完成"交付模式"退出</p>
     </ais-dialog>
 </template>
 
 <script setup>
-import { defineOptions, onActivated, onDeactivated, onMounted } from 'vue'
+import { defineOptions, onActivated, onDeactivated, reactive } from 'vue'
 
 defineOptions({
   name: 'PdiListView'
-})
-
-onMounted(() => {
-  console.log('初始化')
 })
 
 import { ref, watch } from 'vue'
@@ -45,119 +41,82 @@ import ListItem from '@/components/ListItem.vue'
 import AisButton from '@/components/AisButton.vue'
 import AisDialog from '@/libs/components/AisDialog.vue'
 
+import { getPdiList } from '@/api/pdi'
+
 const router = useRouter()
 
 const headerPlaceholder = ref('搜索')
 const searchList = ref([
   {
-    title: '检查状态',
-    key: 'pdiResult',
-    default: '0',
+    title: 'PDI类型',
+    key: 'vehPdiType',
+    default: '',
     nodeType: 'single',
     options: [
-      { label: '待执行', value: '0' },
-      { label: '通过', value: '1' },
-      { label: '不通过', value: '2' }
+      { label: '入库PDI', value: '10' },
+      { label: '在库PDI', value: '20' }
     ]
   },
   {
-    title: '车型',
-    key: 'pdiResultMultiple',
-    default: ['10', '11'],
-    nodeType: 'multiple',
-    options: [
-      { label: '车型1', value: '01' },
-      { label: '车型2', value: '02' },
-      { label: '车型3', value: '03' }
-    ],
-    callBack: (res) => changeList(res),
-    resetDic: { 'carSeries': [] }
-  },
-  {
     title: '车系',
-    key: 'carSeries',
+    key: 'seriesIdList',
     default: [],
     nodeType: 'multiple',
     options: [
       // { label: '车系1', value: '10' },
       // { label: '车系2', value: '11' },
       // { label: '车系3', value: '12' }
-    ]
+    ],
+    callBack: (res) => changeList(res),
+    resetDic: { 'modelIdList': [] }
   },
   {
-    title: '年',
-    key: 'orderTime',
+    title: '车型',
+    key: 'modelIdList',
     default: [],
-    // default: [['2024'], ['2033']],
-    nodeType: 'year',
-    columnsType: ['year'],
-    list: [
-      { label: '去年', value: 'year01' },
-      { label: '今年', value: 'year02' },
-      { label: '明年', value: 'year03' }
+    nodeType: 'multiple',
+    options: [
+      // { label: '车型1', value: '01' },
+      // { label: '车型2', value: '02' },
+      // { label: '车型3', value: '03' }
     ]
   },
   {
-    title: '月',
+    title: '创建时间',
     key: 'createTime',
-    // default: [],
-    default: [['2024', '01'], ['2026', '11']],
-    nodeType: 'month',
-    columnsType: ['year', 'month'],
-    list: [
-      { label: '上个月', value: 'month01' },
-      { label: '当月', value: 'month02' },
-      { label: '下个月', value: 'month03' }
-    ]
-  },
-  {
-    title: '日',
-    key: 'updateTime',
-    // default: [['2024', '01', '02'], ['2026', '11', '19']],
     default: [],
     nodeType: 'day',
     columnsType: ['year', 'month', 'day'],
-    list: [
-      { label: '昨天', value: 'day01' },
-      { label: '今天', value: 'day02' },
-      { label: '明天', value: 'day03' }
-    ]
-  },
-  {
-    title: '小时分钟',
-    key: 'hourTime',
-    default: [['02', '12'], ['23', '59']],
-    nodeType: 'hour',
-    columnsType: ['hour', 'minute'],
-    list: [
-    ]
-  },
-  {
-    title: '分钟秒',
-    key: 'minuteTime',
-    default: [['11', '11'], ['52', '46']],
-    nodeType: 'minute',
-    columnsType: ['minute', 'second'],
-    list: [
-    ]
-  },
-  {
-    title: '时分秒',
-    key: 'secondTime',
-    default: [['01', '11', '11'], ['22', '12', '46']],
-    nodeType: 'second',
-    columnsType: ['hour', 'minute', 'second'],
-    list: [
-    ]
+    list: []
   }
+
 ])
 const tabList = ['入库PDI', 'PDI异常车辆', '在库PDI']
+const pdiAppQueryTypeList = [10, 20, 30]
 const dataList = ref([])
+const requestData = reactive({
+  data: {
+    pdiAppQueryType: 10,
+    vinLastSix: '',
+    vehPdiType: '',
+    seriesIdList: [],
+    modelIdList: [],
+    createTimeStart: '',
+    createTimeEnd: '',
+    pageNum: 1,
+    pageSize: 10
+  },
+  api: getPdiList
+})
 
 const active = ref(0)
+const needRefresh = ref(false)
 const showDialog = ref(false)
+const dialogKey = ref(0) // 添加一个key用于强制重新渲染对话框
 const dialogObj = {
-  index: '',
+  id: '',
+  vin: '',
+  code: '',
   title: '注意事项',
   submitText: '确定',
   cancelText: '取消',
@@ -167,27 +126,48 @@ const dialogObj = {
 
 // 组件激活时（从缓存中恢复）调用
 onActivated(() => {
-  console.log('PdiListView activated from cache')
-  console.log('showDialog', showDialog.value)
-  // 当组件从缓存中激活时，重置对话框状态以防止其显示
-  showDialog.value = false
-  console.log(showDialog.value)
+  console.log('组件激活')
+  // 当组件从缓存中激活时，确保对话框不显示
+  // 使用 nextTick 确保DOM更新后再设置
+  setTimeout(() => {
+    showDialog.value = false
+    // 更新key以强制重新渲染对话框组件
+    dialogKey.value += 1
+  }, 0)
 })
 
 // 组件失活时（进入缓存）调用
 onDeactivated(() => {
-  console.log('PdiListView deactivated to cache')
-  console.log('showDialog', showDialog.value)
+  console.log('组件失活')
+  // 在组件失活前，确保对话框关闭，避免缓存时保持打开状态
   showDialog.value = false
-  console.log(showDialog.value)
+  // 更新key以确保下次激活时重新渲染对话框
+  dialogKey.value += 1
 })
 
 const headerSearch = (row) => {
-  console.log(row)
+  requestData.data.vinLastSix = row.searchValue
+  requestData.data.pageNum = 1
+  dataList.value = []
+  // 强制触发刷新，通过创建新的data对象来确保响应式更新
+  requestData.data = { ...requestData.data }
 }
 
 const filterSearch = (obj) => {
-  console.log(obj)
+  requestData.data.vehPdiType = obj.vehPdiType
+  requestData.data.seriesIdList = obj.seriesIdList
+  requestData.data.modelIdList = obj.modelIdList
+  if (obj.createTime && obj.createTime.length) {
+    requestData.data.createTimeStart = obj.createTime[0].join('-') + ' 00:00:00'
+    requestData.data.createTimeEnd = obj.createTime[1].join('-') + ' 23:59:59'
+  } else {
+    requestData.data.createTimeStart = ''
+    requestData.data.createTimeEnd = ''
+  }
+  requestData.data.pageNum = 1
+  dataList.value = []
+  // 强制触发刷新，通过创建新的data对象来确保响应式更新
+  requestData.data = { ...requestData.data }
 }
 
 const changeList = (res) => {
@@ -206,24 +186,35 @@ const changeList = (res) => {
   }
 }
 
-const setData = res => {
-  dataList.value = res
+const setData = (res) => {
+  if (res.isRefresh) {
+    dataList.value = [...res.list]
+  } else {
+    dataList.value.push(...res.list)
+  }
+  needRefresh.value = false
 }
 
-const PDIBtnClick = (item, index) => {
+const PDIBtnClick = (item) => {
+  dialogObj.id = item.id
+  dialogObj.vin = item.vin
+  dialogObj.code = item.code
   showDialog.value = true
-  console.log(index)
-  dialogObj.index = index
 }
 
 const dialogSubmitFn = () => {
   // 跳转到详情页
   showDialog.value = false
+  // 更新key以确保对话框被重新渲染
+  dialogKey.value += 1
+  const type = active.value === 1 ? 'repair' : 'detail'
   router.push({
     path: '/pdi/detail',
     query: {
-      index: dialogObj.index,
-      name: 'name111'
+      id: dialogObj.id,
+      vin: dialogObj.vin,
+      code: dialogObj.code,
+      type
     }
   })
 }
@@ -235,7 +226,8 @@ const dialogCancelFn = () => {
 watch(
   () => active.value,
   newVal => {
-    console.log('tab类型变化，需要重新加载', newVal)
+    requestData.data.pdiAppQueryType = pdiAppQueryTypeList[newVal]
+    requestData.data.pageNum = 1
   }
 )
 

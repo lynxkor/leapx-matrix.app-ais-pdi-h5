@@ -34,7 +34,7 @@ service.interceptors.request.use(
 // 响应拦截器
 service.interceptors.response.use(
   (response) => {
-    return response
+    return response.data
   },
   (error) => {
     const status = error.response?.status

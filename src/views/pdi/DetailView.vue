@@ -57,6 +57,8 @@ import Inner from '@/components/DetailCard/Inner.vue'
 import Function from '@/components/DetailCard/Function.vue'
 import Repair from '@/components/DetailCard/Repair.vue'
 
+import { getPdiDetails, getPdiRepairDetails } from '@/api/pdi'
+
 const globalStore = useGlobalStore()
 const route = useRoute()
 const { query } = route
@@ -68,7 +70,7 @@ const title = `
 globalStore.setTitle(title)
 
 const tabList = ['外观检查', '玻璃检查', '车内检查', '功能检查']
-const currentIndex = ref(4)
+const currentIndex = ref(0)
 
 const toNext = () => {
   currentIndex.value = currentIndex.value + 1
