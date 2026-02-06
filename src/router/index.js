@@ -55,7 +55,7 @@ const router = createRouter({
           component: () => import('../views/pdi/DetailView.vue'),
           meta: {
             title: '门店整车PDI',
-            keepAlive: true
+            keepAlive: false
           }
         }
       ]

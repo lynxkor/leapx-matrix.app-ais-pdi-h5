@@ -1,53 +1,62 @@
 <template>
   <div class="detail-view-content">
-    <div class="detail-view-header">
-      <ais-header-tab :tabList="tabList" :currentIndex="currentIndex"/>
-    </div>
-    <div class="detail-view-center">
-      <!-- <div class="center-info-content">
-        <svg class="icon center-info-img" aria-hidden="true">
-          <use xlink:href="#icon-lxp-h5circle"></use>
-        </svg>
-        <div class="center-info-text">
-          <p>如有异常请选中车辆受损部位，并填写受损信息。</p>
-          <p>无异常，请直接点击下一步。</p>
+    <van-loading color="#00AA00" class="loading-area" v-if="isFetch"/>
+    <template v-else>
+      <div class="detail-view-header">
+        <ais-header-tab :tabList="tabList" :currentIndex="currentIndex"/>
+      </div>
+      <div class="detail-view-center">
+        <div class="center-info-content" v-if="type === 'detail'">
+          <svg class="icon center-info-img" aria-hidden="true">
+            <use xlink:href="#icon-lxp-h5circle"></use>
+          </svg>
+          <div class="center-info-text">
+            <p>如有异常请选中车辆受损部位，并填写受损信息。</p>
+            <p>无异常，请直接点击下一步。</p>
+          </div>
         </div>
-      </div> -->
-      <appearance v-if="currentIndex === 0"></appearance>
-      <glass v-if="currentIndex === 1"></glass>
-      <inner v-if="currentIndex === 2"></inner>
-      <function v-if="currentIndex === 3"></function>
-      <repair v-if="currentIndex === 4"></repair>
-    </div>
-    <footer class="detail-view-footer">
-      <template v-if="currentIndex === 0">
-        <ais-button class="footer-btn" style="flex: 1;" @click="toNext()">下一步，玻璃检查</ais-button>
-      </template>
-      <template v-if="currentIndex === 1">
-        <ais-button class="footer-btn" style="width: 130px;" plain @click="toFormer()">上一步</ais-button>
-        <ais-button class="footer-btn" style="flex: 1;" @click="toNext()">下一步，车内检查</ais-button>
-      </template>
-      <template v-if="currentIndex === 2">
-        <ais-button class="footer-btn" style="width: 130px;" plain @click="toFormer()">上一步</ais-button>
-        <ais-button class="footer-btn" style="flex: 1;" @click="toNext()">下一步，功能检查</ais-button>
-      </template>
-      <template v-if="currentIndex === 3">
-        <ais-button class="footer-btn" style="width: 130px;" plain @click="toFormer()">上一步</ais-button>
-        <ais-button class="footer-btn" style="flex: 1;" @click="toSubmit()">完成提交</ais-button>
-      </template>
-    </footer>
+        <template v-if="false">
+          <appearance v-if="currentIndex === 0"></appearance>
+          <glass v-if="currentIndex === 1"></glass>
+          <inner v-if="currentIndex === 2"></inner>
+          <function v-if="currentIndex === 3"></function>
+          <!-- <repair v-if="currentIndex === 4"></repair> -->
+        </template>
+        <appearance v-if="currentIndexName === '外观检查' || currentIndexName === '玻璃检查'" :checkItems="pdiItem?.checkItems[currentIndex]"></appearance>
+        <inner v-if="currentIndexName === '车内检查'" :checkItems="pdiItem?.checkItems[currentIndex]"></inner>
+        <function v-if="currentIndexName === '功能检查'" :checkItems="pdiItem?.checkItems[currentIndex]"></function>
+      </div>
+      <footer class="detail-view-footer">
+        <template v-if="currentIndexName === '外观检查'">
+          <ais-button class="footer-btn" style="flex: 1;" @click="toNext()">下一步，玻璃检查</ais-button>
+        </template>
+        <template v-if="currentIndexName === '玻璃检查'">
+          <ais-button class="footer-btn" style="width: 130px;" plain @click="toFormer()">上一步</ais-button>
+          <ais-button class="footer-btn" style="flex: 1;" @click="toNext()">下一步，车内检查</ais-button>
+        </template>
+        <template v-if="currentIndexName === '车内检查'">
+          <ais-button class="footer-btn" style="width: 130px;" plain @click="toFormer()">上一步</ais-button>
+          <ais-button class="footer-btn" style="flex: 1;" @click="toNext()">下一步，功能检查</ais-button>
+        </template>
+        <template v-if="currentIndexName === '功能检查'">
+          <ais-button class="footer-btn" style="width: 130px;" plain @click="toFormer()">上一步</ais-button>
+          <ais-button class="footer-btn" style="flex: 1;" @click="toSubmit()">完成提交</ais-button>
+        </template>
+      </footer>
+    </template>
   </div>
 </template>
 
 <script setup>
-import { defineOptions } from 'vue'
+import { defineOptions, reactive } from 'vue'
 
 defineOptions({
   name: 'PdiDetailView'
 })
 
-import { ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, onMounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { showFailToast } from 'vant'
 import { useGlobalStore } from '@/stores/global'
 import AisHeaderTab from '@/components/AisHeaderTab.vue'
 import AisButton from '@/components/AisButton.vue'
@@ -61,28 +70,74 @@ import { getPdiDetails, getPdiRepairDetails } from '@/api/pdi'
 
 const globalStore = useGlobalStore()
 const route = useRoute()
-const { query } = route
-console.log(query)
-const title = `
-  <p style='font-weight: 500; font-size: 15px; color: #191A1B;'>LFGF23435263563</p>
-  <p style='font-size: 12px; color: #888888;'>DC-251289238237</p>
-`
-globalStore.setTitle(title)
+const router = useRouter()
 
-const tabList = ['外观检查', '玻璃检查', '车内检查', '功能检查']
+const tabList = ref([])
 const currentIndex = ref(0)
+const currentIndexName = ref('')
+const type = ref('')
+const pdiItem = reactive({})
+const isFetch = ref(true)
+let api, pdiId
+
+onMounted(() => {
+  const { query } = route
+  console.log(query)
+  const { id, vin, code } = query
+  type.value = query.type
+  const title = `
+    <p style='font-weight: 500; font-size: 15px; color: #191A1B;'>${vin}</p>
+    <p style='font-size: 12px; color: #888888;'>${code}</p>
+  `
+  globalStore.setTitle(title)
+  api = query.type === 'detail' ? getPdiDetails : getPdiRepairDetails
+  pdiId = id
+  getDetail(api, pdiId)
+})
+
+const getDetail = (api, id) => {
+  isFetch.value = true
+  api(id).then(res => {
+    if (res.code === 200) {
+      const data = res.data
+      console.log(data)
+      tabList.value = data.checkItems.map(item => item.name)
+      currentIndexName.value = tabList.value[currentIndex.value]
+      Object.assign(pdiItem, { ...data })
+      isFetch.value = false
+    } else {
+      showFailToast(res.msg)
+      setTimeout(() => {
+        router.go(-1)
+      }, 300)
+    }
+  }).catch(err => {
+    console.log(err)
+  }).finally(() => {
+    isFetch.value = false
+  })
+}
 
 const toNext = () => {
+  getDetail(api, pdiId)
   currentIndex.value = currentIndex.value + 1
 }
 
 const toFormer = () => {
+  getDetail(api, pdiId)
   currentIndex.value = currentIndex.value - 1
 }
 
 const toSubmit = () => {
   console.log('提交')
 }
+
+watch(
+  () => currentIndex.value,
+  newVal => {
+    currentIndexName.value = tabList.value[newVal]
+  }
+)
 
 </script>
 
@@ -135,5 +190,11 @@ const toSubmit = () => {
     height: 40px;
     margin: 0 auto;
   }
+}
+.loading-area{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
 }
 </style>

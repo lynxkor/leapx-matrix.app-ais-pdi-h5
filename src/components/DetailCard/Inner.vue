@@ -1,21 +1,22 @@
 <template>
   <div class="inner-content">
     <van-collapse v-model="activeNames">
-      <van-collapse-item v-for="(item, index) in 2" :key="index" title="标题1" :name="index" value="异常" value-class="error-text" class="collapse-content">
+      <van-collapse-item v-for="(checkItemItem, checkItemIndex) in innerObj.checkItems" :key="checkItemIndex" :title="checkItemItem.name" :name="index" :value="checkItemItem.isUnusual ? 异常 : ''" value-class="error-text" class="collapse-content">
         <div class="switch-content">
           <van-row>
-            <van-col class="check-item" v-for="(item, index) in switchList" :key="index" span="24">
-              <span class="check-item-text">{{ item.name }}</span>
+            <van-col class="check-item" v-for="(inspectItem, inspectIndex) in checkItemItem.checkItems" :key="inspectIndex" span="24">
+              <span class="check-item-text">{{ inspectItem.name }}</span>
               <div class="switch-inner">
-                <span v-if="switchObj[item.key]">异常</span>
-                <van-switch v-model="switchObj[item.key]" size="20px" inactive-color="#00AA00" active-color="#E43122"/>
+                <span v-if="inspectItem.isUnusual">异常</span>
+                <van-switch v-model="inspectItem.isUnusual" size="20px" inactive-color="#00AA00" active-color="#E43122" @change="switchChange(checkItemItem, checkItemIndex)"/>
               </div>
             </van-col>
             <div class="file-content">
               <p class="file-title">异常说明<span class="require-text">*</span></p>
               <van-field
                 class="textarea-content"
-                v-model="switchObj.remark"
+                v-model="checkItemItem.abnormalDesc"
+                :disabled="checkItemItem.isInputDisabled"
                 rows="1"
                 autosize
                 type="textarea"
@@ -23,11 +24,15 @@
               />
               <p class="file-title">上传图片<span class="grey-text"></span><span class="require-text">*</span></p>
               <div class="upload-content">
-                <div class="upload-item">
+                <div class="upload-item" v-for="(img, imgIndex) in checkItemItem.abnormalUrlList" :key="imgIndex">
+                  <img style="width: 100%; height: 100%; margin-bottom: 0" :src="img" @click="showImg(img)"/>
+                  <img class="delete_icon" src="../../assets/img/delete_icon.png" @click="deleteImg(checkItemIndex, imgIndex)"/>
+                </div>
+                <div class="upload-item" @click="uploadClick()">
                   <svg class="icon upload-img" aria-hidden="true">
                     <use xlink:href="#icon-lxp-h5upload-mob"></use>
                   </svg>
-                  <!-- <span class="upload-text">近景图</span> -->
+                  <span class="upload-text">上传图片</span>
                 </div>
               </div>
             </div>
@@ -39,29 +44,86 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, defineProps, watch, onMounted } from 'vue'
+import { showImagePreview } from 'vant'
+import { getAppImg } from '@/libs/utils/nativeFn'
+
+const props = defineProps({
+  checkItems: {
+    type: Object,
+    default: () => {
+      return {}
+    }
+  }
+})
+
+onMounted(() => {
+  window.getImage = (url) => {
+    console.log('图片', url)
+    const _clickIndex = clickIndex.value
+    if (_clickIndex === -1) {
+      innerObj.abnormalUrlList.push(url)
+    } else {
+      innerObj.abnormalUrlList.splice(_clickIndex, 1, url)
+    }
+  }
+})
+
+console.log(props.checkItems)
+const innerObj = reactive({})
+const tempObj = reactive({})
 
 const activeNames = ref(['1'])
+const clickIndex = ref()
 
-const switchObj = reactive({
-  sags: false,
-  broken: true,
-  replace: false,
-  gap: false,
-  compensation: false,
-  repair: false,
-  scratch: false,
-  remark: ''
-})
-const switchList = ref([
-  { name: '凹凸不平', key: 'sags' },
-  { name: '损坏', key: 'broken' },
-  { name: '更换', key: 'replace' },
-  { name: '间隙不均', key: 'gap' },
-  { name: '索赔', key: 'compensation' },
-  { name: '修理', key: 'repair' },
-  { name: '划痕', key: 'scratch' }
-])
+const switchChange = (_secondCheckItemItem, _firstIndex) => {
+  const _obj = innerObj.checkItems[_firstIndex].checkItems
+  const _temp = tempObj.checkItems[_firstIndex].checkItems
+  for (let index = 0; index < _obj.length; index++) {
+    if (Number(_obj[index].isUnusual) === _temp[index].isUnusual) {
+      _secondCheckItemItem.isInputDisabled = true
+    } else {
+      _secondCheckItemItem.isInputDisabled = false
+      break
+    }
+  }
+}
+
+const showImg = url => {
+  showImagePreview([url])
+}
+
+const deleteImg = (outterIndex, index) => {
+  innerObj.checkItems[outterIndex].abnormalUrlList.splice(index, 1)
+}
+
+const uploadClick = (_firstIndex, imgIndex) => {
+  if (innerObj.checkItems[_firstIndex].isInputDisabled) {
+    return false
+  }
+  clickIndex.value = imgIndex
+  getAppImg()
+}
+
+watch(
+  () => props.checkItems,
+  (newVal) => {
+    // 使用深拷贝避免对象引用问题
+    const deepClone = (obj) => JSON.parse(JSON.stringify(obj))
+    Object.assign(innerObj, {
+      ...deepClone(newVal)
+    })
+    Object.assign(tempObj, deepClone(newVal))
+    innerObj.checkItems.map(item => {
+      item.isInputDisabled = true
+      item.abnormalUrlList = item.abnormalUrl && item.abnormalUrl.length ? item.abnormalUrl.split(',') : []
+    })
+  },
+  {
+    immediate: true
+  }
+)
+
 </script>
 
 <style lang="scss" scoped>
@@ -129,16 +191,18 @@ const switchList = ref([
       display: flex;
       align-items: center;
       justify-content: flex-start;
-      gap: 8px;
+      flex-wrap: wrap;
+      gap: 2.13vw;
       .upload-item{
-        width: 80px;
-        height: 80px;
+        width: 21.3vw;
+        height: 21.3vw;
         border-radius: 7px;
         background: #F5F5F5;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
+        position: relative;
         .upload-img{
           width: 24px;
           height: 24px;
@@ -147,6 +211,13 @@ const switchList = ref([
         .upload-text{
           font-size: 12px;
           color: #888888;
+        }
+        .delete_icon{
+          position: absolute;
+          top: 0;
+          right: 0;
+          width: 15px;
+          height: 15px;
         }
       }
     }

@@ -54,6 +54,8 @@ const getStyle = () => {
   }
   if (loading || disabled) {
     style.opacity = 0.6
+  } else {
+    style.opacity = 1
   }
   return style
 }

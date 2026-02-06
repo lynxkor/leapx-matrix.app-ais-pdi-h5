@@ -1,4 +1,4 @@
-import { post } from './request'
+import { post, postJson } from './request'
 
 export function getList(data) {
   return post('/datacenter/vehiclePartsMaintenance/page', data)
@@ -11,10 +11,10 @@ export function getPdiList(data) {
 
 // pdi详情(入库、在库)
 export function getPdiDetails(data) {
-  return post('/vehstock/app/store/storeVehiclePdi/getPdiEntryDetails', data)
+  return postJson('/vehstock/app/store/storeVehiclePdi/getPdiEntryDetails', data)
 }
 
 // pdi详情(异常)
 export function getPdiRepairDetails(data) {
-  return post('/vehstock/app/store/storeVehiclePdi/getRepairConfirmDetails', data)
+  return postJson('/vehstock/app/store/storeVehiclePdi/getRepairConfirmDetails', data)
 }

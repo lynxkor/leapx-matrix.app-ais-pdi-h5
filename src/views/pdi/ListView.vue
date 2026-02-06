@@ -133,6 +133,7 @@ onActivated(() => {
     showDialog.value = false
     // 更新key以强制重新渲染对话框组件
     dialogKey.value += 1
+    console.log('show', showDialog.value)
   }, 0)
 })
 
@@ -143,6 +144,7 @@ onDeactivated(() => {
   showDialog.value = false
   // 更新key以确保下次激活时重新渲染对话框
   dialogKey.value += 1
+  console.log('show', showDialog.value)
 })
 
 const headerSearch = (row) => {
@@ -187,12 +189,14 @@ const changeList = (res) => {
 }
 
 const setData = (res) => {
+  console.log('set', res)
   if (res.isRefresh) {
     dataList.value = [...res.list]
   } else {
     dataList.value.push(...res.list)
   }
   needRefresh.value = false
+  console.log(dataList.value)
 }
 
 const PDIBtnClick = (item) => {
@@ -205,8 +209,6 @@ const PDIBtnClick = (item) => {
 const dialogSubmitFn = () => {
   // 跳转到详情页
   showDialog.value = false
-  // 更新key以确保对话框被重新渲染
-  dialogKey.value += 1
   const type = active.value === 1 ? 'repair' : 'detail'
   router.push({
     path: '/pdi/detail',

@@ -1,13 +1,13 @@
 <template>
   <div class="inner-content">
     <van-collapse v-model="activeNames">
-      <van-collapse-item v-for="(item, index) in switchList" :key="index" :name="index" class="collapse-content">
+      <van-collapse-item v-for="(checkItem, checkItemIndex) in checkItems.checkItems" :key="checkItemIndex" :name="checkItemIndex" class="collapse-content">
         <template #title>
           <div class="title-slot">
-            <div class="title-slot-text">{{ item.name }}</div>
+            <div class="title-slot-text">{{ checkItem.name }}</div>
             <div class="switch-inner" @click.stop>
-              <span v-if="switchObj[item.key]">异常</span>
-              <van-switch v-model="switchObj[item.key]" size="20px" inactive-color="#00AA00" active-color="#E43122"/>
+              <span v-if="checkItem.isUnusual">异常</span>
+              <van-switch v-model="checkItem.isUnusual" size="20px" inactive-color="#00AA00" active-color="#E43122"/>
             </div>
           </div>
         </template>
@@ -16,7 +16,7 @@
             <p class="file-title">异常说明<span class="require-text">*</span></p>
             <van-field
               class="textarea-content"
-              v-model="switchObj.remark"
+              v-model="checkItem.abnormalDesc"
               rows="1"
               autosize
               type="textarea"
@@ -24,11 +24,15 @@
             />
             <p class="file-title">上传图片<span class="grey-text"></span><span class="require-text">*</span></p>
             <div class="upload-content">
-              <div class="upload-item">
+              <div class="upload-item" v-for="(img, imgIndex) in innerObj.abnormalUrlList" :key="imgIndex">
+                <img style="width: 100%; height: 100%; margin-bottom: 0" :src="img" @click="showImg(img)"/>
+                <img class="delete_icon" src="../../assets/img/delete_icon.png" @click="deleteImg(imgIndex)"/>
+              </div>
+              <div class="upload-item" @click="uploadClick()">
                 <svg class="icon upload-img" aria-hidden="true">
                   <use xlink:href="#icon-lxp-h5upload-mob"></use>
                 </svg>
-                <!-- <span class="upload-text">近景图</span> -->
+                <span class="upload-text">上传图片</span>
               </div>
             </div>
           </div>
@@ -39,29 +43,57 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, defineProps, watch, onMounted } from 'vue'
+import { showImagePreview } from 'vant'
+import { getAppImg } from '@/libs/utils/nativeFn'
+
+const props = defineProps({
+  checkItems: {
+    type: Object,
+    default: () => {
+      return {}
+    }
+  }
+})
+
+onMounted(() => {
+  window.getImage = (url) => {
+    console.log('图片', url)
+    innerObj.abnormalUrlList.push(url)
+  }
+})
+
+console.log(props.checkItems)
 
 const activeNames = ref(['1'])
+const innerObj = reactive({})
 
-const switchObj = reactive({
-  sags: false,
-  broken: true,
-  replace: false,
-  gap: false,
-  compensation: false,
-  repair: false,
-  scratch: false,
-  remark: ''
-})
-const switchList = ref([
-  { name: '车辆故障码检查与清除', key: 'sags' },
-  { name: '车辆起步与刹车', key: 'broken' },
-  { name: '车辆灯光检查', key: 'replace' },
-  { name: '电动尾门检查', key: 'gap' },
-  { name: '交付模式退出', key: 'compensation' },
-  { name: '重置中控屏里程A数据', key: 'repair' },
-  { name: '回复出厂设置检查', key: 'scratch' }
-])
+const showImg = url => {
+  showImagePreview([url])
+}
+
+const deleteImg = index => {
+  innerObj.abnormalUrlList.splice(index, 1)
+}
+
+const uploadClick = () => {
+  getAppImg()
+}
+
+watch(
+  () => props.checkItems,
+  newVal => {
+    const deepClone = (obj) => JSON.parse(JSON.stringify(obj))
+    Object.assign(innerObj, {
+      ...deepClone(newVal),
+      abnormalUrlList: newVal.abnormalUrl && newVal.abnormalUrl.length ? newVal.abnormalUrl.split(',') : []
+    })
+  },
+  {
+    immediate: true
+  }
+)
+
 </script>
 
 <style lang="scss" scoped>
@@ -127,16 +159,18 @@ const switchList = ref([
       display: flex;
       align-items: center;
       justify-content: flex-start;
-      gap: 8px;
+      flex-wrap: wrap;
+      gap: 2.13vw;
       .upload-item{
-        width: 80px;
-        height: 80px;
+        width: 21.3vw;
+        height: 21.3vw;
         border-radius: 7px;
         background: #F5F5F5;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
+        position: relative;
         .upload-img{
           width: 24px;
           height: 24px;
@@ -145,6 +179,13 @@ const switchList = ref([
         .upload-text{
           font-size: 12px;
           color: #888888;
+        }
+        .delete_icon{
+          position: absolute;
+          top: 0;
+          right: 0;
+          width: 15px;
+          height: 15px;
         }
       }
     }

@@ -2,11 +2,11 @@
   <div class="appearance-content">
     <div class="car-content">
       <div class="car-content-inner">
-        <img src="../../assets/img/appearance_bg.png" class="car-bg-img"/>
-          <div v-for="(inspectItem, inspectIndex) in inspectList" :key="inspectIndex"
+        <img :src="checkItems.atlasUrl" class="car-bg-img"/>
+          <div v-for="(inspectItem, inspectIndex) in checkItems.checkItems" :key="inspectIndex"
             :class="inspectItem.isAbnormal ? 'inspect-item-content inspect-item-content-error' : 'inspect-item-content'"
-            :style="{top: `${inspectItem.top}px`, left: `${inspectItem.left}px`, right: `${inspectItem.right}px`}"
-            @click="showPop"
+            :style="{top: `${inspectItem.atlasCoordTop}px`, left: `${inspectItem.atlasCoordLeft}px`, right: `${inspectItem.atlasCoordRight}px`}"
+            @click="showPop(inspectItem)"
           >
             {{ inspectItem.name }}
           </div>
@@ -23,11 +23,11 @@
       <div class="state-content">
           <div class="switch-content">
             <van-row>
-              <van-col class="check-item" v-for="(item, index) in switchList" :key="index" span="12">
-                <span class="check-item-text">{{ item.name }}</span>
+              <van-col class="check-item" v-for="(item, index) in popupObj.damagedTypeList" :key="index" span="12">
+                <span class="check-item-text">{{ item.damagedType }}</span>
                 <div class="switch-inner">
-                  <span v-if="switchObj[item.key]">异常</span>
-                  <van-switch v-model="switchObj[item.key]" size="20px" inactive-color="#00AA00" active-color="#E43122"/>
+                  <span v-if="item.isUnusual">异常</span>
+                  <van-switch v-model="item.isUnusual" size="20px" inactive-color="#00AA00" active-color="#E43122" @change="switchChange()"/>
                 </div>
               </van-col>
             </van-row>
@@ -36,21 +36,31 @@
             <p class="file-title">异常说明<span class="require-text">*</span></p>
             <van-field
               class="textarea-content"
-              v-model="switchObj.remark"
+              v-model="popupObj.abnormalDesc"
+              :disabled="popupInputDisabled"
               rows="1"
               autosize
               type="textarea"
               placeholder="请输入异常说明，不少于10个字"
             />
             <p class="file-title">上传图片<span class="grey-text">(需提供近景图及远景图)</span><span class="require-text">*</span></p>
+            {{ popupObj.abnormalUrlList }}
             <div class="upload-content">
-              <div class="upload-item">
+              <div class="upload-item" v-if="popupObj.abnormalUrlList[0]" @click="uploadClick(0)">
+                <img style="width: 100%; height: 100%; margin-bottom: 0" :src="img" @click="showImg(img)"/>
+                <img class="delete_icon" src="../../assets/img/delete_icon.png" @click="deleteImg(0)"/>
+              </div>
+              <div class="upload-item" v-if="!popupObj.abnormalUrlList[0]" @click="uploadClick(0)">
                 <svg class="icon upload-img" aria-hidden="true">
                   <use xlink:href="#icon-lxp-h5upload-mob"></use>
                 </svg>
                 <span class="upload-text">近景图</span>
               </div>
-              <div class="upload-item">
+              <div class="upload-item" v-if="popupObj.abnormalUrlList[1]" @click="uploadClick(1)">
+                <img style="width: 100%; height: 100%; margin-bottom: 0" :src="img" @click="showImg(img)"/>
+                <img class="delete_icon" src="../../assets/img/delete_icon.png" @click="deleteImg(1)"/>
+              </div>
+              <div class="upload-item" v-if="!popupObj.abnormalUrlList[1]" @click="uploadClick(1)">
                 <svg class="icon upload-img" aria-hidden="true">
                   <use xlink:href="#icon-lxp-h5upload-mob"></use>
                 </svg>
@@ -60,7 +70,7 @@
           </div>
       </div>
       <div class="popup-footer">
-        <ais-button style="height: 40px;" :disabled="submitDisabled" @click="saveClick">保存并返回</ais-button>
+        <ais-button style="height: 40px;" :disabled="popupInputDisabled" @click="saveClick">保存并返回</ais-button>
       </div>
     </div>
   </van-popup>
@@ -70,55 +80,28 @@
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue'
+import { reactive, ref, defineProps, onMounted } from 'vue'
+import { showFailToast, showImagePreview } from 'vant'
+import { getAppImg } from '@/libs/utils/nativeFn'
 import AisButton from '../AisButton.vue'
 import AisDialog from '@/libs/components/AisDialog.vue'
 
-// 需要监听传入进的对象有没有变化，有变化的话，下方按钮高亮，左上角关闭按钮增加弹窗提示
-
-const inspectList = [
-  { name: '前保险杠', top: '19', left: '15', isAbnormal: false },
-  { name: '左前翼子板', top: '96', left: '15', isAbnormal: true },
-  { name: '左前轮', top: '140', left: '15', isAbnormal: false },
-  { name: '左后视镜', top: '205', left: '15', isAbnormal: false },
-  { name: '左前门', top: '249', left: '15', isAbnormal: false },
-  { name: '左后门', top: '330', left: '15', isAbnormal: false },
-  { name: '左后轮', top: '383', left: '15', isAbnormal: false },
-  { name: '后保险杠', top: '513', left: '15', isAbnormal: false },
-  { name: '车辆底盘', top: '513', left: '160', isAbnormal: false },
-  { name: '后备箱盖', top: '513', right: '15', isAbnormal: false },
-  { name: '右后轮', top: '383', right: '15', isAbnormal: false },
-  { name: '右后门', top: '330', right: '15', isAbnormal: false },
-  { name: '右前门', top: '249', right: '15', isAbnormal: false },
-  { name: '右后视镜', top: '205', right: '15', isAbnormal: false },
-  { name: '右前轮', top: '140', right: '15', isAbnormal: false },
-  { name: '右前翼子板', top: '96', right: '15', isAbnormal: false },
-  { name: '车顶', top: '19', right: '15', isAbnormal: false },
-  { name: '引擎盖', top: '19', left: '166', isAbnormal: false }
-]
+defineProps({
+  checkItems: {
+    type: Object,
+    default: () => {
+      return {}
+    }
+  }
+})
 
 const show = ref(false)
 const title = ref('检查-车顶')
-const switchObj = reactive({
-  sags: false,
-  broken: true,
-  replace: false,
-  gap: false,
-  compensation: false,
-  repair: false,
-  scratch: false,
-  remark: ''
-})
-const switchList = ref([
-  { name: '凹凸不平', key: 'sags' },
-  { name: '损坏', key: 'broken' },
-  { name: '更换', key: 'replace' },
-  { name: '间隙不均', key: 'gap' },
-  { name: '索赔', key: 'compensation' },
-  { name: '修理', key: 'repair' },
-  { name: '划痕', key: 'scratch' }
-])
+const popupObj = reactive({})
+const tempObj = reactive({})
+const popupInputDisabled = ref(true)
 const showDialog = ref(false)
+const imgIndex = ref('')
 const dialogObj = {
   index: '',
   title: '提醒',
@@ -127,15 +110,51 @@ const dialogObj = {
   submitFn: () => { showDialog.value = false; show.value = false },
   cancelFn: () => { showDialog.value = false }
 }
-const submitDisabled = ref(true)
 
-const showPop = () => {
+onMounted(() => {
+  window.getImage = (url) => {
+    console.log('图片', url)
+    // 拿到图片路径，然后再放到popupObj.abnormalUrlList[imgIndex.value]里
+    popupObj.abnormalUrlList.splice(imgIndex.value, 1, url)
+  }
+})
+
+const showPop = (item) => {
+  console.log(item)
+  title.value = `检查-${item.name}`
+  Object.assign(popupObj, JSON.parse(JSON.stringify({
+    ...item,
+    abnormalUrlList: item.abnormalUrl && item.abnormalUrl.length ? item.abnormalUrl.split(',') : ['1', '2'],
+    abnormalDesc: item.abnormalDesc ? item.abnormalDesc : ''
+  })))
+  Object.assign(tempObj, JSON.parse(JSON.stringify({
+    ...item,
+    abnormalDesc: item.abnormalDesc ? item.abnormalDesc : ''
+  })))
+  popupInputDisabled.value = true
   show.value = true
+}
+
+const showImg = url => {
+  showImagePreview([url])
+}
+
+const deleteImg = (index) => {
+  popupObj.abnormalUrlList.splice(index, 1, '')
+}
+
+const uploadClick = (_index) => {
+  if (popupInputDisabled.value) {
+    return false
+  }
+  // 近、远图
+  imgIndex.value = _index
+  getAppImg()
 }
 
 const beforeClose = () => {
   // 需要判断数据有没有操作过
-  if (submitDisabled.value) {
+  if (popupInputDisabled.value) {
     show.value = false
   } else {
     showDialog.value = true
@@ -143,7 +162,37 @@ const beforeClose = () => {
 }
 
 const saveClick = () => {
+  // 输入框和图片要必填
+  if (!popupObj.abnormalDesc) {
+    showFailToast('请输入异常说明')
+    return
+  }
+  if (!popupObj.abnormalUrlList.length) {
+    showFailToast('请上传图片')
+    return
+  }
+  if (!popupObj.abnormalUrlList[0]) {
+    showFailToast('请上传近景图')
+    return
+  }
+  if (!popupObj.abnormalUrlList[1]) {
+    showFailToast('请上传远景图')
+    return
+  }
+  // 调用提交接口，然后再调用详情接口页面重新刷新
   show.value = false
+}
+
+const switchChange = () => {
+  // 需要所有的复选框状态都要判断
+  for (let index = 0; index < tempObj.damagedTypeList.length; index++) {
+    if (Number(popupObj.damagedTypeList[index].isUnusual) === tempObj.damagedTypeList[index].isUnusual) {
+      popupInputDisabled.value = true
+    } else {
+      popupInputDisabled.value = false
+      break
+    }
+  }
 }
 
 </script>
@@ -296,6 +345,7 @@ const saveClick = () => {
       flex-direction: column;
       align-items: center;
       justify-content: center;
+      position: relative;
       .upload-img{
         width: 24px;
         height: 24px;
@@ -304,6 +354,13 @@ const saveClick = () => {
       .upload-text{
         font-size: 12px;
         color: #888888;
+      }
+      .delete_icon{
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 15px;
+        height: 15px;
       }
     }
   }
