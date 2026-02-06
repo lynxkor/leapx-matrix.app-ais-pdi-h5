@@ -20,21 +20,6 @@
         <function v-if="currentIndexName === '功能检查'" :checkItems="pdiItem?.checkItems[currentIndex]" :version="pdiItem?.version" :id="pdiItem?.id" @submitFunction="submitFunction" :lastSubmit="lastSubmit"></function>
       </div>
       <footer class="detail-view-footer">
-        <!-- <template v-if="currentIndexName === '外观检查'">
-          <ais-button class="footer-btn" style="flex: 1;" @click="toNext()">下一步，玻璃检查</ais-button>
-        </template>
-        <template v-if="currentIndexName === '玻璃检查'">
-          <ais-button class="footer-btn" style="width: 130px;" plain @click="toFormer()">上一步</ais-button>
-          <ais-button class="footer-btn" style="flex: 1;" @click="toNext()">下一步，车内检查</ais-button>
-        </template>
-        <template v-if="currentIndexName === '车内检查'">
-          <ais-button class="footer-btn" style="width: 130px;" plain @click="toFormer()">上一步</ais-button>
-          <ais-button class="footer-btn" style="flex: 1;" @click="toNext()">下一步，功能检查</ais-button>
-        </template>
-        <template v-if="currentIndexName === '功能检查'">
-          <ais-button class="footer-btn" style="width: 130px;" plain @click="toFormer()">上一步</ais-button>
-          <ais-button class="footer-btn" style="flex: 1;" @click="toSubmit()">完成提交</ais-button>
-        </template> -->
         <ais-button class="footer-btn" style="width: 130px;" v-if="currentIndex != 0" plain @click="toFormer()">上一步</ais-button>
         <ais-button class="footer-btn" style="flex: 1;" v-if="currentIndex < pdiItem?.checkItems.length - 1" @click="toNext()">下一步，{{ pdiItem?.checkItems[currentIndex+1].name }}</ais-button>
         <ais-button class="footer-btn" style="flex: 1;" v-if="currentIndex === pdiItem?.checkItems.length - 1" @click="toSubmit()">完成提交</ais-button>
