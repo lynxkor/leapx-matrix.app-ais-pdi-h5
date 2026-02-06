@@ -1,7 +1,7 @@
 <template>
   <div class="inner-content">
     <van-collapse v-model="activeNames">
-      <van-collapse-item v-for="(checkItem, checkItemIndex) in checkItems.checkItems" :key="checkItemIndex" :name="checkItemIndex" class="collapse-content">
+      <van-collapse-item v-for="(checkItem, checkItemIndex) in innerObj.checkItems" :key="checkItemIndex" :name="checkItemIndex" class="collapse-content">
         <template #title>
           <div class="title-slot">
             <div class="title-slot-text">{{ checkItem.name }}</div>
@@ -17,6 +17,7 @@
             <van-field
               class="textarea-content"
               v-model="checkItem.abnormalDesc"
+              :disabled="!checkItem.isUnusual"
               rows="1"
               autosize
               type="textarea"
@@ -24,11 +25,11 @@
             />
             <p class="file-title">上传图片<span class="grey-text"></span><span class="require-text">*</span></p>
             <div class="upload-content">
-              <div class="upload-item" v-for="(img, imgIndex) in innerObj.abnormalUrlList" :key="imgIndex">
+              <div class="upload-item" v-for="(img, imgIndex) in checkItem.abnormalUrlList" :key="imgIndex">
                 <img style="width: 100%; height: 100%; margin-bottom: 0" :src="img" @click="showImg(img)"/>
-                <img class="delete_icon" src="../../assets/img/delete_icon.png" @click="deleteImg(imgIndex)"/>
+                <img class="delete_icon" src="../../assets/img/delete_icon.png" @click="deleteImg(checkItemIndex, imgIndex)"/>
               </div>
-              <div class="upload-item" @click="uploadClick()">
+              <div class="upload-item" @click="uploadClick(checkItemIndex)">
                 <svg class="icon upload-img" aria-hidden="true">
                   <use xlink:href="#icon-lxp-h5upload-mob"></use>
                 </svg>
@@ -43,8 +44,8 @@
 </template>
 
 <script setup>
-import { ref, reactive, defineProps, watch, onMounted } from 'vue'
-import { showImagePreview } from 'vant'
+import { ref, reactive, defineProps, defineEmits, watch, onMounted } from 'vue'
+import { showFailToast, showImagePreview } from 'vant'
 import { getAppImg } from '@/libs/utils/nativeFn'
 
 const props = defineProps({
@@ -53,8 +54,23 @@ const props = defineProps({
     default: () => {
       return {}
     }
+  },
+  lastSubmit: {
+    type: Boolean,
+    default: false
+  },
+  version: {
+    type: String || Number,
+    default: ''
+  },
+  id: {
+    type: String || Number,
+    default: ''
   }
 })
+
+const emit = defineEmits(['submitFunction'])
+const deepClone = (obj) => JSON.parse(JSON.stringify(obj))
 
 onMounted(() => {
   window.getImage = (url) => {
@@ -72,25 +88,73 @@ const showImg = url => {
   showImagePreview([url])
 }
 
-const deleteImg = index => {
+const deleteImg = (_firstIndex, index) => {
   innerObj.abnormalUrlList.splice(index, 1)
 }
 
-const uploadClick = () => {
+const uploadClick = (_firstIndex) => {
+  if (!innerObj.checkItems[_firstIndex].isUnusual) {
+    return false
+  }
   getAppImg()
 }
 
 watch(
   () => props.checkItems,
   newVal => {
-    const deepClone = (obj) => JSON.parse(JSON.stringify(obj))
     Object.assign(innerObj, {
-      ...deepClone(newVal),
-      abnormalUrlList: newVal.abnormalUrl && newVal.abnormalUrl.length ? newVal.abnormalUrl.split(',') : []
+      ...deepClone(newVal)
+    })
+    innerObj.checkItems.map(checkItem => {
+      checkItem.isUnusual = Boolean(checkItem.isUnusual)
+      checkItem.abnormalUrlList = checkItem.abnormalUrl && checkItem.abnormalUrl.length ? checkItem.abnormalUrl.split(',') : ['', '']
     })
   },
   {
     immediate: true
+  }
+)
+
+watch(
+  () => props.lastSubmit,
+  newVal => {
+    if (newVal) {
+      const obj = { ...deepClone(innerObj) }
+      let isSubmit = true
+      for (const checkItem of obj.checkItems) {
+        if (checkItem.isUnusual) {
+          if (!checkItem.abnormalDesc) {
+            showFailToast(`请输入${checkItem.name}异常说明`)
+            isSubmit = false
+            break
+          }
+          // 图片校验暂时收起
+          // if (!checkItem.abnormalUrlList.length) {
+          //   showFailToast(`请上传${checkItem.name}异常图片`)
+          //   isSubmit = false
+          //   break
+          // }
+        }
+      }
+      if (isSubmit) {
+        obj.checkItems.map(checkItem => {
+          console.log(checkItem)
+          checkItem.abnormalUrl = checkItem.abnormalUrlList.join(',')
+          checkItem.isUnusual = Number(checkItem.isUnusual)
+        })
+        console.log(obj)
+        const _data = {
+          isPdiSubmit: 1,
+          id: props.id,
+          version: props.version,
+          checkItems: [obj]
+        }
+
+        emit('submitFunction', true, _data)
+      } else {
+        emit('submitFunction', false, {})
+      }
+    }
   }
 )
 

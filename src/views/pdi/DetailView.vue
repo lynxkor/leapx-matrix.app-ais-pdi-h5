@@ -15,19 +15,12 @@
             <p>无异常，请直接点击下一步。</p>
           </div>
         </div>
-        <template v-if="false">
-          <appearance v-if="currentIndex === 0"></appearance>
-          <glass v-if="currentIndex === 1"></glass>
-          <inner v-if="currentIndex === 2"></inner>
-          <function v-if="currentIndex === 3"></function>
-          <!-- <repair v-if="currentIndex === 4"></repair> -->
-        </template>
-        <appearance v-if="currentIndexName === '外观检查' || currentIndexName === '玻璃检查'" :checkItems="pdiItem?.checkItems[currentIndex]"></appearance>
-        <inner v-if="currentIndexName === '车内检查'" :checkItems="pdiItem?.checkItems[currentIndex]"></inner>
-        <function v-if="currentIndexName === '功能检查'" :checkItems="pdiItem?.checkItems[currentIndex]"></function>
+        <appearance v-if="currentIndexName === '外观检查' || currentIndexName === '玻璃检查'" :checkItems="pdiItem?.checkItems[currentIndex]" :api="addPdiEntry" :version="pdiItem?.version" :id="pdiItem?.id" @reload="reload"></appearance>
+        <inner v-if="currentIndexName === '车内检查'" :checkItems="pdiItem?.checkItems[currentIndex]" :needSubmit="needSubmit" :version="pdiItem?.version" :id="pdiItem?.id" @submitInner="submitInner"></inner>
+        <function v-if="currentIndexName === '功能检查'" :checkItems="pdiItem?.checkItems[currentIndex]" :version="pdiItem?.version" :id="pdiItem?.id" @submitFunction="submitFunction" :lastSubmit="lastSubmit"></function>
       </div>
       <footer class="detail-view-footer">
-        <template v-if="currentIndexName === '外观检查'">
+        <!-- <template v-if="currentIndexName === '外观检查'">
           <ais-button class="footer-btn" style="flex: 1;" @click="toNext()">下一步，玻璃检查</ais-button>
         </template>
         <template v-if="currentIndexName === '玻璃检查'">
@@ -41,9 +34,13 @@
         <template v-if="currentIndexName === '功能检查'">
           <ais-button class="footer-btn" style="width: 130px;" plain @click="toFormer()">上一步</ais-button>
           <ais-button class="footer-btn" style="flex: 1;" @click="toSubmit()">完成提交</ais-button>
-        </template>
+        </template> -->
+        <ais-button class="footer-btn" style="width: 130px;" v-if="currentIndex != 0" plain @click="toFormer()">上一步</ais-button>
+        <ais-button class="footer-btn" style="flex: 1;" v-if="currentIndex < pdiItem?.checkItems.length - 1" @click="toNext()">下一步，{{ pdiItem?.checkItems[currentIndex+1].name }}</ais-button>
+        <ais-button class="footer-btn" style="flex: 1;" v-if="currentIndex === pdiItem?.checkItems.length - 1" @click="toSubmit()">完成提交</ais-button>
       </footer>
     </template>
+    <!-- <repair v-if="currentIndex === 4"></repair> -->
   </div>
 </template>
 
@@ -66,7 +63,7 @@ import Inner from '@/components/DetailCard/Inner.vue'
 import Function from '@/components/DetailCard/Function.vue'
 import Repair from '@/components/DetailCard/Repair.vue'
 
-import { getPdiDetails, getPdiRepairDetails } from '@/api/pdi'
+import { getPdiDetails, getPdiRepairDetails, addPdiEntry } from '@/api/pdi'
 
 const globalStore = useGlobalStore()
 const route = useRoute()
@@ -79,6 +76,8 @@ const type = ref('')
 const pdiItem = reactive({})
 const isFetch = ref(true)
 let api, pdiId
+const needSubmit = ref(false)
+const lastSubmit = ref(false)
 
 onMounted(() => {
   const { query } = route
@@ -118,9 +117,47 @@ const getDetail = (api, id) => {
   })
 }
 
-const toNext = () => {
+const reload = () => {
   getDetail(api, pdiId)
-  currentIndex.value = currentIndex.value + 1
+}
+
+const submitInner = (isSubmit, data) => {
+  if (isSubmit) {
+    addPdiEntry(data).then(res => {
+      needSubmit.value = false
+      getDetail(api, pdiId)
+      currentIndex.value = currentIndex.value + 1
+    })
+  } else {
+    needSubmit.value = false
+  }
+}
+
+const submitFunction = (isLastSubmit, data) => {
+  if (isLastSubmit) {
+    console.log(data)
+    addPdiEntry(data).then(res => {
+      lastSubmit.value = false
+      // getDetail(api, pdiId)
+      // currentIndex.value = currentIndex.value + 1
+      setTimeout(() => {
+        sessionStorage.setItem('needRefresh', true)
+        router.go(-1)
+      }, 300)
+    })
+  } else {
+    lastSubmit.value = false
+  }
+}
+
+const toNext = () => {
+  if (currentIndex.value === 2) {
+    // 车内检查
+    needSubmit.value = true
+  } else {
+    getDetail(api, pdiId)
+    currentIndex.value = currentIndex.value + 1
+  }
 }
 
 const toFormer = () => {
@@ -130,6 +167,7 @@ const toFormer = () => {
 
 const toSubmit = () => {
   console.log('提交')
+  lastSubmit.value = true
 }
 
 watch(

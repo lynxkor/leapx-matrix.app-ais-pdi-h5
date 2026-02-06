@@ -18,3 +18,8 @@ export function getPdiDetails(data) {
 export function getPdiRepairDetails(data) {
   return postJson('/vehstock/app/store/storeVehiclePdi/getRepairConfirmDetails', data)
 }
+
+// pdi录入(入库、在库)
+export function addPdiEntry(data) {
+  return post('/vehstock/app/store/storeVehiclePdi/addPdiEntry', data)
+}

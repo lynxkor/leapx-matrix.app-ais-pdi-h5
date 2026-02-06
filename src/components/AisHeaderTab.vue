@@ -2,7 +2,7 @@
   <div class="header-tab-line" :class="{ 'center-tabs': !shouldScroll }" ref="headerLineRef">
     <div class="header-item" v-for="(tab, index) in tabList" :key="index">
       <span :class="index <= currentIndex ? 'header-item-text header-item-text-hl' : 'header-item-text'">{{ tab }}</span>
-      <img class="header-item-img" :src="index <= currentIndex ? progressHlIcon : progressIcon" />
+      <img class="header-item-img" v-if="index < tabList.length - 1" :src="index <= currentIndex ? progressHlIcon : progressIcon" />
     </div>
   </div>
 </template>

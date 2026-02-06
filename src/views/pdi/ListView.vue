@@ -33,7 +33,7 @@ defineOptions({
   name: 'PdiListView'
 })
 
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import FilterHeader from '@/libs/components/FilterHeader.vue'
 import RefreshList from '@/libs/components/RefreshList.vue'
@@ -134,6 +134,15 @@ onActivated(() => {
     // 更新key以强制重新渲染对话框组件
     dialogKey.value += 1
     console.log('show', showDialog.value)
+    const needRefresh = sessionStorage.getItem('needRefresh')
+    sessionStorage.removeItem('needRefresh')
+    if (needRefresh) {
+      requestData.data.vinLastSix = ''
+      requestData.data.pageNum = 1
+      dataList.value = []
+      // 强制触发刷新，通过创建新的data对象来确保响应式更新
+      requestData.data = { ...requestData.data }
+    }
   }, 0)
 })
 
@@ -145,6 +154,16 @@ onDeactivated(() => {
   // 更新key以确保下次激活时重新渲染对话框
   dialogKey.value += 1
   console.log('show', showDialog.value)
+})
+
+onMounted(() => {
+  window.getScanResult = (res) => {
+    if (res) {
+      console.log(res)
+      // let scanValue = JSON.parse(res)[0]
+      // scanValue = scanValue.substring(0, 17)
+    }
+  }
 })
 
 const headerSearch = (row) => {

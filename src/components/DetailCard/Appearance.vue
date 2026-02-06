@@ -4,7 +4,7 @@
       <div class="car-content-inner">
         <img :src="checkItems.atlasUrl" class="car-bg-img"/>
           <div v-for="(inspectItem, inspectIndex) in checkItems.checkItems" :key="inspectIndex"
-            :class="inspectItem.isAbnormal ? 'inspect-item-content inspect-item-content-error' : 'inspect-item-content'"
+            :class="inspectItem.isUnusual ? 'inspect-item-content inspect-item-content-error' : 'inspect-item-content'"
             :style="{top: `${inspectItem.atlasCoordTop}px`, left: `${inspectItem.atlasCoordLeft}px`, right: `${inspectItem.atlasCoordRight}px`}"
             @click="showPop(inspectItem)"
           >
@@ -44,7 +44,6 @@
               placeholder="请输入异常说明，不少于10个字"
             />
             <p class="file-title">上传图片<span class="grey-text">(需提供近景图及远景图)</span><span class="require-text">*</span></p>
-            {{ popupObj.abnormalUrlList }}
             <div class="upload-content">
               <div class="upload-item" v-if="popupObj.abnormalUrlList[0]" @click="uploadClick(0)">
                 <img style="width: 100%; height: 100%; margin-bottom: 0" :src="img" @click="showImg(img)"/>
@@ -80,20 +79,33 @@
 </template>
 
 <script setup>
-import { reactive, ref, defineProps, onMounted } from 'vue'
+import { reactive, ref, defineProps, onMounted, defineEmits } from 'vue'
 import { showFailToast, showImagePreview } from 'vant'
 import { getAppImg } from '@/libs/utils/nativeFn'
 import AisButton from '../AisButton.vue'
 import AisDialog from '@/libs/components/AisDialog.vue'
 
-defineProps({
+const props = defineProps({
   checkItems: {
     type: Object,
     default: () => {
       return {}
     }
+  },
+  api: {
+    type: Object
+  },
+  version: {
+    type: String || Number,
+    default: ''
+  },
+  id: {
+    type: String || Number,
+    default: ''
   }
 })
+
+const emit = defineEmits(['reload'])
 
 const show = ref(false)
 const title = ref('检查-车顶')
@@ -120,11 +132,10 @@ onMounted(() => {
 })
 
 const showPop = (item) => {
-  console.log(item)
   title.value = `检查-${item.name}`
   Object.assign(popupObj, JSON.parse(JSON.stringify({
     ...item,
-    abnormalUrlList: item.abnormalUrl && item.abnormalUrl.length ? item.abnormalUrl.split(',') : ['1', '2'],
+    abnormalUrlList: item.abnormalUrl && item.abnormalUrl.length ? item.abnormalUrl.split(',') : [],
     abnormalDesc: item.abnormalDesc ? item.abnormalDesc : ''
   })))
   Object.assign(tempObj, JSON.parse(JSON.stringify({
@@ -132,6 +143,9 @@ const showPop = (item) => {
     abnormalDesc: item.abnormalDesc ? item.abnormalDesc : ''
   })))
   popupInputDisabled.value = true
+  popupObj.damagedTypeList.map(damagedType => {
+    damagedType.isUnusual = Boolean(damagedType.isUnusual)
+  })
   show.value = true
 }
 
@@ -140,6 +154,9 @@ const showImg = url => {
 }
 
 const deleteImg = (index) => {
+  if (popupInputDisabled.value) {
+    return false
+  }
   popupObj.abnormalUrlList.splice(index, 1, '')
 }
 
@@ -167,20 +184,44 @@ const saveClick = () => {
     showFailToast('请输入异常说明')
     return
   }
-  if (!popupObj.abnormalUrlList.length) {
-    showFailToast('请上传图片')
-    return
-  }
-  if (!popupObj.abnormalUrlList[0]) {
-    showFailToast('请上传近景图')
-    return
-  }
-  if (!popupObj.abnormalUrlList[1]) {
-    showFailToast('请上传远景图')
-    return
-  }
+  // if (!popupObj.abnormalUrlList.length) {
+  //   showFailToast('请上传图片')
+  //   return
+  // }
+  // if (!popupObj.abnormalUrlList[0]) {
+  //   showFailToast('请上传近景图')
+  //   return
+  // }
+  // if (!popupObj.abnormalUrlList[1]) {
+  //   showFailToast('请上传远景图')
+  //   return
+  // }
   // 调用提交接口，然后再调用详情接口页面重新刷新
-  show.value = false
+  const deepClone = (obj) => JSON.parse(JSON.stringify(obj))
+  const _checkItems = { ...deepClone(popupObj) }
+  let _count = 0
+  _checkItems.abnormalUrl = _checkItems.abnormalUrlList.join(',')
+  _checkItems.damagedTypeList.map(damagedType => {
+    damagedType.isUnusual = Number(damagedType.isUnusual)
+    if (damagedType.isUnusual) {
+      _count++
+    }
+  })
+  if (_count > 0) {
+    _checkItems.isUnusual = 1
+  } else {
+    _checkItems.isUnusual = 0
+  }
+  const params = {
+    isPdiSubmit: 0,
+    id: props.id,
+    version: props.version,
+    checkItems: [_checkItems]
+  }
+  props.api(params).then(res => {
+    show.value = false
+    emit('reload')
+  })
 }
 
 const switchChange = () => {

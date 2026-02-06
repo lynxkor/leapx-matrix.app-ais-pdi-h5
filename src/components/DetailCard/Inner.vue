@@ -1,7 +1,7 @@
 <template>
   <div class="inner-content">
     <van-collapse v-model="activeNames">
-      <van-collapse-item v-for="(checkItemItem, checkItemIndex) in innerObj.checkItems" :key="checkItemIndex" :title="checkItemItem.name" :name="index" :value="checkItemItem.isUnusual ? 异常 : ''" value-class="error-text" class="collapse-content">
+      <van-collapse-item v-for="(checkItemItem, checkItemIndex) in innerObj.checkItems" :key="checkItemIndex" :title="checkItemItem.name" :name="index" :value="checkItemItem.isUnusual ? '异常' : ''" value-class="error-text" class="collapse-content">
         <div class="switch-content">
           <van-row>
             <van-col class="check-item" v-for="(inspectItem, inspectIndex) in checkItemItem.checkItems" :key="inspectIndex" span="24">
@@ -28,7 +28,7 @@
                   <img style="width: 100%; height: 100%; margin-bottom: 0" :src="img" @click="showImg(img)"/>
                   <img class="delete_icon" src="../../assets/img/delete_icon.png" @click="deleteImg(checkItemIndex, imgIndex)"/>
                 </div>
-                <div class="upload-item" @click="uploadClick()">
+                <div class="upload-item" @click="uploadClick(checkItemIndex)">
                   <svg class="icon upload-img" aria-hidden="true">
                     <use xlink:href="#icon-lxp-h5upload-mob"></use>
                   </svg>
@@ -44,8 +44,8 @@
 </template>
 
 <script setup>
-import { ref, reactive, defineProps, watch, onMounted } from 'vue'
-import { showImagePreview } from 'vant'
+import { ref, reactive, defineProps, defineEmits, watch, onMounted } from 'vue'
+import { showFailToast, showImagePreview } from 'vant'
 import { getAppImg } from '@/libs/utils/nativeFn'
 
 const props = defineProps({
@@ -54,8 +54,23 @@ const props = defineProps({
     default: () => {
       return {}
     }
+  },
+  needSubmit: {
+    type: Boolean,
+    default: false
+  },
+  version: {
+    type: String || Number,
+    default: ''
+  },
+  id: {
+    type: String || Number,
+    default: ''
   }
 })
+
+const emit = defineEmits(['submitInner'])
+const deepClone = (obj) => JSON.parse(JSON.stringify(obj))
 
 onMounted(() => {
   window.getImage = (url) => {
@@ -69,7 +84,6 @@ onMounted(() => {
   }
 })
 
-console.log(props.checkItems)
 const innerObj = reactive({})
 const tempObj = reactive({})
 
@@ -93,15 +107,17 @@ const showImg = url => {
   showImagePreview([url])
 }
 
-const deleteImg = (outterIndex, index) => {
-  innerObj.checkItems[outterIndex].abnormalUrlList.splice(index, 1)
-}
-
-const uploadClick = (_firstIndex, imgIndex) => {
+const deleteImg = (_firstIndex, index) => {
   if (innerObj.checkItems[_firstIndex].isInputDisabled) {
     return false
   }
-  clickIndex.value = imgIndex
+  innerObj.checkItems[_firstIndex].abnormalUrlList.splice(index, 1)
+}
+
+const uploadClick = (_firstIndex) => {
+  if (innerObj.checkItems[_firstIndex].isInputDisabled) {
+    return false
+  }
   getAppImg()
 }
 
@@ -109,18 +125,72 @@ watch(
   () => props.checkItems,
   (newVal) => {
     // 使用深拷贝避免对象引用问题
-    const deepClone = (obj) => JSON.parse(JSON.stringify(obj))
     Object.assign(innerObj, {
       ...deepClone(newVal)
     })
     Object.assign(tempObj, deepClone(newVal))
-    innerObj.checkItems.map(item => {
-      item.isInputDisabled = true
-      item.abnormalUrlList = item.abnormalUrl && item.abnormalUrl.length ? item.abnormalUrl.split(',') : []
+    innerObj.checkItems.map(checkItem => {
+      checkItem.isInputDisabled = true
+      checkItem.abnormalUrlList = checkItem.abnormalUrl && checkItem.abnormalUrl.length ? checkItem.abnormalUrl.split(',') : []
+      checkItem.checkItems.map(thirdItem => {
+        thirdItem.isUnusual = Boolean(thirdItem.isUnusual)
+        if (thirdItem.isUnusual) {
+          checkItem.isUnusual = 1
+        }
+      })
     })
   },
   {
     immediate: true
+  }
+)
+
+watch(
+  () => props.needSubmit,
+  newVal => {
+    if (newVal) {
+      const obj = { ...deepClone(innerObj) }
+      let isSubmit = true
+      // 备注和图片必填
+      for (const checkItem of obj.checkItems) {
+        let count = 0
+        checkItem.checkItems.map(thirdItem => {
+          if (thirdItem.isUnusual) {
+            count++
+          }
+        })
+        if (count > 0) {
+          if (!checkItem.abnormalDesc) {
+            showFailToast(`请输入${checkItem.name}异常说明`)
+            isSubmit = false
+            break
+          }
+          // 图片后期需要放开
+          // if (!checkItem.abnormalUrlList.length) {
+          //   showFailToast(`请上传${checkItem.name}异常图片`)
+          //   isSubmit = false
+          //   break
+          // }
+        }
+      }
+      if (isSubmit) {
+        obj.checkItems.map(checkItem => {
+          checkItem.abnormalUrl = checkItem.abnormalUrlList.join(',')
+          checkItem.checkItems.map(thirdItem => {
+            thirdItem.isUnusual = Number(thirdItem.isUnusual)
+          })
+        })
+        const _data = {
+          isPdiSubmit: 0,
+          id: props.id,
+          version: props.version,
+          checkItems: [obj]
+        }
+        emit('submitInner', isSubmit, _data)
+      } else {
+        emit('submitInner', isSubmit, {})
+      }
+    }
   }
 )
 
