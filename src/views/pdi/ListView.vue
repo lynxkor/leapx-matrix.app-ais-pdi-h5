@@ -11,7 +11,7 @@
         <van-tab v-for="(item, index) in tabList" :title="item" :key="index"></van-tab>
       </van-tabs>
     </div>
-    <div class="common-scroll-content">
+    <div class="common-scroll-content" ref="scrollEle">
       <refresh-list :requestData="requestData" :needRefresh="needRefresh" @setData="setData">
         <list-item v-for="(item, index) in dataList" :key="index" :dataItem="item">
           <ais-button type="primary" plain round @click="PDIBtnClick(item)">{{ active === 1 ? '异常修复确认' : 'PDI录入' }}</ais-button>
@@ -27,7 +27,7 @@
 </template>
 
 <script setup>
-import { defineOptions, onActivated, onDeactivated, reactive } from 'vue'
+import { defineOptions, onActivated, onDeactivated, reactive, nextTick } from 'vue'
 
 defineOptions({
   name: 'PdiListView'
@@ -113,6 +113,9 @@ const active = ref(0)
 const needRefresh = ref(false)
 const showDialog = ref(false)
 const dialogKey = ref(0) // 添加一个key用于强制重新渲染对话框
+
+// 滚动位置管理
+const scrollPositions = ref({}) // 存储每个tab的滚动位置
 const dialogObj = {
   id: '',
   vin: '',
@@ -124,6 +127,36 @@ const dialogObj = {
   cancelFn: () => dialogCancelFn()
 }
 
+const scrollEle = ref(null)
+
+// 获取滚动容器元素
+const getScrollContainer = () => {
+  return scrollEle.value
+}
+
+// 保存当前滚动位置
+const saveScrollPosition = async() => {
+  await nextTick() // 确保DOM更新完成
+  // 使用 setTimeout 确保在下一个事件循环中获取元素尺寸
+  setTimeout(() => {
+    const container = getScrollContainer()
+    // 检查容器是否存在且有滚动属性
+    const scrollTop = container ? container.scrollTop : 0
+    scrollPositions.value[active.value] = scrollTop
+  }, 100) // 增加延时以确保滚动容器完全渲染
+}
+
+// 恢复滚动位置
+const restoreScrollPosition = async() => {
+  await nextTick() // 等待DOM更新完成
+  const savedPosition = scrollPositions.value[active.value]
+  // 延迟执行以确保内容已渲染
+  setTimeout(() => {
+    const container = getScrollContainer()
+    container.scrollTop = savedPosition || 0
+  }, 200) // 增加延时以确保内容完全渲染
+}
+
 // 组件激活时（从缓存中恢复）调用
 onActivated(() => {
   console.log('组件激活')
@@ -133,15 +166,16 @@ onActivated(() => {
     showDialog.value = false
     // 更新key以强制重新渲染对话框组件
     dialogKey.value += 1
-    console.log('show', showDialog.value)
     const needRefresh = sessionStorage.getItem('needRefresh')
-    sessionStorage.removeItem('needRefresh')
     if (needRefresh) {
       requestData.data.vinLastSix = ''
       requestData.data.pageNum = 1
       dataList.value = []
       // 强制触发刷新，通过创建新的data对象来确保响应式更新
       requestData.data = { ...requestData.data }
+    } else {
+      // 如果不需要刷新数据，则恢复滚动位置
+      restoreScrollPosition()
     }
   }, 0)
 })
@@ -153,7 +187,6 @@ onDeactivated(() => {
   showDialog.value = false
   // 更新key以确保下次激活时重新渲染对话框
   dialogKey.value += 1
-  console.log('show', showDialog.value)
 })
 
 onMounted(() => {
@@ -225,19 +258,22 @@ const PDIBtnClick = (item) => {
   showDialog.value = true
 }
 
-const dialogSubmitFn = () => {
-  // 跳转到详情页
-  showDialog.value = false
-  const type = active.value === 1 ? 'repair' : 'detail'
-  router.push({
-    path: '/pdi/detail',
-    query: {
-      id: dialogObj.id,
-      vin: dialogObj.vin,
-      code: dialogObj.code,
-      type
-    }
-  })
+const dialogSubmitFn = async() => {
+  await saveScrollPosition()
+  setTimeout(() => {
+    // 跳转到详情页
+    showDialog.value = false
+    const type = active.value === 1 ? 'repair' : 'detail'
+    router.push({
+      path: '/pdi/detail',
+      query: {
+        id: dialogObj.id,
+        vin: dialogObj.vin,
+        code: dialogObj.code,
+        type
+      }
+    })
+  }, 200)
 }
 
 const dialogCancelFn = () => {
@@ -272,3 +308,4 @@ watch(
     color: #545454;
   }
 </style>
+

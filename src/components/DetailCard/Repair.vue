@@ -1,16 +1,16 @@
 <template>
   <div class="repair-content">
     <van-collapse v-model="activeNames">
-      <van-collapse-item v-for="(item, index) in 2" :key="index" title="前机舱与后备箱" :name="index" value="异常" value-class="error-text" class="collapse-content">
+      <van-collapse-item v-for="(checkItem, checkItemIndex) in innerObj.checkItems" :key="checkItemIndex" :title="checkItem.name" :name="checkItemIndex" class="collapse-content">
         <div class="switch-content">
           <van-row>
             <div class="file-content">
               <div class="error-text-content">
-                <div class="error-text-item" v-for="(errorItem, errorIndex) in 10" :key="errorIndex">前机舱无液体{{ errorIndex + 2 }}</div>
+                <div class="error-text-item" v-for="(errorItem, errorIndex) in checkItem.damagedTypeList.filter(item => item.isUnusual)" :key="errorIndex">{{ errorItem.damagedType }}</div>
               </div>
-              <div class="reason-text">异常说明：我是异常说明我是异常说明我是异常说明我是异常说明我是异常说明</div>
+              <div class="reason-text">异常说明：{{ checkItem.abnormalDesc }}</div>
               <div class="img-content">
-                <img class="reason-img" v-for="(imgItem, imgIndex) in 5" :key="imgIndex"/>
+                <img class="reason-img" v-for="(imgItem, imgIndex) in checkItem.abnormalUrl.length && checkItem.abnormalUrl?.split(',')" :key="imgIndex" @click="showImg('imgItem')"/>
               </div>
             </div>
           </van-row>
@@ -21,15 +21,15 @@
       <div class="repair-state-title">修复情况</div>
       <div class="fill-content">
         <div class="switch-content">
-          <span class="switch-text">外观检查异常是否修复外观检查异常是否修复外观检查异常是否修复</span>
+          <span class="switch-text">{{ innerObj.name }}异常是否修复</span>
           <div class="switch-ope">
-            <span :style="{color: isAbnormal ? '#E43122' : '#00AA00'}">{{ isAbnormal ? '未修复' : '已修复' }}</span>
-            <van-switch v-model="isAbnormal" size="20px" inactive-color="#00AA00" active-color="#E43122"/>
+            <span :style="{color: innerObj.isRepairedFlag ? '#00AA00' : '#E43122'}">{{ innerObj.isRepairedFlag ? '已修复' : '未修复' }}</span>
+            <van-switch v-model="innerObj.isRepairedFlag" size="20px" active-color="#00AA00" inactive-color="#E43122"/>
           </div>
         </div>
         <van-field
           class="textarea-content"
-          v-model="remark"
+          v-model="innerObj.repairedDesc"
           rows="1"
           autosize
           type="textarea"
@@ -41,11 +41,107 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, defineProps, watch, reactive, defineEmits } from 'vue'
+import { showFailToast, showImagePreview } from 'vant'
 
-const activeNames = ref(['1'])
-const isAbnormal = ref(false)
-const remark = ref('')
+const props = defineProps({
+  checkItems: {
+    type: Object,
+    default: () => {
+      return {}
+    }
+  },
+  version: {
+    type: String || Number,
+    default: ''
+  },
+  id: {
+    type: String || Number,
+    default: ''
+  },
+  repairClick: {
+    type: Boolean,
+    default: false
+  },
+  currentIndexName: {
+    type: String,
+    default: ''
+  }
+})
+
+const emit = defineEmits(['repairSubmit'])
+
+const activeNames = ref([0])
+const innerObj = reactive({})
+const deepClone = (obj) => JSON.parse(JSON.stringify(obj))
+
+const showImg = url => {
+  showImagePreview([url])
+}
+
+watch(
+  () => props.checkItems,
+  newVal => {
+    console.log('checkitem')
+    console.log(newVal)
+    Object.assign(innerObj, {
+      ...deepClone(newVal)
+    })
+    innerObj.isRepairedFlag = Boolean(innerObj.isRepaired)
+  },
+  {
+    immediate: true
+  }
+)
+
+watch(
+  () => props.repairClick,
+  newVal => {
+    if (newVal) {
+      const _data = {
+        ...deepClone(innerObj),
+        isRepaired: Number(innerObj.isRepairedFlag)
+      }
+      if (_data.isRepaired) {
+        // 已经修复
+        if (!_data.repairedDesc) {
+          showFailToast('请输入修复说明')
+          emit('repairSubmit', false, {})
+          return
+        }
+        if (_data.repairedDesc.length < 10) {
+          showFailToast('修复说明不得少于10个字')
+          emit('repairSubmit', false, {})
+          return
+        }
+        const _currentIndexName = props.currentIndexName
+        if (_currentIndexName !== '车内检查') {
+          _data.checkItems.map(checkItem => {
+            checkItem.isRepaired = 1
+          })
+        } else {
+          _data.checkItems.map(checkItem => {
+            checkItem.isRepaired = 1
+            console.log(checkItem)
+            checkItem.checkItems.map(item => {
+              item.isRepaired = 1
+            })
+          })
+        }
+      }
+      _data.version = props.version
+      const _params = {
+        id: props.id,
+        version: props.version,
+        checkItems: _data.checkItems,
+        repairedDesc: _data.repairedDesc
+      }
+      console.log(_data)
+      console.log(_params)
+      emit('repairSubmit', true, _params)
+    }
+  }
+)
 
 </script>
 

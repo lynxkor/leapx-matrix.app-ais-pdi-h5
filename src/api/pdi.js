@@ -23,3 +23,8 @@ export function getPdiRepairDetails(data) {
 export function addPdiEntry(data) {
   return post('/vehstock/app/store/storeVehiclePdi/addPdiEntry', data)
 }
+
+// pdi录入(异常)
+export function addRepairConfirm(data) {
+  return post('/vehstock/app/store/storeVehiclePdi/addRepairConfirm', data)
+}

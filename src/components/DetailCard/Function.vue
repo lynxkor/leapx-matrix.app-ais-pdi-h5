@@ -138,11 +138,9 @@ watch(
       }
       if (isSubmit) {
         obj.checkItems.map(checkItem => {
-          console.log(checkItem)
           checkItem.abnormalUrl = checkItem.abnormalUrlList.join(',')
           checkItem.isUnusual = Number(checkItem.isUnusual)
         })
-        console.log(obj)
         const _data = {
           isPdiSubmit: 1,
           id: props.id,

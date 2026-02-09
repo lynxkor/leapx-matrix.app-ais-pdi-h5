@@ -184,6 +184,10 @@ const saveClick = () => {
     showFailToast('请输入异常说明')
     return
   }
+  if (popupObj.abnormalDesc.length < 10) {
+    showFailToast('异常说明不少于10个字')
+    return
+  }
   // if (!popupObj.abnormalUrlList.length) {
   //   showFailToast('请上传图片')
   //   return

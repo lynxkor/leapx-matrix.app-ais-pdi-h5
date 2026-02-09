@@ -5,8 +5,8 @@
       <div class="detail-view-header">
         <ais-header-tab :tabList="tabList" :currentIndex="currentIndex"/>
       </div>
-      <div class="detail-view-center">
-        <div class="center-info-content" v-if="type === 'detail'">
+      <div class="detail-view-center" v-if="type === 'detail'">
+        <div class="center-info-content">
           <svg class="icon center-info-img" aria-hidden="true">
             <use xlink:href="#icon-lxp-h5circle"></use>
           </svg>
@@ -19,13 +19,15 @@
         <inner v-if="currentIndexName === '车内检查'" :checkItems="pdiItem?.checkItems[currentIndex]" :needSubmit="needSubmit" :version="pdiItem?.version" :id="pdiItem?.id" @submitInner="submitInner"></inner>
         <function v-if="currentIndexName === '功能检查'" :checkItems="pdiItem?.checkItems[currentIndex]" :version="pdiItem?.version" :id="pdiItem?.id" @submitFunction="submitFunction" :lastSubmit="lastSubmit"></function>
       </div>
+      <div class="detail-view-center" v-if="type !== 'detail'">
+        <repair :checkItems="pdiItem?.checkItems[currentIndex]" :version="pdiItem?.version" :id="pdiItem?.id" :currentIndexName="currentIndexName" :repairClick="repairClick" @repairSubmit="repairSubmit"></repair>
+      </div>
       <footer class="detail-view-footer">
         <ais-button class="footer-btn" style="width: 130px;" v-if="currentIndex != 0" plain @click="toFormer()">上一步</ais-button>
         <ais-button class="footer-btn" style="flex: 1;" v-if="currentIndex < pdiItem?.checkItems.length - 1" @click="toNext()">下一步，{{ pdiItem?.checkItems[currentIndex+1].name }}</ais-button>
         <ais-button class="footer-btn" style="flex: 1;" v-if="currentIndex === pdiItem?.checkItems.length - 1" @click="toSubmit()">完成提交</ais-button>
       </footer>
     </template>
-    <!-- <repair v-if="currentIndex === 4"></repair> -->
   </div>
 </template>
 
@@ -43,12 +45,11 @@ import { useGlobalStore } from '@/stores/global'
 import AisHeaderTab from '@/components/AisHeaderTab.vue'
 import AisButton from '@/components/AisButton.vue'
 import Appearance from '@/components/DetailCard/Appearance.vue'
-import Glass from '@/components/DetailCard/Glass.vue'
 import Inner from '@/components/DetailCard/Inner.vue'
 import Function from '@/components/DetailCard/Function.vue'
 import Repair from '@/components/DetailCard/Repair.vue'
 
-import { getPdiDetails, getPdiRepairDetails, addPdiEntry } from '@/api/pdi'
+import { getPdiDetails, getPdiRepairDetails, addPdiEntry, addRepairConfirm } from '@/api/pdi'
 
 const globalStore = useGlobalStore()
 const route = useRoute()
@@ -63,10 +64,10 @@ const isFetch = ref(true)
 let api, pdiId
 const needSubmit = ref(false)
 const lastSubmit = ref(false)
+const repairClick = ref(false)
 
 onMounted(() => {
   const { query } = route
-  console.log(query)
   const { id, vin, code } = query
   type.value = query.type
   const title = `
@@ -109,9 +110,13 @@ const reload = () => {
 const submitInner = (isSubmit, data) => {
   if (isSubmit) {
     addPdiEntry(data).then(res => {
-      needSubmit.value = false
-      getDetail(api, pdiId)
-      currentIndex.value = currentIndex.value + 1
+      if (res.code === 200) {
+        needSubmit.value = false
+        getDetail(api, pdiId)
+        currentIndex.value = currentIndex.value + 1
+      } else {
+        showFailToast(res.msg)
+      }
     })
   } else {
     needSubmit.value = false
@@ -123,12 +128,14 @@ const submitFunction = (isLastSubmit, data) => {
     console.log(data)
     addPdiEntry(data).then(res => {
       lastSubmit.value = false
-      // getDetail(api, pdiId)
-      // currentIndex.value = currentIndex.value + 1
-      setTimeout(() => {
-        sessionStorage.setItem('needRefresh', true)
-        router.go(-1)
-      }, 300)
+      if (res.code === 200) {
+        setTimeout(() => {
+          sessionStorage.setItem('needRefresh', true)
+          router.go(-1)
+        }, 300)
+      } else {
+        showFailToast(res.msg)
+      }
     })
   } else {
     lastSubmit.value = false
@@ -136,12 +143,20 @@ const submitFunction = (isLastSubmit, data) => {
 }
 
 const toNext = () => {
-  if (currentIndex.value === 2) {
-    // 车内检查
-    needSubmit.value = true
+  if (type.value === 'detail') {
+    // 在库、入库
+    if (currentIndex.value === 2) {
+      // 车内检查
+      needSubmit.value = true
+    } else {
+      getDetail(api, pdiId)
+      currentIndex.value = currentIndex.value + 1
+    }
   } else {
-    getDetail(api, pdiId)
-    currentIndex.value = currentIndex.value + 1
+    // 异常车辆
+    // getDetail(api, pdiId)
+    // currentIndex.value = currentIndex.value + 1
+    repairClick.value = true
   }
 }
 
@@ -152,7 +167,34 @@ const toFormer = () => {
 
 const toSubmit = () => {
   console.log('提交')
-  lastSubmit.value = true
+  if (type.value === 'detail') {
+    lastSubmit.value = true
+  } else {
+    repairClick.value = true
+  }
+}
+
+const repairSubmit = (isSubmit, data) => {
+  if (isSubmit) {
+    addRepairConfirm(data).then(res => {
+      if (res.code === 200) {
+        repairClick.value = false
+        getDetail(api, pdiId)
+        if (currentIndex.value === tabList.value.length - 1) {
+          setTimeout(() => {
+            sessionStorage.setItem('needRefresh', true)
+            router.go(-1)
+          }, 300)
+        }
+        // currentIndex.value = currentIndex.value + 1
+      } else {
+        showFailToast(res.msg)
+        repairClick.value = false
+      }
+    })
+  } else {
+    repairClick.value = false
+  }
 }
 
 watch(
