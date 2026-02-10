@@ -4,6 +4,16 @@ export function getList(data) {
   return post('/datacenter/vehiclePartsMaintenance/page', data)
 }
 
+// 车系列表
+export function getVehicleSeriesList(data) {
+  return post('/datacenter/app/materials/vehicleSeries/list', data)
+}
+
+// 车型列表
+export function getVehicleModelList(data) {
+  return post('/datacenter/app/materials/vehicleModel/list', data)
+}
+
 // pdi列表
 export function getPdiList(data) {
   return post('/vehstock/app/store/storeVehiclePdi/page', data)

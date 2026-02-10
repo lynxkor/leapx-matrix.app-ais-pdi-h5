@@ -24,8 +24,8 @@
       </div>
       <footer class="detail-view-footer">
         <ais-button class="footer-btn" style="width: 130px;" v-if="currentIndex != 0" plain @click="toFormer()">上一步</ais-button>
-        <ais-button class="footer-btn" style="flex: 1;" v-if="currentIndex < pdiItem?.checkItems.length - 1" @click="toNext()">下一步，{{ pdiItem?.checkItems[currentIndex+1].name }}</ais-button>
-        <ais-button class="footer-btn" style="flex: 1;" v-if="currentIndex === pdiItem?.checkItems.length - 1" @click="toSubmit()">完成提交</ais-button>
+        <ais-button class="footer-btn" style="flex: 1;" v-if="currentIndex < pdiItem?.checkItems.length - 1" @click="toNext()" :loading="submitLoading">下一步，{{ pdiItem?.checkItems[currentIndex+1].name }}</ais-button>
+        <ais-button class="footer-btn" style="flex: 1;" v-if="currentIndex === pdiItem?.checkItems.length - 1" @click="toSubmit()" :loading="submitLoading">完成提交</ais-button>
       </footer>
     </template>
   </div>
@@ -65,6 +65,7 @@ let api, pdiId
 const needSubmit = ref(false)
 const lastSubmit = ref(false)
 const repairClick = ref(false)
+const submitLoading = ref(false)
 
 onMounted(() => {
   const { query } = route
@@ -109,9 +110,11 @@ const reload = () => {
 
 const submitInner = (isSubmit, data) => {
   if (isSubmit) {
+    submitLoading.value = true
     addPdiEntry(data).then(res => {
       if (res.code === 200) {
         needSubmit.value = false
+        submitLoading.value = false
         getDetail(api, pdiId)
         currentIndex.value = currentIndex.value + 1
       } else {
@@ -120,14 +123,17 @@ const submitInner = (isSubmit, data) => {
     })
   } else {
     needSubmit.value = false
+    submitLoading.value = false
   }
 }
 
 const submitFunction = (isLastSubmit, data) => {
   if (isLastSubmit) {
     console.log(data)
+    submitLoading.value = true
     addPdiEntry(data).then(res => {
       lastSubmit.value = false
+      submitLoading.value = false
       if (res.code === 200) {
         setTimeout(() => {
           sessionStorage.setItem('needRefresh', true)
@@ -139,6 +145,7 @@ const submitFunction = (isLastSubmit, data) => {
     })
   } else {
     lastSubmit.value = false
+    submitLoading.value = false
   }
 }
 
@@ -176,24 +183,27 @@ const toSubmit = () => {
 
 const repairSubmit = (isSubmit, data) => {
   if (isSubmit) {
+    submitLoading.value = true
     addRepairConfirm(data).then(res => {
+      repairClick.value = false
+      submitLoading.value = false
       if (res.code === 200) {
-        repairClick.value = false
-        getDetail(api, pdiId)
         if (currentIndex.value === tabList.value.length - 1) {
           setTimeout(() => {
             sessionStorage.setItem('needRefresh', true)
             router.go(-1)
           }, 300)
+        } else {
+          getDetail(api, pdiId)
+          currentIndex.value = currentIndex.value + 1
         }
-        // currentIndex.value = currentIndex.value + 1
       } else {
         showFailToast(res.msg)
-        repairClick.value = false
       }
     })
   } else {
     repairClick.value = false
+    submitLoading.value = false
   }
 }
 

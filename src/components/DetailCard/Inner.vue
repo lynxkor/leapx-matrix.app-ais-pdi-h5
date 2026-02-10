@@ -160,6 +160,8 @@ watch(
           }
         })
         if (count > 0) {
+          // 二级的异常置为true
+          checkItem.isUnusual = 1
           if (!checkItem.abnormalDesc) {
             showFailToast(`请输入${checkItem.name}异常说明`)
             isSubmit = false
@@ -171,6 +173,8 @@ watch(
           //   isSubmit = false
           //   break
           // }
+        } else {
+          checkItem.isUnusual = 0
         }
       }
       if (isSubmit) {

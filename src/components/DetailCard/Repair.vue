@@ -6,7 +6,7 @@
           <van-row>
             <div class="file-content">
               <div class="error-text-content">
-                <div class="error-text-item" v-for="(errorItem, errorIndex) in checkItem.damagedTypeList.filter(item => item.isUnusual)" :key="errorIndex">{{ errorItem.damagedType }}</div>
+                <div class="error-text-item" v-for="(errorItem, errorIndex) in setTypeList(checkItem)" :key="errorIndex">{{ errorItem }}</div>
               </div>
               <div class="reason-text">异常说明：{{ checkItem.abnormalDesc }}</div>
               <div class="img-content">
@@ -23,13 +23,13 @@
         <div class="switch-content">
           <span class="switch-text">{{ innerObj.name }}异常是否修复</span>
           <div class="switch-ope">
-            <span :style="{color: innerObj.isRepairedFlag ? '#00AA00' : '#E43122'}">{{ innerObj.isRepairedFlag ? '已修复' : '未修复' }}</span>
-            <van-switch v-model="innerObj.isRepairedFlag" size="20px" active-color="#00AA00" inactive-color="#E43122"/>
+            <span :style="{color: isRepairedFlag ? '#00AA00' : '#E43122'}">{{ isRepairedFlag ? '已修复' : '未修复' }}</span>
+            <van-switch v-model="isRepairedFlag" size="20px" active-color="#00AA00" inactive-color="#E43122"/>
           </div>
         </div>
         <van-field
           class="textarea-content"
-          v-model="innerObj.repairedDesc"
+          v-model="repairedDesc"
           rows="1"
           autosize
           type="textarea"
@@ -74,9 +74,32 @@ const emit = defineEmits(['repairSubmit'])
 const activeNames = ref([0])
 const innerObj = reactive({})
 const deepClone = (obj) => JSON.parse(JSON.stringify(obj))
+const isRepairedFlag = ref(false)
+const repairedDesc = ref('')
 
 const showImg = url => {
   showImagePreview([url])
+}
+
+const setTypeList = (checkItem) => {
+  const _currentIndexName = props.currentIndexName
+  if (_currentIndexName !== '车内检查') {
+    const arr = []
+    checkItem.damagedTypeList.filter(item => {
+      if (item.isUnusual) {
+        arr.push(item.damagedType)
+      }
+    })
+    return arr
+  } else {
+    const arr = []
+    checkItem.checkItems.filter(item => {
+      if (item.isUnusual) {
+        arr.push(item.name)
+      }
+    })
+    return arr
+  }
 }
 
 watch(
@@ -87,7 +110,8 @@ watch(
     Object.assign(innerObj, {
       ...deepClone(newVal)
     })
-    innerObj.isRepairedFlag = Boolean(innerObj.isRepaired)
+    isRepairedFlag.value = Boolean(innerObj.checkItems[0].isRepaired)
+    repairedDesc.value = innerObj.checkItems[0].repairedDesc
   },
   {
     immediate: true
@@ -100,29 +124,37 @@ watch(
     if (newVal) {
       const _data = {
         ...deepClone(innerObj),
-        isRepaired: Number(innerObj.isRepairedFlag)
+        isRepaired: Number(isRepairedFlag.value)
       }
+
+      console.log(_data)
       if (_data.isRepaired) {
+        console.log('已经修复')
         // 已经修复
-        if (!_data.repairedDesc) {
+        if (!repairedDesc.value) {
           showFailToast('请输入修复说明')
           emit('repairSubmit', false, {})
           return
         }
-        if (_data.repairedDesc.length < 10) {
+        if (repairedDesc.value.length < 10) {
           showFailToast('修复说明不得少于10个字')
           emit('repairSubmit', false, {})
           return
         }
         const _currentIndexName = props.currentIndexName
+        console.log('_currentIndexName', _currentIndexName)
         if (_currentIndexName !== '车内检查') {
           _data.checkItems.map(checkItem => {
             checkItem.isRepaired = 1
+            checkItem.repairedDesc = repairedDesc.value
           })
         } else {
+          // 所有的都需要repairedDesc字段
+          console.log(_data.checkItems)
           _data.checkItems.map(checkItem => {
             checkItem.isRepaired = 1
             console.log(checkItem)
+            checkItem.repairedDesc = repairedDesc.value
             checkItem.checkItems.map(item => {
               item.isRepaired = 1
             })
@@ -133,8 +165,7 @@ watch(
       const _params = {
         id: props.id,
         version: props.version,
-        checkItems: _data.checkItems,
-        repairedDesc: _data.repairedDesc
+        checkItems: _data.checkItems
       }
       console.log(_data)
       console.log(_params)

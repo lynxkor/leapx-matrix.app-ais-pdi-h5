@@ -2,7 +2,7 @@
     <filter-header
         :placeholder="headerPlaceholder"
         @search="headerSearch"
-        :searchList="searchList"
+        :filterList="searchList"
         @filterSearch="filterSearch"
         :showSort="false"
     />
@@ -41,7 +41,7 @@ import ListItem from '@/components/ListItem.vue'
 import AisButton from '@/components/AisButton.vue'
 import AisDialog from '@/libs/components/AisDialog.vue'
 
-import { getPdiList } from '@/api/pdi'
+import { getPdiList, getVehicleModelList, getVehicleSeriesList } from '@/api/pdi'
 
 const router = useRouter()
 
@@ -62,24 +62,17 @@ const searchList = ref([
     key: 'seriesIdList',
     default: [],
     nodeType: 'multiple',
-    options: [
-      // { label: '车系1', value: '10' },
-      // { label: '车系2', value: '11' },
-      // { label: '车系3', value: '12' }
-    ],
-    callBack: (res) => changeList(res),
-    resetDic: { 'modelIdList': [] }
+    options: [],
+    callBack: (res) => changeList(res)
+    // resetDic: { 'modelIdList': [] }
   },
   {
     title: '车型',
     key: 'modelIdList',
     default: [],
     nodeType: 'multiple',
-    options: [
-      // { label: '车型1', value: '01' },
-      // { label: '车型2', value: '02' },
-      // { label: '车型3', value: '03' }
-    ]
+    options: [],
+    placeholder: '请先选择车系'
   },
   {
     title: '创建时间',
@@ -108,6 +101,7 @@ const requestData = reactive({
   },
   api: getPdiList
 })
+const _tempModelIdList = ref([])
 
 const active = ref(0)
 const needRefresh = ref(false)
@@ -197,6 +191,7 @@ onMounted(() => {
       // scanValue = scanValue.substring(0, 17)
     }
   }
+  getVehicle()
 })
 
 const headerSearch = (row) => {
@@ -210,7 +205,12 @@ const headerSearch = (row) => {
 const filterSearch = (obj) => {
   requestData.data.vehPdiType = obj.vehPdiType
   requestData.data.seriesIdList = obj.seriesIdList
-  requestData.data.modelIdList = obj.modelIdList
+  console.log('obj', obj.modelIdList)
+  console.log('modelIdList', _tempModelIdList.value)
+  const _arr = obj.modelIdList.filter(item => _tempModelIdList.value.includes(item))
+  console.log('_arr', _arr)
+  // requestData.data.modelIdList = obj.modelIdList
+  requestData.data.modelIdList = _arr
   if (obj.createTime && obj.createTime.length) {
     requestData.data.createTimeStart = obj.createTime[0].join('-') + ' 00:00:00'
     requestData.data.createTimeEnd = obj.createTime[1].join('-') + ' 23:59:59'
@@ -224,19 +224,49 @@ const filterSearch = (obj) => {
   requestData.data = { ...requestData.data }
 }
 
+const getVehicle = () => {
+  getVehicleSeriesList({ pageSize: 200 }).then(res => {
+    if (res.code === 200) {
+      const arr = []
+      res.data.map(item => {
+        arr.push({
+          label: item.name,
+          value: item.id
+        })
+      })
+      searchList.value[1].options = arr
+    } else {
+      searchList.value[1].options = []
+    }
+  }).catch(() => {
+    searchList.value[1].options = []
+  })
+}
+
 const changeList = (res) => {
-  if (res.includes('01')) {
-    searchList.value[2].options = [
-      { label: '车系1', value: '01' },
-      { label: '车系2', value: '02' },
-      { label: '车系3', value: '03' }
-    ]
+  if (res.length) {
+    const data = {
+      seriesIdList: res,
+      pageSize: 200
+    }
+    _tempModelIdList.value = []
+    getVehicleModelList(data).then(res => {
+      if (res.code === 200) {
+        const arr = []
+        res.data.map(item => {
+          arr.push({
+            label: item.name,
+            value: item.id
+          })
+          _tempModelIdList.value.push(item.id)
+        })
+        searchList.value[2].options = arr
+      }
+    }).catch(() => {
+      searchList.value[2].options = []
+    })
   } else {
-    searchList.value[2].options = [
-      { label: '车系4', value: '04' },
-      { label: '车系5', value: '05' },
-      { label: '车系6', value: '06' }
-    ]
+    searchList.value[2].options = []
   }
 }
 

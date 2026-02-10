@@ -70,11 +70,11 @@ const onClick = (event) => {
 const renderText = () => {
   let text
   if (props.loading) {
-    text = `<span>加载中</span>`
+    text = `<span>${slots.default()[0]?.children}</span>`
   } else {
     // 获取默认插槽内容
     if (slots.default) {
-      text = slots.default()[0]?.children || '测试'
+      text = slots.default()[0]?.children || ''
     }
   }
 
