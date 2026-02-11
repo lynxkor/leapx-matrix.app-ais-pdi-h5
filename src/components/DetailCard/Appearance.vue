@@ -45,8 +45,8 @@
             />
             <p class="file-title">上传图片<span class="grey-text">(需提供近景图及远景图)</span><span class="require-text">*</span></p>
             <div class="upload-content">
-              <div class="upload-item" v-if="popupObj.abnormalUrlList[0]" @click="uploadClick(0)">
-                <img style="width: 100%; height: 100%; margin-bottom: 0" :src="img" @click="showImg(img)"/>
+              <div class="upload-item" v-if="popupObj.abnormalUrlList[0]">
+                <img style="width: 100%; height: 100%; margin-bottom: 0" :src="popupObj.abnormalUrlList[0]" @click="showImg(popupObj.abnormalUrlList[0])"/>
                 <img class="delete_icon" src="../../assets/img/delete_icon.png" @click="deleteImg(0)"/>
               </div>
               <div class="upload-item" v-if="!popupObj.abnormalUrlList[0]" @click="uploadClick(0)">
@@ -55,8 +55,8 @@
                 </svg>
                 <span class="upload-text">近景图</span>
               </div>
-              <div class="upload-item" v-if="popupObj.abnormalUrlList[1]" @click="uploadClick(1)">
-                <img style="width: 100%; height: 100%; margin-bottom: 0" :src="img" @click="showImg(img)"/>
+              <div class="upload-item" v-if="popupObj.abnormalUrlList[1]">
+                <img style="width: 100%; height: 100%; margin-bottom: 0" :src="popupObj.abnormalUrlList[1]" @click="showImg(popupObj.abnormalUrlList[1])"/>
                 <img class="delete_icon" src="../../assets/img/delete_icon.png" @click="deleteImg(1)"/>
               </div>
               <div class="upload-item" v-if="!popupObj.abnormalUrlList[1]" @click="uploadClick(1)">
@@ -125,9 +125,8 @@ const dialogObj = {
 
 onMounted(() => {
   window.getImage = (url) => {
-    console.log('图片', url)
-    // 拿到图片路径，然后再放到popupObj.abnormalUrlList[imgIndex.value]里
-    popupObj.abnormalUrlList.splice(imgIndex.value, 1, url)
+    // 图片上传之后图片覆盖
+    popupObj.abnormalUrlList[imgIndex.value] = url
   }
 })
 
@@ -179,27 +178,6 @@ const beforeClose = () => {
 }
 
 const saveClick = () => {
-  // 输入框和图片要必填
-  if (!popupObj.abnormalDesc) {
-    showFailToast('请输入异常说明')
-    return
-  }
-  if (popupObj.abnormalDesc.length < 10) {
-    showFailToast('异常说明不少于10个字')
-    return
-  }
-  // if (!popupObj.abnormalUrlList.length) {
-  //   showFailToast('请上传图片')
-  //   return
-  // }
-  // if (!popupObj.abnormalUrlList[0]) {
-  //   showFailToast('请上传近景图')
-  //   return
-  // }
-  // if (!popupObj.abnormalUrlList[1]) {
-  //   showFailToast('请上传远景图')
-  //   return
-  // }
   // 调用提交接口，然后再调用详情接口页面重新刷新
   const deepClone = (obj) => JSON.parse(JSON.stringify(obj))
   const _checkItems = { ...deepClone(popupObj) }
@@ -211,10 +189,34 @@ const saveClick = () => {
       _count++
     }
   })
-  if (_count > 0) {
-    _checkItems.isUnusual = 1
-  } else {
+  console.log(_count)
+  // return
+  if (_count === 0) {
+    // 没有勾选异常
     _checkItems.isUnusual = 0
+  } else {
+    // 输入框和图片要必填
+    if (!popupObj.abnormalDesc) {
+      showFailToast('请输入异常说明')
+      return
+    }
+    if (popupObj.abnormalDesc.length < 10) {
+      showFailToast('异常说明不少于10个字')
+      return
+    }
+    if (!popupObj.abnormalUrlList.length) {
+      showFailToast('请上传图片')
+      return
+    }
+    if (!popupObj.abnormalUrlList[0]) {
+      showFailToast('请上传近景图')
+      return
+    }
+    if (!popupObj.abnormalUrlList[1]) {
+      showFailToast('请上传远景图')
+      return
+    }
+    _checkItems.isUnusual = 1
   }
   const params = {
     isPdiSubmit: 0,
@@ -254,6 +256,7 @@ const switchChange = () => {
   border-bottom: 1px dashed #6C6E6C;
   .car-content-inner{
     width: 375px;
+    max-width: 100%;
     height: 546px;
     margin: 0 auto;
     position: relative;

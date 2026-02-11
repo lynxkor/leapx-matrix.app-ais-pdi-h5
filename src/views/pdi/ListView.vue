@@ -184,13 +184,6 @@ onDeactivated(() => {
 })
 
 onMounted(() => {
-  window.getScanResult = (res) => {
-    if (res) {
-      console.log(res)
-      // let scanValue = JSON.parse(res)[0]
-      // scanValue = scanValue.substring(0, 17)
-    }
-  }
   getVehicle()
 })
 

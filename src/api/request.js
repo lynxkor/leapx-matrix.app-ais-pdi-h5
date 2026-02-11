@@ -19,6 +19,7 @@ service.interceptors.request.use(
     // 添加Authorization头
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`
+      config.headers['platform'] = 'leapx'
     }
     return config
   },

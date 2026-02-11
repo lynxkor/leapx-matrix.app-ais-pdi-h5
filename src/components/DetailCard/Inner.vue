@@ -74,13 +74,7 @@ const deepClone = (obj) => JSON.parse(JSON.stringify(obj))
 
 onMounted(() => {
   window.getImage = (url) => {
-    console.log('图片', url)
-    const _clickIndex = clickIndex.value
-    if (_clickIndex === -1) {
-      innerObj.abnormalUrlList.push(url)
-    } else {
-      innerObj.abnormalUrlList.splice(_clickIndex, 1, url)
-    }
+    innerObj.checkItems[clickIndex.value].abnormalUrlList.push(url)
   }
 })
 
@@ -108,16 +102,17 @@ const showImg = url => {
 }
 
 const deleteImg = (_firstIndex, index) => {
-  if (innerObj.checkItems[_firstIndex].isInputDisabled) {
-    return false
-  }
+  // if (innerObj.checkItems[_firstIndex].isInputDisabled) {
+  //   return false
+  // }
   innerObj.checkItems[_firstIndex].abnormalUrlList.splice(index, 1)
 }
 
 const uploadClick = (_firstIndex) => {
-  if (innerObj.checkItems[_firstIndex].isInputDisabled) {
-    return false
-  }
+  // if (innerObj.checkItems[_firstIndex].isInputDisabled) {
+  //   return false
+  // }
+  clickIndex.value = _firstIndex
   getAppImg()
 }
 
@@ -167,12 +162,11 @@ watch(
             isSubmit = false
             break
           }
-          // 图片后期需要放开
-          // if (!checkItem.abnormalUrlList.length) {
-          //   showFailToast(`请上传${checkItem.name}异常图片`)
-          //   isSubmit = false
-          //   break
-          // }
+          if (!checkItem.abnormalUrlList.length) {
+            showFailToast(`请上传${checkItem.name}异常图片`)
+            isSubmit = false
+            break
+          }
         } else {
           checkItem.isUnusual = 0
         }

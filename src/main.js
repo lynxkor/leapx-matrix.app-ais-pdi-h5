@@ -49,11 +49,17 @@ app.use(Tabs)
 app.use(Switch)
 app.use(Collapse)
 app.use(CollapseItem)
-app.use(Loading )
+app.use(Loading)
 
 // 注册时可以配置额外的选项
 app.use(Lazyload, {
   lazyComponent: true
 })
+
+if (import.meta.env.DEV) {
+  import('vconsole').then(({ default: VConsole }) => {
+    new VConsole()
+  })
+}
 
 app.mount('#app')

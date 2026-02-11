@@ -75,7 +75,8 @@ const deepClone = (obj) => JSON.parse(JSON.stringify(obj))
 onMounted(() => {
   window.getImage = (url) => {
     console.log('图片', url)
-    innerObj.abnormalUrlList.push(url)
+    // innerObj.abnormalUrlList.push(url)
+    innerObj.checkItems[clickIndex.value].abnormalUrlList.push(url)
   }
 })
 
@@ -83,19 +84,24 @@ console.log(props.checkItems)
 
 const activeNames = ref(['1'])
 const innerObj = reactive({})
+const clickIndex = ref()
 
 const showImg = url => {
   showImagePreview([url])
 }
 
 const deleteImg = (_firstIndex, index) => {
-  innerObj.abnormalUrlList.splice(index, 1)
+  // if (innerObj.checkItems[_firstIndex].isInputDisabled) {
+  //   return false
+  // }
+  innerObj.checkItems[_firstIndex].abnormalUrlList.splice(index, 1)
 }
 
 const uploadClick = (_firstIndex) => {
-  if (!innerObj.checkItems[_firstIndex].isUnusual) {
-    return false
-  }
+  // if (!innerObj.checkItems[_firstIndex].isUnusual) {
+  //   return false
+  // }
+  clickIndex.value = _firstIndex
   getAppImg()
 }
 
@@ -107,7 +113,7 @@ watch(
     })
     innerObj.checkItems.map(checkItem => {
       checkItem.isUnusual = Boolean(checkItem.isUnusual)
-      checkItem.abnormalUrlList = checkItem.abnormalUrl && checkItem.abnormalUrl.length ? checkItem.abnormalUrl.split(',') : ['', '']
+      checkItem.abnormalUrlList = checkItem.abnormalUrl && checkItem.abnormalUrl.length ? checkItem.abnormalUrl.split(',') : []
     })
   },
   {
@@ -128,12 +134,11 @@ watch(
             isSubmit = false
             break
           }
-          // 图片校验暂时收起
-          // if (!checkItem.abnormalUrlList.length) {
-          //   showFailToast(`请上传${checkItem.name}异常图片`)
-          //   isSubmit = false
-          //   break
-          // }
+          if (!checkItem.abnormalUrlList.length) {
+            showFailToast(`请上传${checkItem.name}异常图片`)
+            isSubmit = false
+            break
+          }
         }
       }
       if (isSubmit) {

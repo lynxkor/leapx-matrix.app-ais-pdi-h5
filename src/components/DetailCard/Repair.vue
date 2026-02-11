@@ -10,7 +10,7 @@
               </div>
               <div class="reason-text">异常说明：{{ checkItem.abnormalDesc }}</div>
               <div class="img-content">
-                <img class="reason-img" v-for="(imgItem, imgIndex) in checkItem.abnormalUrl.length && checkItem.abnormalUrl?.split(',')" :key="imgIndex" @click="showImg('imgItem')"/>
+                <img class="reason-img" v-for="(imgItem, imgIndex) in checkItem.abnormalUrl.length && checkItem.abnormalUrl?.split(',')" :key="imgIndex" :src="imgItem" @click="showImg(imgItem)"/>
               </div>
             </div>
           </van-row>
