@@ -10,8 +10,8 @@ const router = createRouter({
       name: 'home',
       component: HomeView,
       meta: {
-        title: 'Demo-首页',
-      },
+        title: 'Demo-首页'
+      }
     },
     {
       path: '/example',
@@ -21,8 +21,8 @@ const router = createRouter({
       // which is lazy-loaded when the route is visited.
       component: () => import('../views/example/ListView.vue'),
       meta: {
-        title: 'Demo-商品列表',
-      },
+        title: 'Demo-商品列表'
+      }
     },
     {
       path: '/example/detail',
@@ -32,10 +32,35 @@ const router = createRouter({
       // which is lazy-loaded when the route is visited.
       component: () => import('../views/example/DetailView.vue'),
       meta: {
-        title: 'Demo-商品详情',
-      },
+        title: 'Demo-商品详情'
+      }
     },
-  ],
+    {
+      path: '/',
+      name: 'baseLayout',
+      component: () => import('@/libs/layout/baseLayout.vue'),
+      children: [
+        {
+          path: '/pdi/list',
+          name: 'PdiListView',
+          component: () => import('../views/pdi/ListView.vue'),
+          meta: {
+            title: '门店整车PDI',
+            keepAlive: true
+          }
+        },
+        {
+          path: '/pdi/detail',
+          name: 'PdiDetailView',
+          component: () => import('../views/pdi/DetailView.vue'),
+          meta: {
+            title: '门店整车PDI',
+            keepAlive: false
+          }
+        }
+      ]
+    }
+  ]
 })
 
 router.beforeEach((to, from, next) => {

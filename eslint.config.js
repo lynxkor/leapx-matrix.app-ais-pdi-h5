@@ -3,11 +3,12 @@ import globals from 'globals'
 import js from '@eslint/js'
 import pluginVue from 'eslint-plugin-vue'
 import skipFormatting from '@vue/eslint-config-prettier/skip-formatting'
+import rules from '@leapmotor/design-base/packages/eslint/index.js'
 
 export default defineConfig([
   {
     name: 'app/files-to-lint',
-    files: ['**/*.{js,mjs,jsx,vue}'],
+    files: ['**/*.{js,mjs,jsx,vue}']
   },
 
   globalIgnores(['**/dist/**', '**/dist-ssr/**', '**/coverage/**']),
@@ -16,8 +17,9 @@ export default defineConfig([
     languageOptions: {
       globals: {
         ...globals.browser,
-      },
-    },
+        ...globals.node
+      }
+    }
   },
 
   js.configs.recommended,
@@ -25,8 +27,7 @@ export default defineConfig([
   skipFormatting,
   {
     rules: {
-      quotes: ['error', 'single'],
-      semi: ['error', 'never']
+      ...rules
     }
   }
 ])
