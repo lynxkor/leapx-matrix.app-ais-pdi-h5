@@ -1,29 +1,33 @@
 <template>
-    <filter-header
-        :placeholder="headerPlaceholder"
-        @search="headerSearch"
-        :filterList="searchList"
-        @filterSearch="filterSearch"
-        :showSort="false"
-    />
-    <div class="tab-content">
-      <van-tabs v-model:active="active" sticky >
-        <van-tab v-for="(item, index) in tabList" :title="item" :key="index"></van-tab>
-      </van-tabs>
-    </div>
-    <div class="common-scroll-content" ref="scrollEle">
-      <refresh-list :requestData="requestData" :needRefresh="needRefresh" @setData="setData">
-        <list-item v-for="(item, index) in dataList" :key="index" :dataItem="item">
-          <ais-button type="primary" plain round @click="PDIBtnClick(item)">{{ active === 1 ? '异常修复确认' : 'PDI录入' }}</ais-button>
-        </list-item>
-      </refresh-list>
-    </div>
-    <ais-dialog :key="dialogKey" :showDialog="showDialog" :dialogObj="dialogObj">
-      <p class="dialog-line-text">1、检查时请不要插拔任何高压线束；</p>
-      <p class="dialog-line-text">2、对"制动性"和"行驶性"的检查可以在车辆移动中进行；</p>
-      <p class="dialog-line-text">3、车辆到店需检查是否需要更新车机版本，如需升级，先完成OTA再入库；</p>
-      <p class="dialog-line-text">4、车辆PDI过程中需通过诊断仪完成"交付模式"退出</p>
-    </ais-dialog>
+  <filter-header
+    :placeholder="headerPlaceholder"
+    @search="headerSearch"
+    :filterList="searchList"
+    @filterSearch="filterSearch"
+    :showSort="false"
+  />
+  <div class="tab-content">
+    <van-tabs v-model:active="active" sticky>
+      <van-tab v-for="(item, index) in tabList" :title="item" :key="index"></van-tab>
+    </van-tabs>
+  </div>
+  <div class="common-scroll-content" ref="scrollEle">
+    <refresh-list :requestData="requestData" :needRefresh="needRefresh" @setData="setData">
+      <list-item v-for="(item, index) in dataList" :key="index" :dataItem="item">
+        <ais-button type="primary" plain round @click="PDIBtnClick(item)" v-show="(active !== 1 && resourceBtnList.includes('app:store:storeVehiclePdi:addPdiEntry')) || (active === 1 && resourceBtnList.includes('app:store:storeVehiclePdi:addRepairConfirm'))">{{
+          active === 1 ? '异常修复确认' : 'PDI录入'
+        }}</ais-button>
+      </list-item>
+    </refresh-list>
+  </div>
+  <ais-dialog :key="dialogKey" :showDialog="showDialog" :dialogObj="dialogObj">
+    <p class="dialog-line-text">1、检查时请不要插拔任何高压线束；</p>
+    <p class="dialog-line-text">2、对"制动性"和"行驶性"的检查可以在车辆移动中进行；</p>
+    <p class="dialog-line-text">
+      3、车辆到店需检查是否需要更新车机版本，如需升级，先完成OTA再入库；
+    </p>
+    <p class="dialog-line-text">4、车辆PDI过程中需通过诊断仪完成"交付模式"退出</p>
+  </ais-dialog>
 </template>
 
 <script setup>
@@ -41,7 +45,7 @@ import ListItem from '@/components/ListItem.vue'
 import AisButton from '@/components/AisButton.vue'
 import AisDialog from '@/libs/components/AisDialog.vue'
 
-import { getPdiList, getVehicleModelList, getVehicleSeriesList } from '@/api/pdi'
+import { getPdiList, getVehicleModelList, getVehicleSeriesList, getOwnerTree } from '@/api/pdi'
 
 const router = useRouter()
 
@@ -82,7 +86,6 @@ const searchList = ref([
     columnsType: ['year', 'month', 'day'],
     list: []
   }
-
 ])
 const tabList = ['入库PDI', 'PDI异常车辆', '在库PDI']
 const pdiAppQueryTypeList = [10, 20, 30]
@@ -122,6 +125,7 @@ const dialogObj = {
 }
 
 const scrollEle = ref(null)
+const resourceBtnList = ref([]) // 按钮资源数组
 
 // 获取滚动容器元素
 const getScrollContainer = () => {
@@ -184,6 +188,7 @@ onDeactivated(() => {
 })
 
 onMounted(() => {
+  getOwnerTreeList()
   getVehicle()
 })
 
@@ -200,7 +205,7 @@ const filterSearch = (obj) => {
   requestData.data.seriesIdList = obj.seriesIdList
   console.log('obj', obj.modelIdList)
   console.log('modelIdList', _tempModelIdList.value)
-  const _arr = obj.modelIdList.filter(item => _tempModelIdList.value.includes(item))
+  const _arr = obj.modelIdList.filter((item) => _tempModelIdList.value.includes(item))
   console.log('_arr', _arr)
   // requestData.data.modelIdList = obj.modelIdList
   requestData.data.modelIdList = _arr
@@ -216,24 +221,36 @@ const filterSearch = (obj) => {
   // 强制触发刷新，通过创建新的data对象来确保响应式更新
   requestData.data = { ...requestData.data }
 }
-
-const getVehicle = () => {
-  getVehicleSeriesList({ pageSize: 200 }).then(res => {
-    if (res.code === 200) {
-      const arr = []
-      res.data.map(item => {
-        arr.push({
-          label: item.name,
-          value: item.id
-        })
+// 查询当前用户拥有的所有资源列表
+const getOwnerTreeList = () => {
+  getOwnerTree({ resourceTag: 'AISVS100001', resourceType: 'APP_SIDE' })
+    .then((res) => {
+      console.log('res666', res)
+      res.data.forEach((item) => {
+        resourceBtnList.value.push(item.resourceTag)
       })
-      searchList.value[1].options = arr
-    } else {
+    })
+    .catch(() => { })
+}
+const getVehicle = () => {
+  getVehicleSeriesList({ pageSize: 200 })
+    .then((res) => {
+      if (res.code === 200) {
+        const arr = []
+        res.data.map((item) => {
+          arr.push({
+            label: item.name,
+            value: item.id
+          })
+        })
+        searchList.value[1].options = arr
+      } else {
+        searchList.value[1].options = []
+      }
+    })
+    .catch(() => {
       searchList.value[1].options = []
-    }
-  }).catch(() => {
-    searchList.value[1].options = []
-  })
+    })
 }
 
 const changeList = (res) => {
@@ -243,21 +260,23 @@ const changeList = (res) => {
       pageSize: 200
     }
     _tempModelIdList.value = []
-    getVehicleModelList(data).then(res => {
-      if (res.code === 200) {
-        const arr = []
-        res.data.map(item => {
-          arr.push({
-            label: item.name,
-            value: item.id
+    getVehicleModelList(data)
+      .then((res) => {
+        if (res.code === 200) {
+          const arr = []
+          res.data.map((item) => {
+            arr.push({
+              label: item.name,
+              value: item.id
+            })
+            _tempModelIdList.value.push(item.id)
           })
-          _tempModelIdList.value.push(item.id)
-        })
-        searchList.value[2].options = arr
-      }
-    }).catch(() => {
-      searchList.value[2].options = []
-    })
+          searchList.value[2].options = arr
+        }
+      })
+      .catch(() => {
+        searchList.value[2].options = []
+      })
   } else {
     searchList.value[2].options = []
   }
@@ -305,30 +324,28 @@ const dialogCancelFn = () => {
 
 watch(
   () => active.value,
-  newVal => {
+  (newVal) => {
     requestData.data.pdiAppQueryType = pdiAppQueryTypeList[newVal]
     requestData.data.pageNum = 1
   }
 )
-
 </script>
 
 <style lang="scss" scoped>
-  .common-scroll-content{
-    flex: 1;
-    overflow-y: auto;
-    .tab-content{
-      width: 100%;
-      overflow-x: auto;
-      height: 42px;
-      overflow-y: hidden;
-    }
+.common-scroll-content {
+  flex: 1;
+  overflow-y: auto;
+  .tab-content {
+    width: 100%;
+    overflow-x: auto;
+    height: 42px;
+    overflow-y: hidden;
   }
-  .dialog-line-text{
-    font-family: PingFang SC;
-    font-size: 14px;
-    letter-spacing: 0.43px;
-    color: #545454;
-  }
+}
+.dialog-line-text {
+  font-family: PingFang SC;
+  font-size: 14px;
+  letter-spacing: 0.43px;
+  color: #545454;
+}
 </style>
-

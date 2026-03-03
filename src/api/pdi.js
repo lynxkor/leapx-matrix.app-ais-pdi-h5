@@ -1,4 +1,4 @@
-import { post, postJson } from './request'
+import { get, post, postJson } from './request'
 
 export function getList(data) {
   return post('/datacenter/vehiclePartsMaintenance/page', data)
@@ -37,4 +37,8 @@ export function addPdiEntry(data) {
 // pdi录入(异常)
 export function addRepairConfirm(data) {
   return post('/vehstock/app/store/storeVehiclePdi/addRepairConfirm', data)
+}
+// 查询当前用户拥有的所有资源列表
+export function getOwnerTree(data) {
+  return get('/passport/resourceInfo/owner/tree', data)
 }
