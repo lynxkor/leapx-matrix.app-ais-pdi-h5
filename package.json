@@ -7,9 +7,17 @@
     "node": "^20.19.0 || >=22.12.0"
   },
   "scripts": {
+    "prepare": "husky",
     "dev": "vite --host",
-    "build": "vite build",
+    "local": "vite --mode dev",
+    "sit": "vite build --mode sit",
+    "uat": "vite build --mode uat",
+    "pre": "vite build --mode pre",
+    "build": "vite build --mode prod",
     "preview": "vite preview",
+    "preview:sit": "vite preview --mode sit",
+    "preview:uat": "vite preview --mode uat",
+    "preview:pre": "vite preview --mode pre",
     "lint": "eslint . --fix",
     "format": "prettier --write src/"
   },
