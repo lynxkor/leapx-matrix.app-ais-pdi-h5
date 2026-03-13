@@ -20,8 +20,12 @@
           round
           @click="PDIBtnClick(item)"
           v-show="
-            (active !== 1 && resourceBtnList.includes('app:store:storeVehiclePdi:addPdiEntry')) ||
-            (active === 1 && resourceBtnList.includes('app:store:storeVehiclePdi:addRepairConfirm'))
+            (active !== 1 &&
+              resourceBtnList.includes('AISMC-storeVehiclePdi-addPdiEntry') &&
+              resourceBtnList.includes('AISMC-storeVehiclePdi-getPdiEntryDetails')) ||
+            (active === 1 &&
+              resourceBtnList.includes('AISMC-storeVehiclePdi-addRepairConfirm') &&
+              resourceBtnList.includes('AISMC-storeVehiclePdi-getRepairConfirmDetails'))
           "
           >{{ active === 1 ? '异常修复确认' : 'PDI录入' }}</ais-button
         >
