@@ -256,7 +256,57 @@ const saveClick = () => {
   console.log(_count)
   // return
   if (_count === 0) {
-    // 没有勾选异常
+    // 没有勾选异常，如果有异常说明或异常图片，则提示用户清空
+    if (popupObj.abnormalDesc || (popupObj.abnormalUrlList && popupObj.abnormalUrlList.some(url => url))) {
+      // 使用现有对话框提示用户清空
+      dialogObj.index = '';
+      dialogObj.title = '提醒';
+      dialogObj.submitText = '清空';
+      dialogObj.cancelText = '保留';
+      dialogObj.submitFn = () => {
+        showDialog.value = false;
+
+        // 清空数据
+        popupObj.abnormalDesc = '';
+        popupObj.abnormalUrlList = ['', ''];
+
+        // 创建新的 _checkItems 对象，使用清空后的数据
+        const _checkItemsCleared = { ...deepClone(popupObj) };
+        _checkItemsCleared.abnormalUrl = _checkItemsCleared.abnormalUrlList.join(',');
+        _checkItemsCleared.damagedTypeList.map(damagedType => {
+          damagedType.isUnusual = Number(damagedType.isUnusual);
+        });
+        _checkItemsCleared.isUnusual = 0; // 确保清空后 isUnusual 为 0
+
+        const params = {
+          isPdiSubmit: 0,
+          id: props.id,
+          version: props.version,
+          checkItems: [_checkItemsCleared], // 传递清空后的数据
+        };
+        props.api(params).then((res) => {
+          show.value = false
+          emit('reload')
+        });
+      };
+      dialogObj.cancelFn = () => {
+        showDialog.value = false;
+        // 不清空，使用原始的 _checkItems 数据，但 isUnusual 设为 0
+        _checkItems.isUnusual = 0;
+        const params = {
+          isPdiSubmit: 0,
+          id: props.id,
+          version: props.version,
+          checkItems: [_checkItems],
+        };
+        props.api(params).then((res) => {
+          show.value = false
+          emit('reload')
+        });
+      };
+      showDialog.value = true;
+      return; // 提前退出函数，让用户选择
+    }
     _checkItems.isUnusual = 0
   } else {
     // 输入框和图片要必填
