@@ -1,5 +1,6 @@
 <template>
   <filter-header
+    ref="filterHeaderRef"
     :placeholder="headerPlaceholder"
     @search="headerSearch"
     :filterList="searchList"
@@ -12,7 +13,12 @@
     </van-tabs>
   </div>
   <div class="common-scroll-content" ref="scrollEle">
-    <refresh-list :requestData="requestData" :needRefresh="needRefresh" @setData="setData">
+    <refresh-list
+      :requestData="requestData"
+      :needRefresh="needRefresh"
+      :has-no-data="dataList.length === 0 && requestData.data && (requestData.data.vehPdiType || requestData.data.seriesIdList?.length || requestData.data.modelIdList?.length || requestData.data.createTimeStart || requestData.data.createTimeEnd || requestData.data.vinLastSix)"
+      @setData="setData"
+      @resetFilters="resetFilterConditions">
       <list-item v-for="(item, index) in dataList" :key="index" :dataItem="item">
         <ais-button
           type="primary"
@@ -61,6 +67,7 @@ import { getPdiList, getVehicleModelList, getVehicleSeriesList, getOwnerTree } f
 
 const router = useRouter()
 
+const filterHeaderRef = ref(null)
 const headerPlaceholder = ref('搜索')
 const searchList = ref([
   {
@@ -210,6 +217,33 @@ const headerSearch = (row) => {
   dataList.value = []
   // 强制触发刷新，通过创建新的data对象来确保响应式更新
   requestData.data = { ...requestData.data }
+}
+
+const resetFilterConditions = () => {
+  // 重置搜索条件
+  requestData.data.vinLastSix = ''
+
+  // 重置筛选条件
+  requestData.data.vehPdiType = ''
+  requestData.data.seriesIdList = []
+  requestData.data.modelIdList = []
+  requestData.data.createTimeStart = ''
+  requestData.data.createTimeEnd = ''
+
+  // 重置 FilterHeader 组件的状态
+  if (filterHeaderRef.value) {
+    filterHeaderRef.value.resetFilters()
+  }
+
+  // 重置分页
+  requestData.data.pageNum = 1
+  dataList.value = []
+
+  // 强制触发刷新
+  requestData.data = { ...requestData.data }
+
+  // 触发一次搜索以刷新数据
+  headerSearch({ searchValue: '', sortOrder: false })
 }
 
 const filterSearch = (obj) => {
