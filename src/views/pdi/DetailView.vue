@@ -32,7 +32,7 @@
 </template>
 
 <script setup>
-import { defineOptions, reactive } from 'vue'
+import { reactive } from 'vue'
 
 defineOptions({
   name: 'PdiDetailView'
