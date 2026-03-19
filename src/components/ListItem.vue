@@ -1,7 +1,9 @@
 <template>
   <div class="list-item-content">
     <div class="card-title-text">{{ dataItem.vin }}</div>
-    <div class="card-subtitle-text">{{ dataItem.modelName }}</div>
+    <div class="card-subtitle-text">
+      {{ dataItem.modelName }} | {{ dataItem.exteriorName }} | {{ dataItem.interiorName }}
+    </div>
     <van-row class="card-info">
       <van-col span="12" class="card-info-col">
         <p class="card-info-title">收车确认时间：</p>
@@ -34,48 +36,48 @@ const props = defineProps({
     type: Object,
     default: () => {
       return {}
-    }
-  }
+    },
+  },
 })
 </script>
 
 <style lang="scss" scoped>
-.list-item-content{
-  background: #FFFFFF;
+.list-item-content {
+  background: #ffffff;
   padding: 12px;
   border-radius: 7px;
   margin-top: 12px;
-  .card-title-text{
+  .card-title-text {
     font-family: PingFang SC;
     font-size: 16px;
     font-weight: 500;
-    color: #191A1B;
+    color: #191a1b;
   }
-  .card-subtitle-text{
+  .card-subtitle-text {
     font-family: PingFang SC;
     font-size: 13px;
     color: #545454;
   }
-  .card-info{
+  .card-info {
     box-sizing: border-box;
-    background: #FCFBFB;
+    background: #fcfbfb;
     margin-top: 8px;
     padding-bottom: 8px;
-    .card-info-col{
+    .card-info-col {
       font-family: PingFang SC;
       font-size: 12px;
       padding: 8px;
       padding-bottom: 0;
-      .card-info-title{
+      .card-info-title {
         color: #888888;
         margin-bottom: 2px;
       }
-      .card-info-des{
+      .card-info-des {
         color: #545454;
       }
     }
   }
-  .btn-content{
+  .btn-content {
     margin-top: 12px;
     display: flex;
     align-items: center;
