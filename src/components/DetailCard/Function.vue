@@ -171,6 +171,14 @@ watch(
             isSubmit = false
             break
           }
+        } else {
+          // 没有勾选异常，但如果有异常说明或异常图片，则清空相关内容
+          if (checkItem.abnormalDesc || (checkItem.abnormalUrlList && checkItem.abnormalUrlList.length > 0)) {
+            // 清空异常说明和图片
+            checkItem.abnormalDesc = '';
+            checkItem.abnormalUrlList = [];
+          }
+          checkItem.isUnusual = 0
         }
       }
       if (isSubmit) {
