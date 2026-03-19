@@ -2,74 +2,122 @@
   <div class="appearance-content">
     <div class="car-content">
       <div class="car-content-inner">
-        <img :src="checkItems.atlasUrl" class="car-bg-img"/>
-          <div v-for="(inspectItem, inspectIndex) in checkItems.checkItems" :key="inspectIndex"
-            :class="inspectItem.isUnusual ? 'inspect-item-content inspect-item-content-error' : 'inspect-item-content'"
-            :style="{top: `${inspectItem.atlasCoordTop}px`, left: `${inspectItem.atlasCoordLeft}px`, right: `${inspectItem.atlasCoordRight}px`}"
-            @click="showPop(inspectItem)"
-          >
-            {{ inspectItem.name }}
-          </div>
+        <img :src="checkItems.atlasUrl" class="car-bg-img" />
+        <div
+          v-for="(inspectItem, inspectIndex) in checkItems.checkItems"
+          :key="inspectIndex"
+          :class="
+            inspectItem.isUnusual
+              ? 'inspect-item-content inspect-item-content-error'
+              : 'inspect-item-content'
+          "
+          :style="{
+            top: `${inspectItem.atlasCoordTop}px`,
+            left: `${inspectItem.atlasCoordLeft}px`,
+            right: `${inspectItem.atlasCoordRight}px`,
+          }"
+          @click="showPop(inspectItem)"
+        >
+          {{ inspectItem.name }}
+        </div>
       </div>
     </div>
   </div>
-  <van-popup v-model:show="show" round position="bottom"
-    closeable close-icon="close" close-icon-position="top-left"
+  <van-popup
+    v-model:show="show"
+    round
+    position="bottom"
+    closeable
+    close-icon="close"
+    close-icon-position="top-left"
     :close-on-click-overlay="false"
     :before-close="beforeClose"
-    :style="{ height: '88%', backgroundColor: '#F4F4F4' }">
+    :style="{ height: '88%', backgroundColor: '#F4F4F4' }"
+  >
     <div class="popup-inner">
       <p class="popup-title">{{ title }}</p>
       <div class="state-content">
-          <div class="switch-content">
-            <van-row>
-              <van-col class="check-item" v-for="(item, index) in popupObj.damagedTypeList" :key="index" span="12">
-                <span class="check-item-text">{{ item.damagedType }}</span>
-                <div class="switch-inner">
-                  <span v-if="item.isUnusual">异常</span>
-                  <van-switch v-model="item.isUnusual" size="20px" inactive-color="#00AA00" active-color="#E43122" @change="switchChange()"/>
-                </div>
-              </van-col>
-            </van-row>
-          </div>
-          <div class="file-content">
-            <p class="file-title">异常说明<span class="require-text">*</span></p>
-            <van-field
-              class="textarea-content"
-              v-model="popupObj.abnormalDesc"
-              :disabled="popupInputDisabled"
-              rows="1"
-              autosize
-              type="textarea"
-              placeholder="请输入异常说明，不少于10个字"
-            />
-            <p class="file-title">上传图片<span class="grey-text">(需提供近景图及远景图)</span><span class="require-text">*</span></p>
-            <div class="upload-content">
-              <div class="upload-item" v-if="popupObj.abnormalUrlList[0]">
-                <img style="width: 100%; height: 100%; margin-bottom: 0" :src="popupObj.abnormalUrlList[0]" @click="showImg(popupObj.abnormalUrlList[0])"/>
-                <img class="delete_icon" src="../../assets/img/delete_icon.png" @click="deleteImg(0)"/>
+        <div class="switch-content">
+          <van-row>
+            <van-col
+              class="check-item"
+              v-for="(item, index) in popupObj.damagedTypeList"
+              :key="index"
+              span="12"
+            >
+              <span class="check-item-text">{{ item.damagedType }}</span>
+              <div class="switch-inner">
+                <span v-if="item.isUnusual">异常</span>
+                <van-switch
+                  v-model="item.isUnusual"
+                  size="20px"
+                  inactive-color="#00AA00"
+                  active-color="#E43122"
+                  @change="switchChange()"
+                />
               </div>
-              <div class="upload-item" v-if="!popupObj.abnormalUrlList[0]" @click="uploadClick(0)">
-                <svg class="icon upload-img" aria-hidden="true">
-                  <use xlink:href="#icon-lxp-h5upload-mob"></use>
-                </svg>
-                <span class="upload-text">近景图</span>
-              </div>
-              <div class="upload-item" v-if="popupObj.abnormalUrlList[1]">
-                <img style="width: 100%; height: 100%; margin-bottom: 0" :src="popupObj.abnormalUrlList[1]" @click="showImg(popupObj.abnormalUrlList[1])"/>
-                <img class="delete_icon" src="../../assets/img/delete_icon.png" @click="deleteImg(1)"/>
-              </div>
-              <div class="upload-item" v-if="!popupObj.abnormalUrlList[1]" @click="uploadClick(1)">
-                <svg class="icon upload-img" aria-hidden="true">
-                  <use xlink:href="#icon-lxp-h5upload-mob"></use>
-                </svg>
-                <span class="upload-text">远景图</span>
-              </div>
+            </van-col>
+          </van-row>
+        </div>
+        <div class="file-content">
+          <p class="file-title">异常说明<span class="require-text">*</span></p>
+          <van-field
+            class="textarea-content"
+            v-model="popupObj.abnormalDesc"
+            :disabled="popupInputDisabled"
+            rows="1"
+            autosize
+            type="textarea"
+            placeholder="请输入异常说明，不少于10个字"
+          />
+          <p class="file-title">
+            上传图片<span class="grey-text">(需提供近景图及远景图)</span
+            ><span class="require-text">*</span>
+          </p>
+          <div class="upload-content">
+            <div class="upload-item" v-if="popupObj.abnormalUrlList[0]">
+              <img
+                style="width: 100%; height: 100%; margin-bottom: 0"
+                :src="popupObj.abnormalUrlList[0]"
+                @click="showImg(popupObj.abnormalUrlList[0])"
+              />
+              <img
+                class="delete_icon"
+                src="../../assets/img/delete_icon.png"
+                @click="deleteImg(0)"
+              />
+            </div>
+            <div class="upload-item" v-if="!popupObj.abnormalUrlList[0]" @click="uploadClick(0)">
+              <svg class="icon upload-img" aria-hidden="true">
+                <use xlink:href="#icon-lxp-h5upload-mob"></use>
+              </svg>
+              <span class="upload-text">近景图</span>
+            </div>
+            <div class="upload-item" v-if="popupObj.abnormalUrlList[1]">
+              <img
+                style="width: 100%; height: 100%; margin-bottom: 0"
+                :src="popupObj.abnormalUrlList[1]"
+                @click="showImg(popupObj.abnormalUrlList[1])"
+              />
+              <img
+                class="delete_icon"
+                src="../../assets/img/delete_icon.png"
+                @click="deleteImg(1)"
+              />
+            </div>
+            <div class="upload-item" v-if="!popupObj.abnormalUrlList[1]" @click="uploadClick(1)">
+              <svg class="icon upload-img" aria-hidden="true">
+                <use xlink:href="#icon-lxp-h5upload-mob"></use>
+              </svg>
+              <span class="upload-text">远景图</span>
             </div>
           </div>
+        </div>
       </div>
       <div class="popup-footer">
-        <ais-button style="height: 40px;" :disabled="popupInputDisabled" @click="saveClick">保存并返回</ais-button>
+        <ais-button style="height: 40px" :disabled="popupInputDisabled" @click="saveClick"
+          >保存并返回</ais-button
+        >
       </div>
     </div>
   </van-popup>
@@ -90,19 +138,19 @@ const props = defineProps({
     type: Object,
     default: () => {
       return {}
-    }
+    },
   },
   api: {
-    type: Object
+    type: Object,
   },
   version: {
     type: String || Number,
-    default: ''
+    default: '',
   },
   id: {
     type: String || Number,
-    default: ''
-  }
+    default: '',
+  },
 })
 
 const emit = defineEmits(['reload'])
@@ -119,8 +167,13 @@ const dialogObj = {
   title: '提醒',
   submitText: '确定',
   cancelText: '取消',
-  submitFn: () => { showDialog.value = false; show.value = false },
-  cancelFn: () => { showDialog.value = false }
+  submitFn: () => {
+    showDialog.value = false
+    show.value = false
+  },
+  cancelFn: () => {
+    showDialog.value = false
+  },
 }
 
 onMounted(() => {
@@ -132,23 +185,34 @@ onMounted(() => {
 
 const showPop = (item) => {
   title.value = `检查-${item.name}`
-  Object.assign(popupObj, JSON.parse(JSON.stringify({
-    ...item,
-    abnormalUrlList: item.abnormalUrl && item.abnormalUrl.length ? item.abnormalUrl.split(',') : [],
-    abnormalDesc: item.abnormalDesc ? item.abnormalDesc : ''
-  })))
-  Object.assign(tempObj, JSON.parse(JSON.stringify({
-    ...item,
-    abnormalDesc: item.abnormalDesc ? item.abnormalDesc : ''
-  })))
-  popupInputDisabled.value = true
-  popupObj.damagedTypeList.map(damagedType => {
+  Object.assign(
+    popupObj,
+    JSON.parse(
+      JSON.stringify({
+        ...item,
+        abnormalUrlList:
+          item.abnormalUrl && item.abnormalUrl.length ? item.abnormalUrl.split(',') : [],
+        abnormalDesc: item.abnormalDesc ? item.abnormalDesc : '',
+      }),
+    ),
+  )
+  Object.assign(
+    tempObj,
+    JSON.parse(
+      JSON.stringify({
+        ...item,
+        abnormalDesc: item.abnormalDesc ? item.abnormalDesc : '',
+      }),
+    ),
+  )
+  popupInputDisabled.value = !(item.isUnusual || item.abnormalDesc || (item.abnormalUrlList && item.abnormalUrlList.length > 0))
+  popupObj.damagedTypeList.map((damagedType) => {
     damagedType.isUnusual = Boolean(damagedType.isUnusual)
   })
   show.value = true
 }
 
-const showImg = url => {
+const showImg = (url) => {
   showImagePreview([url])
 }
 
@@ -183,7 +247,7 @@ const saveClick = () => {
   const _checkItems = { ...deepClone(popupObj) }
   let _count = 0
   _checkItems.abnormalUrl = _checkItems.abnormalUrlList.join(',')
-  _checkItems.damagedTypeList.map(damagedType => {
+  _checkItems.damagedTypeList.map((damagedType) => {
     damagedType.isUnusual = Number(damagedType.isUnusual)
     if (damagedType.isUnusual) {
       _count++
@@ -222,81 +286,81 @@ const saveClick = () => {
     isPdiSubmit: 0,
     id: props.id,
     version: props.version,
-    checkItems: [_checkItems]
+    checkItems: [_checkItems],
   }
-  props.api(params).then(res => {
+  props.api(params).then((res) => {
     show.value = false
     emit('reload')
   })
 }
 
 const switchChange = () => {
-  // 需要所有的复选框状态都要判断
-  for (let index = 0; index < tempObj.damagedTypeList.length; index++) {
-    if (Number(popupObj.damagedTypeList[index].isUnusual) === tempObj.damagedTypeList[index].isUnusual) {
-      popupInputDisabled.value = true
-    } else {
-      popupInputDisabled.value = false
-      break
+  // 计算是否有任何损坏类型为异常
+  let hasUnusual = false;
+  for (let i = 0; i < popupObj.damagedTypeList.length; i++) {
+    if (popupObj.damagedTypeList[i].isUnusual) {
+      hasUnusual = true;
+      break;
     }
   }
+  // 当有异常或已有异常描述或已有异常图片时，允许编辑
+  popupInputDisabled.value = !(hasUnusual || popupObj.abnormalDesc || (popupObj.abnormalUrlList && popupObj.abnormalUrlList.length > 0));
 }
-
 </script>
 
 <style lang="scss" scoped>
-.appearance-content{
+.appearance-content {
   flex: 1;
   overflow-y: auto;
 }
 
-.car-content{
+.car-content {
   width: 100%;
-  border-top: 1px dashed #6C6E6C;
-  border-bottom: 1px dashed #6C6E6C;
-  .car-content-inner{
+  border-top: 1px dashed #6c6e6c;
+  border-bottom: 1px dashed #6c6e6c;
+  .car-content-inner {
     width: 375px;
     max-width: 100%;
     height: 546px;
     margin: 0 auto;
     position: relative;
-    .car-bg-img{
+    .car-bg-img {
       width: 100%;
     }
-    .inspect-item-content{
+    .inspect-item-content {
       box-sizing: border-box;
-      border: 1px solid #191A1B;
+      border: 1px solid #191a1b;
       padding: 2px 4px;
       display: inline-block;
       position: absolute;
       font-family: PingFang SC;
       font-size: 12px;
-      color: #191A1B;
+      color: #191a1b;
       white-space: nowrap;
     }
-    .inspect-item-content-error{
-      border: 0.5px solid #B91919;
-      background: #B91919;
-      color: #FFFFFF;
+    .inspect-item-content-error {
+      border: 0.5px solid #b91919;
+      background: #b91919;
+      color: #ffffff;
     }
   }
 }
 
-.popup-inner{
+.popup-inner {
   width: 93%;
   height: 100%;
   margin: 0 auto;
   overflow-y: hidden;
   display: flex;
   flex-direction: column;
-  .popup-title{
+  .popup-title {
     font-size: 14px;
     font-weight: 500;
     text-align: center;
-    color: #191A1B;
+    color: #191a1b;
     padding: 12px 0;
   }
-  .state-content{
+  .state-content {
     border-radius: 7px;
     margin-bottom: 12px;
     overflow-y: auto;
@@ -304,17 +368,17 @@ const switchChange = () => {
     display: flex;
     flex-direction: column;
     align-items: center;
-    .switch-content{
+    .switch-content {
       border-radius: 6px;
-      background: #FFFFFF;
+      background: #ffffff;
       margin-bottom: 8px;
       width: 100%;
       padding: 12px;
       box-sizing: border-box;
     }
-    .file-content{
+    .file-content {
       border-radius: 6px;
-      background: #FFFFFF;
+      background: #ffffff;
       margin-bottom: 8px;
       width: 100%;
       padding: 12px;
@@ -324,53 +388,53 @@ const switchChange = () => {
   }
 }
 
-.check-item{
+.check-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 8px 12px;
-  border-bottom: 1px solid #E6E6E5;
-  border-right: 1px solid #E6E6E5;
+  border-bottom: 1px solid #e6e6e5;
+  border-right: 1px solid #e6e6e5;
   &:nth-last-of-type(1) {
     border-bottom: 0;
   }
   &:nth-of-type(even) {
     border-right: 0;
   }
-  .check-item-text{
+  .check-item-text {
     font-family: PingFang SC;
     font-size: 14px;
-    color: #191A1B;
+    color: #191a1b;
     padding-left: 8px;
   }
 }
 
-.switch-inner{
+.switch-inner {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  span{
+  span {
     font-family: PingFang SC;
     font-size: 12px;
-    color: #E43122;
+    color: #e43122;
     margin-right: 4px;
   }
 }
 
-.file-content{
-  .file-title{
+.file-content {
+  .file-title {
     font-size: 14px;
     letter-spacing: 0.7px;
-    color: #191A1B;
+    color: #191a1b;
     margin-bottom: 8px;
-    .require-text{
-      color: #E43122;
+    .require-text {
+      color: #e43122;
     }
-    .grey-text{
+    .grey-text {
       color: #888888;
     }
   }
-  .textarea-content{
+  .textarea-content {
     width: 100%;
     height: 80px;
     box-sizing: border-box;
@@ -379,31 +443,31 @@ const switchChange = () => {
     border-radius: 7px;
     margin-bottom: 16px;
   }
-  .upload-content{
+  .upload-content {
     display: flex;
     align-items: center;
     justify-content: flex-start;
     gap: 8px;
-    .upload-item{
+    .upload-item {
       width: 80px;
       height: 80px;
       border-radius: 7px;
-      background: #F5F5F5;
+      background: #f5f5f5;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       position: relative;
-      .upload-img{
+      .upload-img {
         width: 24px;
         height: 24px;
         margin-bottom: 12px;
       }
-      .upload-text{
+      .upload-text {
         font-size: 12px;
         color: #888888;
       }
-      .delete_icon{
+      .delete_icon {
         position: absolute;
         top: 0;
         right: 0;
@@ -414,12 +478,12 @@ const switchChange = () => {
   }
 }
 
-.popup-footer{
+.popup-footer {
   height: 40px;
   margin-bottom: 20px;
 }
 
-.dialog-line-text{
+.dialog-line-text {
   font-size: 14px;
   letter-spacing: 0.43px;
   color: #545454;
