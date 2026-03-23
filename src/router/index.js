@@ -57,6 +57,24 @@ const router = createRouter({
             title: '门店整车PDI',
             keepAlive: false
           }
+        },
+        {
+          path: '/vehicleAbnormalRecord/list',
+          name: 'VehicleAbnormalRecordListView',
+          component: () => import('../views/vehicleAbnormalRecord/ListView.vue'),
+          meta: {
+            title: '低电量车',
+            keepAlive: true
+          }
+        },
+        {
+          path: '/storeVehicleInventory/list',
+          name: 'StoreVehicleInventoryListView',
+          component: () => import('../views/storeVehicleInventory/ListView.vue'),
+          meta: {
+            title: '门店整车库存',
+            keepAlive: true
+          }
         }
       ]
     }
