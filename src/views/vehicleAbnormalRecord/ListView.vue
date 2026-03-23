@@ -136,12 +136,12 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
-@use '@/libs/styles/variables' as *;
+// @import '@/libs/assets/styles/variables.scss';
 .common-scroll-content {
   flex: 1;
   overflow-y: auto;
   padding: 12px;
-  background: $leap-color-default-light-5;
+  background: var(--leap-color-default-light-5);
 }
 
 .list-item-content {
@@ -159,7 +159,7 @@ onMounted(() => {
       font-family: PingFang SC;
       font-size: 15px;
       font-weight: 500;
-      color: $leap-color-default;
+      color: var(--leap-color-default);
     }
 
     .battery-tag-row {
@@ -170,7 +170,7 @@ onMounted(() => {
         border-radius: 3px;
         font-size: 11px;
         background: #F8E8E8;
-        color: $leap-color-danger;
+        color: var(--leap-color-danger);
 
         .battery-icon {
           position: relative;
@@ -182,7 +182,7 @@ onMounted(() => {
           .battery-outline {
             width: 100%;
             height: 100%;
-            color: $leap-color-danger;
+            color: var(--leap-color-danger);
           }
 
           // 使用伪元素填充电池内部
@@ -193,7 +193,7 @@ onMounted(() => {
             left: 5px;
             width: calc(var(--battery-level) * 0.1px);
             height: 6px;
-            background: $leap-color-danger;
+            background: var(--leap-color-danger);
             border-radius: 1px;
             transform: translateY(-50%);
           }
@@ -205,7 +205,7 @@ onMounted(() => {
         }
 
         .days {
-          color: $leap-color-danger;
+          color: var(--leap-color-danger);
         }
       }
     }
@@ -214,13 +214,13 @@ onMounted(() => {
   .card-subtitle-text {
     font-family: PingFang SC;
     font-size: 13px;
-    color: $leap-color-default-light-1;
+    color: var(--leap-color-default-light-1);
     margin-top: 4px;
   }
 
   .card-info {
     box-sizing: border-box;
-    background: $leap-color-default-light-6;
+    background: var(--leap-color-default-light-6);
     margin-top: 12px;
     padding-bottom: 8px;
     border-radius: 4px;
@@ -232,12 +232,12 @@ onMounted(() => {
       padding-bottom: 0;
 
       .card-info-title {
-        color: $leap-color-default-light-2;
+        color:var(--leap-color-default-light-2);
         margin-bottom: 2px;
       }
 
       .card-info-des {
-        color: $leap-color-default-light-1;
+        color: var(--leap-color-default-light-1);
       }
     }
   }

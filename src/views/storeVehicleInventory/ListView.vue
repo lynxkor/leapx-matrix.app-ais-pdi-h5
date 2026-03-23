@@ -168,7 +168,6 @@ export default {
     // 行点击事件
     onRowClick(detail) {
       console.log('点击行:', detail)
-      // TODO: 这里添加跳转逻辑，例如：
       // this.$router.push({ path: '/detail', query: { vin: detail.vin } })
     }
   }
@@ -176,7 +175,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@use '@/libs/styles/variables' as *;
+// @import '@/libs/assets/styles/variables.scss';
 
 .list-container {
   display: flex;
@@ -204,14 +203,14 @@ export default {
     padding: 4px 12px;
     background: transparent;
     border: none;
-    font-family: PingFang SC;
+
     font-size: 14px;
-    color: $leap-color-default-light-2;
+    color: var(--leap-color-default-light-2);
     cursor: pointer;
     position: relative;
 
     &.active {
-      color: $leap-color-success;
+      color: var(--leap-color-success);
       font-weight: 600;
 
       &::after {
@@ -222,7 +221,7 @@ export default {
         transform: translateX(-50%);
         width: 20px;
         height: 2px;
-        background: $leap-color-success;
+        background: var(--leap-color-success);
       }
     }
   }
@@ -232,7 +231,7 @@ export default {
   flex: 1;
   overflow-y: auto;
   padding: 12px;
-  background: $leap-color-default-light-5;
+  background: var(--leap-color-default-light-5);
 }
 
 .series-card {
@@ -247,23 +246,23 @@ export default {
     margin-bottom: 12px;
 
     .series-name {
-      font-family: PingFang SC;
+
       font-size: 15px;
       font-weight: 600;
-      color: $leap-color-success;
+      color: var(--leap-color-success);
     }
 
     .series-total {
-      font-family: PingFang SC;
+
       font-size: 14px;
       font-weight: 600;
-      color: $leap-color-success;
+      color: var(--leap-color-success);
       margin-left: 4px;
     }
 
     .info-icon {
       font-size: 14px;
-      color: $leap-color-success;
+      color: var(--leap-color-success);
       margin-left: 4px;
     }
   }
@@ -272,12 +271,12 @@ export default {
     display: grid;
     grid-template-columns: 1.5fr 1fr 1fr 1fr 1fr 1fr;
     padding: 8px 0;
-    border-bottom: 1px solid $leap-color-default-light-4;
+    border-bottom: 1px solid var(--leap-color-default-light-4);
 
     .th {
-      font-family: PingFang SC;
+
       font-size: 12px;
-      color: $leap-color-default-light-2;
+      color: var(--leap-color-default-light-2);
       text-align: center;
 
       &.model-name {
@@ -285,7 +284,7 @@ export default {
       }
 
       &.available {
-        color: $leap-color-success;
+        color: var(--leap-color-success);
         font-weight: 500;
         display: flex;
         align-items: center;
@@ -309,26 +308,26 @@ export default {
     display: grid;
     grid-template-columns: 1.5fr 1fr 1fr 1fr 1fr 1fr;
     padding: 10px 0;
-    border-bottom: 1px solid $leap-color-default-light-4;
+    border-bottom: 1px solid var(--leap-color-default-light-4);
 
     &:last-child {
       border-bottom: none;
     }
 
     .td {
-      font-family: PingFang SC;
+
       font-size: 12px;
-      color: $leap-color-default-light-1;
+      color: var(--leap-color-default-light-1);
       text-align: center;
 
       &.model-name {
         text-align: left;
-        color: $leap-color-default;
+        color: var(--leap-color-default);
         font-weight: 500;
       }
 
       &.available {
-        color: $leap-color-success;
+        color: var(--leap-color-success);
         font-weight: 500;
       }
     }
