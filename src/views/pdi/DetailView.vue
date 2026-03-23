@@ -81,13 +81,7 @@
 </template>
 
 <script setup>
-import { reactive } from 'vue'
-
-defineOptions({
-  name: 'PdiDetailView',
-})
-
-import { ref, onMounted, watch } from 'vue'
+import { ref, reactive, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { showFailToast } from 'vant'
 import { useGlobalStore } from '@/stores/global'
@@ -97,8 +91,11 @@ import Appearance from '@/components/DetailCard/Appearance.vue'
 import Inner from '@/components/DetailCard/Inner.vue'
 import Function from '@/components/DetailCard/Function.vue'
 import Repair from '@/components/DetailCard/Repair.vue'
-
 import { getPdiDetails, getPdiRepairDetails, addPdiEntry, addRepairConfirm } from '@/api/pdi'
+
+defineOptions({
+  name: 'PdiDetailView',
+})
 
 const globalStore = useGlobalStore()
 const route = useRoute()
