@@ -127,7 +127,7 @@
 </template>
 
 <script setup>
-import { reactive, ref, defineProps, onMounted, defineEmits } from 'vue'
+import { reactive, ref, onMounted } from 'vue'
 import { showFailToast, showImagePreview } from 'vant'
 import { getAppImg } from '@/libs/utils/nativeFn'
 import AisButton from '../AisButton.vue'
@@ -138,19 +138,19 @@ const props = defineProps({
     type: Object,
     default: () => {
       return {}
-    },
+    }
   },
   api: {
-    type: Object,
+    type: Object
   },
   version: {
     type: String || Number,
-    default: '',
+    default: ''
   },
   id: {
     type: String || Number,
-    default: '',
-  },
+    default: ''
+  }
 })
 
 const emit = defineEmits(['reload'])
@@ -173,7 +173,7 @@ const dialogObj = {
   },
   cancelFn: () => {
     showDialog.value = false
-  },
+  }
 }
 
 onMounted(() => {
@@ -192,18 +192,18 @@ const showPop = (item) => {
         ...item,
         abnormalUrlList:
           item.abnormalUrl && item.abnormalUrl.length ? item.abnormalUrl.split(',') : [],
-        abnormalDesc: item.abnormalDesc ? item.abnormalDesc : '',
-      }),
-    ),
+        abnormalDesc: item.abnormalDesc ? item.abnormalDesc : ''
+      })
+    )
   )
   Object.assign(
     tempObj,
     JSON.parse(
       JSON.stringify({
         ...item,
-        abnormalDesc: item.abnormalDesc ? item.abnormalDesc : '',
-      }),
-    ),
+        abnormalDesc: item.abnormalDesc ? item.abnormalDesc : ''
+      })
+    )
   )
   popupInputDisabled.value = !(item.isUnusual || item.abnormalDesc || (item.abnormalUrlList && item.abnormalUrlList.length > 0))
   popupObj.damagedTypeList.map((damagedType) => {
@@ -259,53 +259,53 @@ const saveClick = () => {
     // 没有勾选异常，如果有异常说明或异常图片，则提示用户清空
     if (popupObj.abnormalDesc || (popupObj.abnormalUrlList && popupObj.abnormalUrlList.some(url => url))) {
       // 使用现有对话框提示用户清空
-      dialogObj.index = '';
-      dialogObj.title = '提醒';
-      dialogObj.submitText = '清空';
-      dialogObj.cancelText = '保留';
+      dialogObj.index = ''
+      dialogObj.title = '提醒'
+      dialogObj.submitText = '清空'
+      dialogObj.cancelText = '保留'
       dialogObj.submitFn = () => {
-        showDialog.value = false;
+        showDialog.value = false
 
         // 清空数据
-        popupObj.abnormalDesc = '';
-        popupObj.abnormalUrlList = ['', ''];
+        popupObj.abnormalDesc = ''
+        popupObj.abnormalUrlList = ['', '']
 
         // 创建新的 _checkItems 对象，使用清空后的数据
-        const _checkItemsCleared = { ...deepClone(popupObj) };
-        _checkItemsCleared.abnormalUrl = _checkItemsCleared.abnormalUrlList.join(',');
+        const _checkItemsCleared = { ...deepClone(popupObj) }
+        _checkItemsCleared.abnormalUrl = _checkItemsCleared.abnormalUrlList.join(',')
         _checkItemsCleared.damagedTypeList.map(damagedType => {
-          damagedType.isUnusual = Number(damagedType.isUnusual);
-        });
-        _checkItemsCleared.isUnusual = 0; // 确保清空后 isUnusual 为 0
+          damagedType.isUnusual = Number(damagedType.isUnusual)
+        })
+        _checkItemsCleared.isUnusual = 0 // 确保清空后 isUnusual 为 0
 
         const params = {
           isPdiSubmit: 0,
           id: props.id,
           version: props.version,
-          checkItems: [_checkItemsCleared], // 传递清空后的数据
-        };
+          checkItems: [_checkItemsCleared] // 传递清空后的数据
+        }
         props.api(params).then((res) => {
           show.value = false
           emit('reload')
-        });
-      };
+        })
+      }
       dialogObj.cancelFn = () => {
-        showDialog.value = false;
+        showDialog.value = false
         // 不清空，使用原始的 _checkItems 数据，但 isUnusual 设为 0
-        _checkItems.isUnusual = 0;
+        _checkItems.isUnusual = 0
         const params = {
           isPdiSubmit: 0,
           id: props.id,
           version: props.version,
-          checkItems: [_checkItems],
-        };
+          checkItems: [_checkItems]
+        }
         props.api(params).then((res) => {
           show.value = false
           emit('reload')
-        });
-      };
-      showDialog.value = true;
-      return; // 提前退出函数，让用户选择
+        })
+      }
+      showDialog.value = true
+      return // 提前退出函数，让用户选择
     }
     _checkItems.isUnusual = 0
   } else {
@@ -336,7 +336,7 @@ const saveClick = () => {
     isPdiSubmit: 0,
     id: props.id,
     version: props.version,
-    checkItems: [_checkItems],
+    checkItems: [_checkItems]
   }
   props.api(params).then((res) => {
     show.value = false
@@ -346,15 +346,15 @@ const saveClick = () => {
 
 const switchChange = () => {
   // 计算是否有任何损坏类型为异常
-  let hasUnusual = false;
+  let hasUnusual = false
   for (let i = 0; i < popupObj.damagedTypeList.length; i++) {
     if (popupObj.damagedTypeList[i].isUnusual) {
-      hasUnusual = true;
-      break;
+      hasUnusual = true
+      break
     }
   }
   // 当有异常或已有异常描述或已有异常图片时，允许编辑
-  popupInputDisabled.value = !(hasUnusual || popupObj.abnormalDesc || (popupObj.abnormalUrlList && popupObj.abnormalUrlList.length > 0));
+  popupInputDisabled.value = !(hasUnusual || popupObj.abnormalDesc || (popupObj.abnormalUrlList && popupObj.abnormalUrlList.length > 0))
 }
 </script>
 

@@ -46,6 +46,7 @@ const router = createRouter({
           component: () => import('../views/pdi/ListView.vue'),
           meta: {
             title: '门店整车PDI',
+            hideHeader: false,
             keepAlive: true
           }
         },
@@ -55,6 +56,17 @@ const router = createRouter({
           component: () => import('../views/pdi/DetailView.vue'),
           meta: {
             title: '门店整车PDI',
+            hideHeader: false,
+            keepAlive: false
+          }
+        },
+        {
+          path: '/pdi/search',
+          name: 'PdiSearch',
+          component: () => import('../views/pdi/SearchPage.vue'),
+          meta: {
+            title: 'PDI搜索',
+            hideHeader: true, // 隐藏默认导航栏，使用自定义头部
             keepAlive: false
           }
         },
@@ -84,8 +96,15 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const globalStore = useGlobalStore()
   // 优先使用路由元信息中的标题
-  globalStore.setTitle(to.meta.title || '')
-  document.title = to.meta.title || ''
+  // 注意：如果 hideHeader 为 true，则不设置标题（由页面自行处理，如搜索页面）
+  if (!to.meta?.hideHeader) {
+    globalStore.setTitle(to.meta.title || '')
+    document.title = to.meta.title || ''
+  } else {
+    // 隐藏头部的页面（如搜索页）清空标题
+    globalStore.setTitle('')
+    document.title = to.meta.title || ''
+  }
 
   next()
 })

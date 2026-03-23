@@ -81,7 +81,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, defineProps, defineEmits, watch, onMounted } from 'vue'
+import { ref, reactive, watch, onMounted } from 'vue'
 import { showFailToast, showImagePreview } from 'vant'
 import { getAppImg } from '@/libs/utils/nativeFn'
 
@@ -90,20 +90,20 @@ const props = defineProps({
     type: Object,
     default: () => {
       return {}
-    },
+    }
   },
   needSubmit: {
     type: Boolean,
-    default: false,
+    default: false
   },
   version: {
     type: String || Number,
-    default: '',
+    default: ''
   },
   id: {
     type: String || Number,
-    default: '',
-  },
+    default: ''
+  }
 })
 
 const emit = defineEmits(['submitInner'])
@@ -123,9 +123,9 @@ const clickIndex = ref()
 
 const switchChange = (_secondCheckItemItem, _firstIndex) => {
   // 检查该组下是否有任何子项为异常
-  const hasUnusual = _secondCheckItemItem.checkItems.some(item => item.isUnusual);
+  const hasUnusual = _secondCheckItemItem.checkItems.some(item => item.isUnusual)
   // 如果有异常或已有异常说明或已有异常图片，则允许编辑
-  _secondCheckItemItem.isInputDisabled = !(hasUnusual || _secondCheckItemItem.abnormalDesc || (_secondCheckItemItem.abnormalUrlList && _secondCheckItemItem.abnormalUrlList.length > 0));
+  _secondCheckItemItem.isInputDisabled = !(hasUnusual || _secondCheckItemItem.abnormalDesc || (_secondCheckItemItem.abnormalUrlList && _secondCheckItemItem.abnormalUrlList.length > 0))
 }
 
 const showImg = (url) => {
@@ -153,7 +153,7 @@ watch(
   (newVal) => {
     // 使用深拷贝避免对象引用问题
     Object.assign(innerObj, {
-      ...deepClone(newVal),
+      ...deepClone(newVal)
     })
     Object.assign(tempObj, deepClone(newVal))
     innerObj.checkItems.map((checkItem) => {
@@ -171,8 +171,8 @@ watch(
     })
   },
   {
-    immediate: true,
-  },
+    immediate: true
+  }
 )
 
 watch(
@@ -206,8 +206,8 @@ watch(
           // 没有勾选异常，但如果有异常说明或异常图片，则清空相关内容
           if (checkItem.abnormalDesc || (checkItem.abnormalUrlList && checkItem.abnormalUrlList.length > 0)) {
             // 清空异常说明和图片
-            checkItem.abnormalDesc = '';
-            checkItem.abnormalUrlList = [];
+            checkItem.abnormalDesc = ''
+            checkItem.abnormalUrlList = []
           }
           checkItem.isUnusual = 0
         }
@@ -223,14 +223,14 @@ watch(
           isPdiSubmit: 0,
           id: props.id,
           version: props.version,
-          checkItems: [obj],
+          checkItems: [obj]
         }
         emit('submitInner', isSubmit, _data)
       } else {
         emit('submitInner', isSubmit, {})
       }
     }
-  },
+  }
 )
 </script>
 
