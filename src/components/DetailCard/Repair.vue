@@ -41,7 +41,7 @@
 </template>
 
 <script setup>
-import { ref, defineProps, watch, reactive, defineEmits } from 'vue'
+import { ref, watch, reactive } from 'vue'
 import { showFailToast, showImagePreview } from 'vant'
 
 const props = defineProps({

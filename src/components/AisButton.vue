@@ -4,7 +4,7 @@
 </template>
 
 <script setup>
-import { defineProps, reactive, useSlots, defineEmits } from 'vue'
+import { reactive, useSlots } from 'vue'
 
 const props = defineProps({
   type: {

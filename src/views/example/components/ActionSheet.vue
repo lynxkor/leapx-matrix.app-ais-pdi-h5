@@ -7,8 +7,8 @@ import { closeToast, showLoadingToast } from 'vant'
 const props = defineProps({
   show: {
     type: Boolean,
-    required: true
-  }
+    required: true,
+  },
 })
 
 // ========== 事件定义 ==========
@@ -21,7 +21,7 @@ const formData = ref({
   value2: '',
   value3: 'abc',
   value4: '',
-  value5: '静态文本'
+  value5: '静态文本',
 })
 const pattern = /\d{6}/
 
@@ -31,25 +31,26 @@ const innerShow = computed({
   set: (val) => {
     console.log('set')
     emit('update:show', val)
-  }
+  },
 })
 
 // ========== 表单校验逻辑 ==========
 const validators = {
   // 正则校验
   pattern: (val) => /1\d{10}/.test(val),
-  
+
   // 自定义校验提示
   message: (val) => `${val} 不合法，请重新输入`,
-  
+
   // 异步校验
-  async: (val) => new Promise((resolve) => {
-    showLoadingToast('验证中...')
-    setTimeout(() => {
-      closeToast()
-      resolve(val === '1234')
-    }, 1000)
-  })
+  async: (val) =>
+    new Promise((resolve) => {
+      showLoadingToast('验证中...')
+      setTimeout(() => {
+        closeToast()
+        resolve(val === '1234')
+      }, 1000)
+    }),
 }
 
 // ========== 事件处理 ==========
@@ -58,12 +59,15 @@ const handleCancel = () => {
 }
 
 const handleConfirm = () => {
-  formRef.value.validate().then((res) => {
-    console.log('success', res)
-    emit('confirm')
-  }).catch((err) => {
-    console.log('failed', err)
-  })
+  formRef.value
+    .validate()
+    .then((res) => {
+      console.log('success', res)
+      emit('confirm')
+    })
+    .catch((err) => {
+      console.log('failed', err)
+    })
 }
 
 const onFailed = (errorInfo) => {
@@ -109,12 +113,7 @@ const onFailed = (errorInfo) => {
               placeholder="异步函数校验"
               :rules="[{ validator: validators.async, message: '请输入正确内容' }]"
             />
-            <van-field
-              v-model="formData.value5"
-              label="文本5"
-              name="text5"
-              readonly
-            />
+            <van-field v-model="formData.value5" label="文本5" name="text5" readonly />
           </van-cell-group>
         </van-form>
       </div>
@@ -130,7 +129,7 @@ const onFailed = (errorInfo) => {
 .m-example-action-sheet {
   position: relative;
   height: 70vh;
-  
+
   .g-btns {
     position: absolute;
     width: 100%;
