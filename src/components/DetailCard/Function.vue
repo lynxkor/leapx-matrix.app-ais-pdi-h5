@@ -72,7 +72,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, defineProps, defineEmits, watch, onMounted } from 'vue'
+import { ref, reactive, watch, onMounted } from 'vue'
 import { showFailToast, showImagePreview } from 'vant'
 import { getAppImg } from '@/libs/utils/nativeFn'
 
@@ -81,20 +81,20 @@ const props = defineProps({
     type: Object,
     default: () => {
       return {}
-    },
+    }
   },
   lastSubmit: {
     type: Boolean,
-    default: false,
+    default: false
   },
   version: {
     type: String || Number,
-    default: '',
+    default: ''
   },
   id: {
     type: String || Number,
-    default: '',
-  },
+    default: ''
+  }
 })
 
 const emit = defineEmits(['submitFunction'])
@@ -138,7 +138,7 @@ watch(
   () => props.checkItems,
   (newVal) => {
     Object.assign(innerObj, {
-      ...deepClone(newVal),
+      ...deepClone(newVal)
     })
     innerObj.checkItems.map((checkItem) => {
       checkItem.isUnusual = Boolean(checkItem.isUnusual)
@@ -149,8 +149,8 @@ watch(
     })
   },
   {
-    immediate: true,
-  },
+    immediate: true
+  }
 )
 
 watch(
@@ -175,8 +175,8 @@ watch(
           // 没有勾选异常，但如果有异常说明或异常图片，则清空相关内容
           if (checkItem.abnormalDesc || (checkItem.abnormalUrlList && checkItem.abnormalUrlList.length > 0)) {
             // 清空异常说明和图片
-            checkItem.abnormalDesc = '';
-            checkItem.abnormalUrlList = [];
+            checkItem.abnormalDesc = ''
+            checkItem.abnormalUrlList = []
           }
           checkItem.isUnusual = 0
         }
@@ -190,7 +190,7 @@ watch(
           isPdiSubmit: 1,
           id: props.id,
           version: props.version,
-          checkItems: [obj],
+          checkItems: [obj]
         }
 
         emit('submitFunction', true, _data)
@@ -198,7 +198,7 @@ watch(
         emit('submitFunction', false, {})
       }
     }
-  },
+  }
 )
 </script>
 
