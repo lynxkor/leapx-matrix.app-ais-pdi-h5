@@ -1,4 +1,4 @@
-import { get, post, postJson } from './request'
+import { post } from './request'
 
 const prefix = 'vehstock/app/store/vehicleAbnormalRecord'
 

@@ -24,7 +24,7 @@
             <!-- 车系标题 -->
             <div class="series-header">
               <span class="series-name">{{ item.seriesName }}</span>
-              <span class="series-total">[ {{ getTotal(item.detailList) }} 辆 ]</span>
+              <span class="series-total">[ {{ item.available }} 辆 ]</span>
               <van-icon name="information-o" class="info-icon" />
             </div>
 
@@ -49,11 +49,11 @@
               @click="onRowClick(detail)"
             >
               <div class="td model-name">{{ detail.modelName }}</div>
-              <div class="td">{{ detail.transitQty || 0 }}</div>
-              <div class="td">{{ detail.stockQty || 0 }}</div>
-              <div class="td">{{ detail.reservedQty || 0 }}</div>
-              <div class="td">{{ detail.lockedQty || 0 }}</div>
-              <div class="td available">{{ detail.availableQty || 0 }}</div>
+              <div class="td">{{ detail.onWay || 0 }}</div>
+              <div class="td">{{ detail.inStock || 0 }}</div>
+              <div class="td">{{ detail.reserved || 0 }}</div>
+              <div class="td">{{ detail.locked || 0 }}</div>
+              <div class="td available">{{ detail.available || 0 }}</div>
             </div>
           </div>
         </van-list>
@@ -210,7 +210,7 @@ export default {
     position: relative;
 
     &.active {
-      color: var(--leap-color-success);
+      color: var(--leap-color-primary);
       font-weight: 600;
 
       &::after {
@@ -221,7 +221,7 @@ export default {
         transform: translateX(-50%);
         width: 20px;
         height: 2px;
-        background: var(--leap-color-success);
+        background: var(--leap-color-primary);
       }
     }
   }
@@ -249,20 +249,20 @@ export default {
 
       font-size: 15px;
       font-weight: 600;
-      color: var(--leap-color-success);
+      color: var(--leap-color-primary);
     }
 
     .series-total {
 
       font-size: 14px;
       font-weight: 600;
-      color: var(--leap-color-success);
+      color: var(--leap-color-primary);
       margin-left: 4px;
     }
 
     .info-icon {
       font-size: 14px;
-      color: var(--leap-color-success);
+      color: var(--leap-color-primary);
       margin-left: 4px;
     }
   }
@@ -276,7 +276,7 @@ export default {
     .th {
 
       font-size: 12px;
-      color: var(--leap-color-default-light-2);
+      color: var(--leap-color-primary);
       text-align: center;
 
       &.model-name {
@@ -284,7 +284,7 @@ export default {
       }
 
       &.available {
-        color: var(--leap-color-success);
+        color: var(--leap-color-primary);
         font-weight: 500;
         display: flex;
         align-items: center;
@@ -327,7 +327,7 @@ export default {
       }
 
       &.available {
-        color: var(--leap-color-success);
+        color: var(--leap-color-primary);
         font-weight: 500;
       }
     }

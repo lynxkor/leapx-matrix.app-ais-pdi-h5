@@ -136,7 +136,6 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
-// @import '@/libs/assets/styles/variables.scss';
 .common-scroll-content {
   flex: 1;
   overflow-y: auto;

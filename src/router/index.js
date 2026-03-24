@@ -72,7 +72,7 @@ const router = createRouter({
         },
         {
           path: '/vehicleAbnormalRecord/list',
-          name: 'VehicleAbnormalRecordListView',
+          name: 'vehicleAbnormalRecordListView',
           component: () => import('../views/vehicleAbnormalRecord/ListView.vue'),
           meta: {
             title: '低电量车',
@@ -85,6 +85,15 @@ const router = createRouter({
           component: () => import('../views/storeVehicleInventory/ListView.vue'),
           meta: {
             title: '门店整车库存',
+            keepAlive: true
+          }
+        },
+        {
+          path: '/storeInventoryLedger/list',
+          name: 'storeInventoryLedgerListView',
+          component: () => import('../views/storeInventoryLedger/ListView.vue'),
+          meta: {
+            title: '门店整车台账',
             keepAlive: true
           }
         }
