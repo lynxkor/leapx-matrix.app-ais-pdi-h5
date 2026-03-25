@@ -19,13 +19,13 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
-    },
+    }
   },
   css: {
     preprocessorOptions: {
       scss: {
-        additionalData: `@import "@/libs/assets/styles/variables.scss";`
+        additionalData: `@use "@/libs/assets/styles/variables.scss" as *;`
       }
     }
-  },
+  }
 })

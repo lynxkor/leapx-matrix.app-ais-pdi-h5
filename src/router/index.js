@@ -96,6 +96,24 @@ const router = createRouter({
             title: '门店整车台账',
             keepAlive: true
           }
+        },
+        {
+          path: '/vehicleVdcInventoryStatistics/list',
+          name: 'vehicleVdcInventoryStatisticsListView',
+          component: () => import('../views/vehicleVdcInventoryStatistics/ListView.vue'),
+          meta: {
+            title: '厂端整车库存',
+            keepAlive: true
+          }
+        },
+        {
+          path: '/vehicleVdcInventoryStatistics/search',
+          name: 'VehicleVdcInventorySearch',
+          component: () => import('../views/vehicleVdcInventoryStatistics/SearchPage.vue'),
+          meta: {
+            title: '搜索',
+            keepAlive: false
+          }
         }
       ]
     }

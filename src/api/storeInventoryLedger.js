@@ -11,7 +11,7 @@ export function getList(data) {
 }
 
 /**
- * 门店库存台账生成在库PDI单
+ * 门店库存台账生成在库 PDI 单
  * @param {Object} data
  */
 export function generatePdi(data) {

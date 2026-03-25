@@ -70,108 +70,102 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, reactive, onMounted, nextTick } from 'vue'
 import { getList } from '@/api/storeVehicleInventory'
 
-export default {
-  name: 'StoreVehicleInventoryListView',
+defineOptions({
+  name: 'StoreVehicleInventoryListView'
+})
 
-  data() {
-    return {
-      dataList: [],
-      loading: false,
-      finished: false,
-      refreshing: false,
-      showQuestion: false,
-      currentSeriesIndex: 0,
-      requestData: {
-        pageNum: 1,
-        pageSize: 100
-      }
-    }
-  },
-  created() {
-    this.fetchData()
-  },
+const dataList = ref([])
+const loading = ref(false)
+const finished = ref(false)
+const refreshing = ref(false)
+const showQuestion = ref(false)
+const currentSeriesIndex = ref(0)
 
-  methods: {
-    // 获取数据
-    fetchData() {
-      getList(this.requestData)
-        .then(res => {
-          console.log('res', res)
-          if (res.code === 200) {
-            const data = res.data
-            // 兼容不同的返回字段
-            const list = data || []
+const requestData = reactive({
+  pageNum: 1,
+  pageSize: 100
+})
 
-            if (this.refreshing) {
-              this.dataList = list
-            } else {
-              this.dataList = this.dataList.concat(list)
-            }
+// 获取数据
+const fetchData = () => {
+  getList(requestData)
+    .then((res) => {
+      console.log('res', res)
+      if (res.code === 200) {
+        const data = res.data
+        // 兼容不同的返回字段
+        const list = data || []
 
-            // 判断是否加载完成
-            const current = data.current || data.pageNum || 1
-            const pageSize = data.pageSize || this.requestData.pageSize || 100
-            const total = data.total || 0
-
-            if (total === 0 || current * pageSize >= total) {
-              this.finished = true
-            } else {
-              this.requestData.pageNum = current + 1
-              this.finished = false
-            }
-
-            this.loading = false
-            this.refreshing = false
-          }
-        })
-        .catch(err => {
-          console.log(err)
-          this.loading = false
-          this.refreshing = false
-        })
-    },
-
-    onRefresh() {
-      this.refreshing = true
-      this.finished = false
-      this.requestData.pageNum = 1
-      this.fetchData()
-    },
-
-    onLoad() {
-      if (!this.finished && !this.loading) {
-        this.fetchData()
-      }
-    },
-
-    // 计算总数
-    getTotal(detailList) {
-      if (!detailList || detailList.length === 0) return 0
-      return detailList.reduce((sum, item) => sum + (item.availableQty || 0), 0)
-    },
-
-    // 滚动到指定车系
-    scrollToSeries(index) {
-      this.currentSeriesIndex = index
-      this.$nextTick(() => {
-        const refName = 'series-' + index
-        const el = this.$refs[refName] && this.$refs[refName][0]
-        if (el) {
-          el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        if (refreshing.value) {
+          dataList.value = list
+        } else {
+          dataList.value = dataList.value.concat(list)
         }
-      })
-    },
 
-    // 行点击事件
-    onRowClick(detail) {
-      console.log('点击行:', detail)
-      // this.$router.push({ path: '/detail', query: { vin: detail.vin } })
-    }
+        // 判断是否加载完成
+        const current = data.current || data.pageNum || 1
+        const pageSize = data.pageSize || requestData.pageSize || 100
+        const total = data.total || 0
+
+        if (total === 0 || current * pageSize >= total) {
+          finished.value = true
+        } else {
+          requestData.pageNum = current + 1
+          finished.value = false
+        }
+
+        loading.value = false
+        refreshing.value = false
+      }
+    })
+    .catch((err) => {
+      console.log(err)
+      loading.value = false
+      refreshing.value = false
+    })
+}
+
+const onRefresh = () => {
+  refreshing.value = true
+  finished.value = false
+  requestData.pageNum = 1
+  fetchData()
+}
+
+const onLoad = () => {
+  if (!finished.value && !loading.value) {
+    fetchData()
   }
 }
+
+// 滚动到指定车系
+const scrollToSeries = (index) => {
+  currentSeriesIndex.value = index
+  nextTick(() => {
+    const refName = 'series-' + index
+    const el = refs.value[refName]
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  })
+}
+
+// 行点击事件
+const onRowClick = (detail) => {
+  console.log('点击行:', detail)
+  // router.push({ path: '/detail', query: { vin: detail.vin } })
+}
+
+// 存储 ref 的對象
+const refs = ref({})
+
+onMounted(() => {
+  fetchData()
+})
 </script>
 
 <style lang="scss" scoped>
