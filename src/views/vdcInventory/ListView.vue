@@ -2,7 +2,7 @@
   <filter-header
     ref="filterHeaderRef"
     :placeholder="headerPlaceholder"
-    :search-page-route="'VehicleVdcInventorySearch'"
+    :search-page-route="'VdcInventorySearch'"
     @search="headerSearch"
     :filterList="searchList"
     @filterSearch="filterSearch"
@@ -72,7 +72,7 @@ import { reactive, ref, onMounted, onActivated, onDeactivated, nextTick } from '
 import FilterHeader from '@/libs/components/FilterHeader.vue'
 import RefreshList from '@/libs/components/RefreshList.vue'
 
-import { getList } from '@/api/vehicleVdcInventoryStatistics'
+import { getList } from '@/api/vdcInventory'
 import {
   getVehicleSeriesList,
   getVehicleModelList,

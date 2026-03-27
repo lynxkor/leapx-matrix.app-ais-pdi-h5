@@ -1,4 +1,13 @@
 <template>
+  <filter-header
+    ref="filterHeaderRef"
+    :placeholder="headerPlaceholder"
+    :search-page-route="'VehicleInventorySearch'"
+    @search="headerSearch"
+    :filterList="searchList"
+    @filterSearch="filterSearch"
+    :showSort="false"
+  />
   <div class="list-container">
     <!-- 顶部横向滚动导航 - 固定不动 -->
     <div class="series-nav-scroll">
@@ -10,6 +19,10 @@
       >
         {{ item.seriesName }}
       </button>
+      <!-- 跳转到库存台账按钮 -->
+      <button class="nav-btn ledger-btn" @click="goToInventoryLedger">
+        查看库存台账 <van-icon name="arrow" />
+      </button>
     </div>
 
     <div class="common-scroll-content">
@@ -20,7 +33,7 @@
           finished-text="没有更多了"
           @load="onLoad"
         >
-          <div v-for="(item, index) in dataList" :key="index" class="series-card" :ref="'series-' + index">
+          <div v-for="(item, index) in dataList" :key="index" :ref="(el) => setRef(el, index)" class="series-card">
             <!-- 车系标题 -->
             <div class="series-header">
               <span class="series-name">{{ item.seriesName }}</span>
@@ -46,7 +59,7 @@
               v-for="(detail, detailIndex) in item.detailList"
               :key="detailIndex"
               class="table-row"
-              @click="onRowClick(detail)"
+              @click="onRowClick(detail, item)"
             >
               <div class="td model-name">{{ detail.modelName }}</div>
               <div class="td">{{ detail.onWay || 0 }}</div>
@@ -72,11 +85,18 @@
 
 <script setup>
 import { ref, reactive, onMounted, nextTick } from 'vue'
-import { getList } from '@/api/storeVehicleInventory'
+import { useRouter } from 'vue-router'
+import FilterHeader from '@/libs/components/FilterHeader.vue'
+import { getList } from '@/api/vehicleInventory'
 
 defineOptions({
-  name: 'StoreVehicleInventoryListView'
+  name: 'VehicleInventoryListView'
 })
+
+const router = useRouter()
+const filterHeaderRef = ref(null)
+const headerPlaceholder = ref('搜索车系/车型')
+const searchList = ref([])
 
 const dataList = ref([])
 const loading = ref(false)
@@ -146,22 +166,53 @@ const onLoad = () => {
 const scrollToSeries = (index) => {
   currentSeriesIndex.value = index
   nextTick(() => {
-    const refName = 'series-' + index
-    const el = refs.value[refName]
+    const el = refs.value['series-' + index]
     if (el) {
       el.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }
   })
 }
 
-// 行点击事件
-const onRowClick = (detail) => {
-  console.log('点击行:', detail)
-  // router.push({ path: '/detail', query: { vin: detail.vin } })
+// 行点击事件 - 跳转到库存台账并带上车系和车型参数
+const onRowClick = (detail, seriesItem) => {
+  router.push({
+    path: '/inventoryLedger/list',
+    query: {
+      seriesId: seriesItem.id,
+      seriesName: seriesItem.seriesName,
+      modelName: detail.modelName
+    }
+  })
+}
+
+// 跳转到库存台账页面
+const goToInventoryLedger = () => {
+  router.push({
+    path: '/inventoryLedger/list'
+  })
 }
 
 // 存储 ref 的對象
 const refs = ref({})
+
+// 设置 ref
+const setRef = (el, index) => {
+  if (el) {
+    refs.value['series-' + index] = el
+  }
+}
+
+// 搜索处理
+const headerSearch = (row) => {
+  console.log('搜索:', row.searchValue)
+  // 这里可以添加搜索逻辑，目前由 SearchPage 处理
+}
+
+// 筛选处理
+const filterSearch = (obj) => {
+  console.log('筛选:', obj)
+  // 这里可以添加筛选逻辑
+}
 
 onMounted(() => {
   fetchData()
@@ -169,12 +220,11 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
-// @import '@/libs/assets/styles/variables.scss';
-
 .list-container {
   display: flex;
   flex-direction: column;
   height: 100%;
+  padding-top: 10px; // FilterHeader 高度
 }
 
 .series-nav-scroll {
@@ -217,6 +267,19 @@ onMounted(() => {
         height: 2px;
         background: var(--leap-color-primary);
       }
+    }
+  }
+
+  .ledger-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--leap-color-primary);
+    font-weight: 500;
+    margin-left: 8px;
+
+    :deep(.van-icon) {
+      font-size: 12px;
     }
   }
 }

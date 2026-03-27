@@ -2,6 +2,7 @@
   <filter-header
     ref="filterHeaderRef"
     :placeholder="headerPlaceholder"
+    :search-page-route="'InventoryLedgerSearch'"
     @search="headerSearch"
     :filterList="searchList"
     @filterSearch="filterSearch"
@@ -48,20 +49,21 @@
 
 <script setup>
 import { ref, reactive, watch, onMounted, onActivated, onDeactivated, nextTick } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import FilterHeader from '@/libs/components/FilterHeader.vue'
 import RefreshList from '@/libs/components/RefreshList.vue'
 import ListItem from '@/components/ListItem.vue'
 import AisButton from '@/components/AisButton.vue'
 
-import { getList } from '@/api/storeInventoryLedger'
+import { getList } from '@/api/inventoryLedger'
 import { getVehicleSeriesList, getVehicleModelList, getOwnerTree, storePage } from '@/libs/api/common'
 
 defineOptions({
-  name: 'StoreInventoryLedgerListView'
+  name: 'InventoryLedgerListView'
 })
 
 const router = useRouter()
+const route = useRoute()
 
 const filterHeaderRef = ref(null)
 const headerPlaceholder = ref('搜索 VIN/车架号')
@@ -195,6 +197,19 @@ onMounted(() => {
   storePage1()
 })
 
+// 检查路由参数并处理（从 vehicleInventory 跳转过来）
+const checkRouteParams = () => {
+  const { seriesId, modelName } = route.query
+  if (seriesId) {
+    // 设置车系筛选
+    requestData.data.seriesIdList = [seriesId]
+    requestData.data.pageNum = 1
+    dataList.value = []
+    // 触发车系变更回调以加载车型列表
+    changeList([seriesId], modelName)
+  }
+}
+
 const headerSearch = (row) => {
   requestData.data.vinLike = row.searchValue
   requestData.data.pageNum = 1
@@ -288,6 +303,8 @@ const getVehicle = () => {
           })
         })
         searchList.value[1].options = arr
+        // 车系列表加载完成后，检查路由参数
+        checkRouteParams()
       } else {
         searchList.value[1].options = []
       }
@@ -297,7 +314,7 @@ const getVehicle = () => {
     })
 }
 
-const changeList = (res) => {
+const changeList = (res, modelName) => {
   if (res.length) {
     const data = {
       seriesIdList: res,
@@ -316,6 +333,28 @@ const changeList = (res) => {
             tempModelIdList.value.push(item.id)
           })
           searchList.value[2].options = arr
+
+          // 如果有 modelName 参数，查找并设置车型筛选
+          if (modelName && arr.length > 0) {
+            const targetModel = arr.find((item) => item.label === modelName)
+            if (targetModel) {
+              // 设置车型筛选
+              if (filterHeaderRef.value) {
+                filterHeaderRef.value.setFilterValue('modelIdList', [targetModel.value])
+              }
+              requestData.data.modelIdList = [targetModel.value]
+            }
+          }
+
+          // 设置车系筛选
+          if (filterHeaderRef.value) {
+            filterHeaderRef.value.setFilterValue('seriesIdList', res)
+          }
+
+          // 触发查询
+          requestData.data.pageNum = 1
+          dataList.value = []
+          requestData.data = { ...requestData.data }
         }
       })
       .catch(() => {
@@ -339,7 +378,7 @@ const setData = (res) => {
 
 const generatePdiClick = (item) => {
   router.push({
-    path: '/storeInventoryLedger/detail',
+    path: '/inventoryLedger/detail',
     query: {
       id: item.id,
       vin: item.vin

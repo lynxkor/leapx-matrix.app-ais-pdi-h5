@@ -1,6 +1,7 @@
 <template>
   <filter-header
     :placeholder="headerPlaceholder"
+    :search-page-route="'AbnormalRecordSearch'"
     @search="headerSearch"
     :filterList="searchList"
     @filterSearch="filterSearch"
@@ -67,7 +68,7 @@ defineOptions({
 import FilterHeader from '@/libs/components/FilterHeader.vue'
 import RefreshList from '@/libs/components/RefreshList.vue'
 
-import { getList } from '@/api/vehicleAbnormalRecord'
+import { getList } from '@/api/abnormalRecord'
 
 const headerPlaceholder = ref('请输入车辆 VIN 后六位')
 const searchList = ref([]) // 暂无筛选项

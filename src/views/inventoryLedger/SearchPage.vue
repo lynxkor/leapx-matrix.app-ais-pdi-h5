@@ -57,10 +57,11 @@
 import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useGlobalStore } from '@/stores/global'
-import { getList, getOwnerTree } from '@/api/storeInventoryLedger'
+import { getList } from '@/api/inventoryLedger'
 import { showToast } from 'vant'
 import ListItem from '@/components/ListItem.vue'
 import AisButton from '@/components/AisButton.vue'
+import { getOwnerTree } from '@/libs/api/common'
 
 const route = useRoute()
 const router = useRouter()
@@ -79,7 +80,7 @@ const hasSearched = ref(false)
 const resourceBtnList = ref([])
 
 // 页面加载时
-onMounted(async () => {
+onMounted(async() => {
   globalStore.setTitle('')
   getOwnerTreeList()
 
@@ -102,7 +103,7 @@ onMounted(() => {
         localSearchValue.value = globalStore.searchValue
         handleSearch(globalStore.searchValue)
       }
-    },
+    }
   )
 })
 
@@ -133,7 +134,7 @@ const onLocalSearch = (val) => {
 }
 
 // 搜索处理
-const handleSearch = async (keyword) => {
+const handleSearch = async(keyword) => {
   if (!keyword) return
 
   searchLoading.value = true
@@ -144,7 +145,7 @@ const handleSearch = async (keyword) => {
     const searchParams = {
       vinLike: keyword,
       pageNum: 1,
-      pageSize: 100,
+      pageSize: 100
     }
 
     const res = await getList(searchParams)
@@ -165,11 +166,11 @@ const handleSearch = async (keyword) => {
 // 生成 PDI 点击
 const generatePdiClick = (item) => {
   router.push({
-    path: '/storeInventoryLedger/detail',
+    path: '/inventoryLedger/detail',
     query: {
       id: item.id,
-      vin: item.vin,
-    },
+      vin: item.vin
+    }
   })
 }
 </script>
