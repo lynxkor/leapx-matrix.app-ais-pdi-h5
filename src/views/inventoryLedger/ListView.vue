@@ -282,7 +282,7 @@ const handleSearchChange = (obj) => {
 }
 // 查询当前用户拥有的所有资源列表
 const getOwnerTreeList = () => {
-  getOwnerTree({ resourceTag: 'AISMC-storeInventoryLedger', resourceType: 'APP_SIDE' })
+  getOwnerTree({ resourceTag: 'AISVS100004', resourceType: 'APP_SIDE' })
     .then((res) => {
       res.data.forEach((item) => {
         resourceBtnList.value.push(item.resourceTag)
