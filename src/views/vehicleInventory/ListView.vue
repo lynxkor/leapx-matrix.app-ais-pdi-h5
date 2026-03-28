@@ -1,5 +1,5 @@
 <template>
-  <filter-header
+  <!-- <filter-header
     ref="filterHeaderRef"
     :placeholder="headerPlaceholder"
     :search-page-route="'VehicleInventorySearch'"
@@ -7,7 +7,7 @@
     :filterList="searchList"
     @filterSearch="filterSearch"
     :showSort="false"
-  />
+  /> -->
   <div class="list-container">
     <!-- 顶部横向滚动导航 - 固定不动 -->
     <div class="series-nav-scroll">
@@ -86,7 +86,7 @@
 <script setup>
 import { ref, reactive, onMounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
-import FilterHeader from '@/libs/components/FilterHeader.vue'
+// import FilterHeader from '@/libs/components/FilterHeader.vue'
 import { getList } from '@/api/vehicleInventory'
 
 defineOptions({
@@ -94,9 +94,9 @@ defineOptions({
 })
 
 const router = useRouter()
-const filterHeaderRef = ref(null)
-const headerPlaceholder = ref('搜索车系/车型')
-const searchList = ref([])
+// const filterHeaderRef = ref(null)
+// const headerPlaceholder = ref('搜索车系/车型')
+// const searchList = ref([])
 
 const dataList = ref([])
 const loading = ref(false)
@@ -203,16 +203,16 @@ const setRef = (el, index) => {
 }
 
 // 搜索处理
-const headerSearch = (row) => {
-  console.log('搜索:', row.searchValue)
-  // 这里可以添加搜索逻辑，目前由 SearchPage 处理
-}
+// const headerSearch = (row) => {
+//   console.log('搜索:', row.searchValue)
+//   // 这里可以添加搜索逻辑，目前由 SearchPage 处理
+// }
 
 // 筛选处理
-const filterSearch = (obj) => {
-  console.log('筛选:', obj)
-  // 这里可以添加筛选逻辑
-}
+// const filterSearch = (obj) => {
+//   console.log('筛选:', obj)
+//   // 这里可以添加筛选逻辑
+// }
 
 onMounted(() => {
   fetchData()

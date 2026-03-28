@@ -256,7 +256,6 @@ const filterSearch = (obj) => {
 }
 const storePage1 = (storeName) => {
   storePage({ isWholesaleSale: true, storeName }).then(res => {
-    console.log('res', res)
     if (res.code === 200) {
       const arr = []
       res.data.records.map((item) => {

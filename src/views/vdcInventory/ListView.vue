@@ -25,13 +25,13 @@
       :has-no-data="
         dataList.length === 0 &&
         requestData.data &&
-        (requestData.data.seriesIdList?.length ||
-          requestData.data.modelIdList?.length ||
-          requestData.data.yearTypeList?.length ||
-          requestData.data.exteriorList?.length ||
-          requestData.data.interiorList?.length ||
-          requestData.data.wheelHubList?.length ||
-          requestData.data.optionPackageList?.length ||
+        (requestData.data.seriesIds?.length ||
+          requestData.data.modelIds?.length ||
+          requestData.data.yearTypeIds?.length ||
+          requestData.data.exteriorIds?.length ||
+          requestData.data.interiorIds?.length ||
+          requestData.data.wheelHubIds?.length ||
+          requestData.data.optionPackageIds?.length ||
           requestData.data.materialsDescLike ||
           requestData.data.materialsCodeLike)
       "
@@ -92,7 +92,7 @@ const headerPlaceholder = ref('搜索物料描述、物料编码')
 const searchList = ref([
   {
     title: '车系',
-    key: 'seriesIdList',
+    key: 'seriesIds',
     default: [],
     nodeType: 'multiple',
     options: [],
@@ -100,7 +100,7 @@ const searchList = ref([
   },
   {
     title: '车型',
-    key: 'modelIdList',
+    key: 'modelIds',
     default: [],
     nodeType: 'multiple',
     options: [],
@@ -108,7 +108,7 @@ const searchList = ref([
   },
   {
     title: '年款',
-    key: 'yearTypeList',
+    key: 'yearTypeIds',
     default: [],
     nodeType: 'multiple',
     options: [],
@@ -116,7 +116,7 @@ const searchList = ref([
   },
   {
     title: '外观',
-    key: 'exteriorList',
+    key: 'exteriorIds',
     default: [],
     nodeType: 'multiple',
     options: [],
@@ -124,7 +124,7 @@ const searchList = ref([
   },
   {
     title: '内饰',
-    key: 'interiorList',
+    key: 'interiorIds',
     default: [],
     nodeType: 'multiple',
     options: [],
@@ -132,7 +132,7 @@ const searchList = ref([
   },
   {
     title: '轮毂',
-    key: 'wheelHubList',
+    key: 'wheelHubIds',
     default: [],
     nodeType: 'multiple',
     options: [],
@@ -140,7 +140,7 @@ const searchList = ref([
   },
   {
     title: '选装包',
-    key: 'optionPackageList',
+    key: 'optionPackageIds',
     default: [],
     nodeType: 'multiple',
     options: [],
@@ -150,13 +150,13 @@ const searchList = ref([
 const dataList = ref([])
 const requestData = reactive({
   data: {
-    seriesIdList: [],
-    modelIdList: [],
-    yearTypeList: [],
-    exteriorList: [],
-    interiorList: [],
-    wheelHubList: [],
-    optionPackageList: [],
+    seriesIds: [],
+    modelIds: [],
+    yearTypeIds: [],
+    exteriorIds: [],
+    interiorIds: [],
+    wheelHubIds: [],
+    optionPackageIds: [],
     materialsDescLike: '',
     materialsCodeLike: ''
   },
@@ -245,13 +245,13 @@ const headerSearch = (row) => {
 const resetFilterConditions = () => {
   requestData.data.materialsDescLike = ''
   requestData.data.materialsCodeLike = ''
-  requestData.data.seriesIdList = []
-  requestData.data.modelIdList = []
-  requestData.data.yearTypeList = []
-  requestData.data.exteriorList = []
-  requestData.data.interiorList = []
-  requestData.data.wheelHubList = []
-  requestData.data.optionPackageList = []
+  requestData.data.seriesIds = []
+  requestData.data.modelIds = []
+  requestData.data.yearTypeIds = []
+  requestData.data.exteriorIds = []
+  requestData.data.interiorIds = []
+  requestData.data.wheelHubIds = []
+  requestData.data.optionPackageIds = []
 
   if (filterHeaderRef.value) {
     filterHeaderRef.value.resetFilters()
@@ -263,13 +263,13 @@ const resetFilterConditions = () => {
 }
 
 const filterSearch = (obj) => {
-  requestData.data.seriesIdList = obj.seriesIdList
-  requestData.data.modelIdList = obj.modelIdList || []
-  requestData.data.yearTypeList = obj.yearTypeList || []
-  requestData.data.exteriorList = obj.exteriorList || []
-  requestData.data.interiorList = obj.interiorList || []
-  requestData.data.wheelHubList = obj.wheelHubList || []
-  requestData.data.optionPackageList = obj.optionPackageList || []
+  requestData.data.seriesIds = obj.seriesIds
+  requestData.data.modelIds = obj.modelIds || []
+  requestData.data.yearTypeIds = obj.yearTypeIds || []
+  requestData.data.exteriorIds = obj.exteriorIds || []
+  requestData.data.interiorIds = obj.interiorIds || []
+  requestData.data.wheelHubIds = obj.wheelHubIds || []
+  requestData.data.optionPackageIds = obj.optionPackageIds || []
 
   requestData.data.pageNum = 1
   dataList.value = []
@@ -303,7 +303,7 @@ const loadVehicleModels = (seriesIds) => {
     return
   }
   const data = {
-    seriesIdList: seriesIds,
+    seriesIds: seriesIds,
     pageSize: 200
   }
   getVehicleModelList(data)
@@ -396,6 +396,7 @@ const loadInteriors = () => {
 const loadWheelHubs = () => {
   getVehicleWheelHub({ pageSize: 200 })
     .then((res) => {
+      console.log('轮毂 API 响应:', res)
       if (res.code === 200) {
         const arr = []
         res.data.map((item) => {
@@ -404,12 +405,15 @@ const loadWheelHubs = () => {
             value: item.id
           })
         })
+        console.log('轮毂数据:', arr)
         searchList.value[5].options = arr
       } else {
+        console.log('轮毂 API 返回错误:', res)
         searchList.value[5].options = []
       }
     })
-    .catch(() => {
+    .catch((err) => {
+      console.log('轮毂 API 请求失败:', err)
       searchList.value[5].options = []
     })
 }
