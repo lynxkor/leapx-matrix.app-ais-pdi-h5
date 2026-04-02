@@ -30,39 +30,78 @@
       @setData="setData"
       @resetFilters="resetFilterConditions"
     >
-      <list-item v-for="(item, index) in dataList" :key="index" :dataItem="item">
-        <ais-button
-          type="primary"
-          plain
-          round
-          @click="generatePdiClick(item)"
-          v-show="
-            resourceBtnList.includes('AISMC-storeInventoryLedger-generatePdi') &&
-            item.vechicleStatus === 12
-          "
-          >生成在库 PDI 单</ais-button
-        >
-      </list-item>
+      <div v-for="(item, index) in dataList" :key="index" class="list-item-content">
+        <div class="card-header">
+          <div class="card-title-text">{{ item.vin }}</div>
+          <div class="card-tags">
+            <van-tag v-if="item.vechicleStatusLabel" type="primary">{{ item.vechicleStatusLabel }}</van-tag>
+            <van-tag v-if="item.reserved === 1" type="success">预留</van-tag>
+            <van-tag v-if="item.lockStatus === 1" type="warning">锁定</van-tag>
+          </div>
+        </div>
+        <div class="card-subtitle-text">
+          {{ item.materialsDesc || item.modelName }} | {{ item.exteriorName }} | {{ item.interiorName }}
+        </div>
+        <van-row class="card-info">
+          <van-col span="12" class="card-info-col">
+            <p class="card-info-title">基本车型：</p>
+            <p class="card-info-des">{{ item.modelName || '-' }}</p>
+          </van-col>
+          <van-col span="12" class="card-info-col">
+            <p class="card-info-title">是否预留：</p>
+            <p class="card-info-des">{{ item.reserved === 1 ? '是' : '否' }}</p>
+          </van-col>
+          <van-col span="12" class="card-info-col">
+            <p class="card-info-title">销售门店：</p>
+            <p class="card-info-des">{{ item.saleDealerName || '-' }}</p>
+          </van-col>
+          <van-col span="12" class="card-info-col">
+            <p class="card-info-title">交付门店：</p>
+            <p class="card-info-des">{{ item.deliveryDealerName || '-' }}</p>
+          </van-col>
+          <van-col span="12" class="card-info-col">
+            <p class="card-info-title">是否锁定：</p>
+            <p class="card-info-des">{{ item.lockStatus === 1 ? '未锁定' : '锁定' }}</p>
+          </van-col>
+          <van-col span="12" class="card-info-col">
+            <p class="card-info-title">入库仓库：</p>
+            <p class="card-info-des">{{ item.dealerWarehouseName || '-' }}</p>
+          </van-col>
+        </van-row>
+        <div class="btn-content">
+          <ais-button
+            type="primary"
+            plain
+            round
+            :loading="generatePdiLoading"
+            @click="generatePdiClick(item)"
+            v-show="
+              resourceBtnList.includes('AISMC-storeInventoryLedger-generatePdi') &&
+              item.vechicleStatus === 12
+            "
+            >生成在库 PDI 单</ais-button
+          >
+        </div>
+      </div>
     </refresh-list>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, watch, onMounted, onActivated, onDeactivated, nextTick } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { useRoute } from 'vue-router'
 import FilterHeader from '@/libs/components/FilterHeader.vue'
 import RefreshList from '@/libs/components/RefreshList.vue'
-import ListItem from '@/components/ListItem.vue'
 import AisButton from '@/components/AisButton.vue'
 
-import { getList } from '@/api/inventoryLedger'
+import { getList, generatePdi } from '@/api/inventoryLedger'
 import { getVehicleSeriesList, getVehicleModelList, getOwnerTree, storePage } from '@/libs/api/common'
+import { showFailToast } from 'vant'
 
 defineOptions({
   name: 'InventoryLedgerListView'
 })
 
-const router = useRouter()
 const route = useRoute()
 
 const filterHeaderRef = ref(null)
@@ -202,7 +241,7 @@ const checkRouteParams = () => {
   const { seriesId, modelName } = route.query
   if (seriesId) {
     // 设置车系筛选
-    requestData.data.seriesIdList = [seriesId]
+    requestData.data.seriesIds = [seriesId]
     requestData.data.pageNum = 1
     dataList.value = []
     // 触发车系变更回调以加载车型列表
@@ -220,8 +259,8 @@ const headerSearch = (row) => {
 const resetFilterConditions = () => {
   requestData.data.vinLike = ''
   requestData.data.vechicleStatus = ''
-  requestData.data.seriesIdList = []
-  requestData.data.modelIdList = []
+  requestData.data.seriesIds = []
+  requestData.data.modelIds = []
   requestData.data.saleOrgId = ''
   requestData.data.createTimeStart = ''
   requestData.data.createTimeEnd = ''
@@ -237,9 +276,9 @@ const resetFilterConditions = () => {
 
 const filterSearch = (obj) => {
   requestData.data.vechicleStatus = obj.vechicleStatus
-  requestData.data.seriesIdList = obj.seriesIdList
-  const _arr = obj.modelIdList.filter((item) => tempModelIdList.value.includes(item))
-  requestData.data.modelIdList = _arr
+  requestData.data.seriesIds = obj.seriesIdList
+  const _arr = obj.modelIds.filter((item) => tempModelIdList.value.includes(item))
+  requestData.data.modelIds = _arr
   requestData.data.saleOrgId = obj.saleOrgId
 
   if (obj.createTime && obj.createTime.length) {
@@ -281,8 +320,9 @@ const handleSearchChange = (obj) => {
 }
 // 查询当前用户拥有的所有资源列表
 const getOwnerTreeList = () => {
-  getOwnerTree({ resourceTag: 'AISVS100004', resourceType: 'APP_SIDE' })
+  getOwnerTree({ resourceTag: 'AISVS100005', resourceType: 'APP_SIDE' })
     .then((res) => {
+      console.log('getOwnerTree:', res)
       res.data.forEach((item) => {
         resourceBtnList.value.push(item.resourceTag)
       })
@@ -365,24 +405,42 @@ const changeList = (res, modelName) => {
 }
 
 const setData = (res) => {
-  console.log('set', res)
   if (res.isRefresh) {
     dataList.value = [...res.list]
   } else {
     dataList.value.push(...res.list)
   }
   needRefresh.value = false
-  console.log(dataList.value)
 }
 
+const generatePdiLoading = ref(false)
+
 const generatePdiClick = (item) => {
-  router.push({
-    path: '/inventoryLedger/detail',
-    query: {
-      id: item.id,
-      vin: item.vin
-    }
-  })
+  if (generatePdiLoading.value) return
+  generatePdiLoading.value = true
+  generatePdi(item.id)
+    .then((res) => {
+      generatePdiLoading.value = false
+      if (res.code === 200) {
+        // 成功后刷新列表 - 通过改变 api 引用来强制触发 watch
+        const currentApi = requestData.api
+        requestData.api = null
+        dataList.value = []
+        // 强制改变一个参数值来触发 watch
+        requestData.data.refreshFlag = Date.now()
+        nextTick(() => {
+          requestData.api = currentApi
+          requestData.data.pageNum = 1
+          requestData.data = { ...requestData.data }
+        })
+      } else {
+        showFailToast(res.message)
+      }
+    })
+    .catch((err) => {
+      console.error(err)
+      generatePdiLoading.value = false
+    })
 }
 
 watch(
@@ -403,6 +461,59 @@ watch(
     overflow-x: auto;
     height: 42px;
     overflow-y: hidden;
+  }
+}
+.list-item-content {
+  background: #ffffff;
+  padding: 12px;
+  border-radius: 7px;
+  margin-top: 12px;
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+  }
+  .card-title-text {
+    font-family: PingFang SC;
+    font-size: 16px;
+    font-weight: 500;
+    color: #191a1b;
+  }
+  .card-tags {
+    display: flex;
+    gap: 4px;
+  }
+  .card-subtitle-text {
+    font-family: PingFang SC;
+    font-size: 13px;
+    color: #545454;
+  }
+  .card-info {
+    box-sizing: border-box;
+    background: #fcfbfb;
+    margin-top: 8px;
+    padding-bottom: 8px;
+    .card-info-col {
+      font-family: PingFang SC;
+      font-size: 12px;
+      padding: 8px;
+      padding-bottom: 0;
+      .card-info-title {
+        color: #888888;
+        margin-bottom: 2px;
+      }
+      .card-info-des {
+        color: #545454;
+      }
+    }
+  }
+  .btn-content {
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
   }
 }
 </style>

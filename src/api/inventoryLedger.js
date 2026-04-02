@@ -1,4 +1,4 @@
-import { post } from './request'
+import { post, postJson } from './request'
 
 const prefix = 'vehstock/app/store/storeInventoryLedger'
 
@@ -15,5 +15,5 @@ export function getList(data) {
  * @param {Object} data
  */
 export function generatePdi(data) {
-  return post(prefix + '/generatePdi', data)
+  return postJson(prefix + '/generatePdi', data)
 }

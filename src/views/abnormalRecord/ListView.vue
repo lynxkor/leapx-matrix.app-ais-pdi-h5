@@ -3,8 +3,8 @@
     :placeholder="headerPlaceholder"
     :search-page-route="'AbnormalRecordSearch'"
     @search="headerSearch"
-    :filterList="searchList"
     @filterSearch="filterSearch"
+    :showFilter="false"
     :showSort="false"
   />
   <div class="common-scroll-content">
@@ -71,7 +71,6 @@ import RefreshList from '@/libs/components/RefreshList.vue'
 import { getList } from '@/api/abnormalRecord'
 
 const headerPlaceholder = ref('请输入车辆 VIN 后六位')
-const searchList = ref([]) // 暂无筛选项
 
 const dataList = ref([])
 const requestData = reactive({
