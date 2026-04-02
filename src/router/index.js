@@ -69,6 +69,81 @@ const router = createRouter({
             hideHeader: true, // 隐藏默认导航栏，使用自定义头部
             keepAlive: false
           }
+        },
+        {
+          path: '/abnormalRecord/list',
+          name: 'AbnormalRecordListView',
+          component: () => import('../views/abnormalRecord/ListView.vue'),
+          meta: {
+            title: '低电量车',
+            keepAlive: true
+          }
+        },
+        {
+          path: '/abnormalRecord/search',
+          name: 'AbnormalRecordSearch',
+          component: () => import('../views/abnormalRecord/SearchPage.vue'),
+          meta: {
+            title: '搜索',
+            hideHeader: true,
+            keepAlive: false
+          }
+        },
+        {
+          path: '/vehicleInventory/list',
+          name: 'VehicleInventoryListView',
+          component: () => import('../views/vehicleInventory/ListView.vue'),
+          meta: {
+            title: '门店整车库存',
+            keepAlive: true
+          }
+        },
+        {
+          path: '/vehicleInventory/search',
+          name: 'VehicleInventorySearch',
+          component: () => import('../views/vehicleInventory/SearchPage.vue'),
+          meta: {
+            title: '搜索',
+            hideHeader: true,
+            keepAlive: false
+          }
+        },
+        {
+          path: '/inventoryLedger/list',
+          name: 'InventoryLedgerListView',
+          component: () => import('../views/inventoryLedger/ListView.vue'),
+          meta: {
+            title: '门店整车台账',
+            keepAlive: true
+          }
+        },
+        {
+          path: '/inventoryLedger/search',
+          name: 'InventoryLedgerSearch',
+          component: () => import('../views/inventoryLedger/SearchPage.vue'),
+          meta: {
+            title: '搜索',
+            hideHeader: true,
+            keepAlive: false
+          }
+        },
+        {
+          path: '/vdcInventory/list',
+          name: 'VdcInventoryListView',
+          component: () => import('../views/vdcInventory/ListView.vue'),
+          meta: {
+            title: '厂端整车库存',
+            keepAlive: true
+          }
+        },
+        {
+          path: '/vdcInventory/search',
+          name: 'VdcInventorySearch',
+          component: () => import('../views/vdcInventory/SearchPage.vue'),
+          meta: {
+            title: '搜索',
+            keepAlive: false
+          }
         }
       ]
     }

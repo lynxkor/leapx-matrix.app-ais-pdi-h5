@@ -65,6 +65,7 @@
             class="textarea-content"
             v-model="popupObj.abnormalDesc"
             :disabled="popupInputDisabled"
+            :class="{ 'disabled-upload': popupInputDisabled }"
             rows="1"
             autosize
             type="textarea"
@@ -87,7 +88,7 @@
                 @click="deleteImg(0)"
               />
             </div>
-            <div class="upload-item" v-if="!popupObj.abnormalUrlList[0]" @click="uploadClick(0)">
+            <div class="upload-item" v-if="!popupObj.abnormalUrlList[0]" @click="uploadClick(0)" :class="{ 'disabled-upload': popupInputDisabled }">
               <svg class="icon upload-img" aria-hidden="true">
                 <use xlink:href="#icon-lxp-h5upload-mob"></use>
               </svg>
@@ -105,7 +106,12 @@
                 @click="deleteImg(1)"
               />
             </div>
-            <div class="upload-item" v-if="!popupObj.abnormalUrlList[1]" @click="uploadClick(1)">
+            <div
+              class="upload-item"
+              v-if="!popupObj.abnormalUrlList[1]"
+              @click="uploadClick(1)"
+              :class="{ 'disabled-upload': popupInputDisabled }"
+            >
               <svg class="icon upload-img" aria-hidden="true">
                 <use xlink:href="#icon-lxp-h5upload-mob"></use>
               </svg>
@@ -205,7 +211,11 @@ const showPop = (item) => {
       })
     )
   )
-  popupInputDisabled.value = !(item.isUnusual || item.abnormalDesc || (item.abnormalUrlList && item.abnormalUrlList.length > 0))
+  popupInputDisabled.value = !(
+    item.isUnusual ||
+    item.abnormalDesc ||
+    (item.abnormalUrlList && item.abnormalUrlList.length > 0)
+  )
   popupObj.damagedTypeList.map((damagedType) => {
     damagedType.isUnusual = Boolean(damagedType.isUnusual)
   })
@@ -257,7 +267,10 @@ const saveClick = () => {
   // return
   if (_count === 0) {
     // 没有勾选异常，如果有异常说明或异常图片，则提示用户清空
-    if (popupObj.abnormalDesc || (popupObj.abnormalUrlList && popupObj.abnormalUrlList.some(url => url))) {
+    if (
+      popupObj.abnormalDesc ||
+      (popupObj.abnormalUrlList && popupObj.abnormalUrlList.some((url) => url))
+    ) {
       // 使用现有对话框提示用户清空
       dialogObj.index = ''
       dialogObj.title = '提醒'
@@ -273,7 +286,7 @@ const saveClick = () => {
         // 创建新的 _checkItems 对象，使用清空后的数据
         const _checkItemsCleared = { ...deepClone(popupObj) }
         _checkItemsCleared.abnormalUrl = _checkItemsCleared.abnormalUrlList.join(',')
-        _checkItemsCleared.damagedTypeList.map(damagedType => {
+        _checkItemsCleared.damagedTypeList.map((damagedType) => {
           damagedType.isUnusual = Number(damagedType.isUnusual)
         })
         _checkItemsCleared.isUnusual = 0 // 确保清空后 isUnusual 为 0
@@ -354,7 +367,11 @@ const switchChange = () => {
     }
   }
   // 当有异常或已有异常描述或已有异常图片时，允许编辑
-  popupInputDisabled.value = !(hasUnusual || popupObj.abnormalDesc || (popupObj.abnormalUrlList && popupObj.abnormalUrlList.length > 0))
+  popupInputDisabled.value = !(
+    hasUnusual ||
+    popupObj.abnormalDesc ||
+    (popupObj.abnormalUrlList && popupObj.abnormalUrlList.length > 0)
+  )
 }
 </script>
 
@@ -537,5 +554,9 @@ const switchChange = () => {
   font-size: 14px;
   letter-spacing: 0.43px;
   color: #545454;
+}
+.disabled-upload {
+  opacity: 0.5;
+  pointer-events: none;
 }
 </style>

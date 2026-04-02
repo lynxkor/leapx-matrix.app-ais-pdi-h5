@@ -63,7 +63,7 @@
 import { onActivated, onDeactivated, reactive, nextTick } from 'vue'
 
 defineOptions({
-  name: 'PdiListView',
+  name: 'PdiListView'
 })
 
 import { ref, watch, onMounted } from 'vue'
@@ -88,8 +88,8 @@ const searchList = ref([
     nodeType: 'single',
     options: [
       { label: '入库PDI', value: '10' },
-      { label: '在库PDI', value: '20' },
-    ],
+      { label: '在库PDI', value: '20' }
+    ]
   },
   {
     title: '车系',
@@ -97,7 +97,7 @@ const searchList = ref([
     default: [],
     nodeType: 'multiple',
     options: [],
-    callBack: (res) => changeList(res),
+    callBack: (res) => changeList(res)
     // resetDic: { 'modelIdList': [] }
   },
   {
@@ -106,7 +106,7 @@ const searchList = ref([
     default: [],
     nodeType: 'multiple',
     options: [],
-    placeholder: '请先选择车系',
+    placeholder: '请先选择车系'
   },
   {
     title: '创建时间',
@@ -114,8 +114,8 @@ const searchList = ref([
     default: [],
     nodeType: 'day',
     columnsType: ['year', 'month', 'day'],
-    list: [],
-  },
+    list: []
+  }
 ])
 const tabList = ['入库PDI', 'PDI异常车辆', '在库PDI']
 const pdiAppQueryTypeList = [10, 20, 30]
@@ -130,9 +130,9 @@ const requestData = reactive({
     createTimeStart: '',
     createTimeEnd: '',
     pageNum: 1,
-    pageSize: 10,
+    pageSize: 10
   },
-  api: getPdiList,
+  api: getPdiList
 })
 const _tempModelIdList = ref([])
 
@@ -151,7 +151,7 @@ const dialogObj = {
   submitText: '确定',
   cancelText: '取消',
   submitFn: () => dialogSubmitFn(),
-  cancelFn: () => dialogCancelFn(),
+  cancelFn: () => dialogCancelFn()
 }
 
 const scrollEle = ref(null)
@@ -163,7 +163,7 @@ const getScrollContainer = () => {
 }
 
 // 保存当前滚动位置
-const saveScrollPosition = async () => {
+const saveScrollPosition = async() => {
   await nextTick() // 确保DOM更新完成
   // 使用 setTimeout 确保在下一个事件循环中获取元素尺寸
   setTimeout(() => {
@@ -175,7 +175,7 @@ const saveScrollPosition = async () => {
 }
 
 // 恢复滚动位置
-const restoreScrollPosition = async () => {
+const restoreScrollPosition = async() => {
   await nextTick() // 等待DOM更新完成
   const savedPosition = scrollPositions.value[active.value]
   // 延迟执行以确保内容已渲染
@@ -297,7 +297,7 @@ const getVehicle = () => {
         res.data.map((item) => {
           arr.push({
             label: item.name,
-            value: item.id,
+            value: item.id
           })
         })
         searchList.value[1].options = arr
@@ -314,7 +314,7 @@ const changeList = (res) => {
   if (res.length) {
     const data = {
       seriesIdList: res,
-      pageSize: 200,
+      pageSize: 200
     }
     _tempModelIdList.value = []
     getVehicleModelList(data)
@@ -324,7 +324,7 @@ const changeList = (res) => {
           res.data.map((item) => {
             arr.push({
               label: item.name,
-              value: item.id,
+              value: item.id
             })
             _tempModelIdList.value.push(item.id)
           })
@@ -357,7 +357,7 @@ const PDIBtnClick = (item) => {
   showDialog.value = true
 }
 
-const dialogSubmitFn = async () => {
+const dialogSubmitFn = async() => {
   await saveScrollPosition()
   setTimeout(() => {
     // 跳转到详情页
@@ -369,8 +369,8 @@ const dialogSubmitFn = async () => {
         id: dialogObj.id,
         vin: dialogObj.vin,
         code: dialogObj.code,
-        type,
-      },
+        type
+      }
     })
   }, 200)
 }
@@ -384,7 +384,7 @@ watch(
   (newVal) => {
     requestData.data.pdiAppQueryType = pdiAppQueryTypeList[newVal]
     requestData.data.pageNum = 1
-  },
+  }
 )
 </script>
 
