@@ -422,17 +422,14 @@ const generatePdiClick = (item) => {
     .then((res) => {
       generatePdiLoading.value = false
       if (res.code === 200) {
-        // 成功后刷新列表 - 通过改变 api 引用来强制触发 watch
-        const currentApi = requestData.api
-        requestData.api = null
-        dataList.value = []
-        // 强制改变一个参数值来触发 watch
-        requestData.data.refreshFlag = Date.now()
-        nextTick(() => {
-          requestData.api = currentApi
+        showFailToast('PDI执行成功')
+        setTimeout(() => {
+        // 成功后刷新列表 - 通过改变 refreshFlag 来触发 watch
+          dataList.value = []
+          requestData.data.refreshFlag = Date.now()
           requestData.data.pageNum = 1
           requestData.data = { ...requestData.data }
-        })
+        }, 500)
       } else {
         showFailToast(res.message)
       }
