@@ -10,8 +10,8 @@
     :showScan="true"
     @searchChange="handleSearchChange"
   />
-  <div class="tab-content">
-    <van-tabs v-model:active="active" sticky>
+  <div class="tab-content tab-content-ledger">
+    <van-tabs v-model:active="active" sticky scrollable>
       <van-tab v-for="(item, index) in tabList" :title="item" :key="index"></van-tab>
     </van-tabs>
   </div>
@@ -22,7 +22,7 @@
       :has-no-data="
         dataList.length === 0 &&
         requestData.data &&
-        (requestData.data.vechicleStatus ||
+        (requestData.data.storeInventoryLedgerTab ||
           requestData.data.seriesIdList?.length ||
           requestData.data.modelIdList?.length ||
           requestData.data.vinLike)
@@ -35,8 +35,7 @@
           <div class="card-title-text">{{ item.vin }}</div>
           <div class="card-tags">
             <van-tag v-if="item.vechicleStatusLabel" type="primary">{{ item.vechicleStatusLabel }}</van-tag>
-            <van-tag v-if="item.reserved === 1" type="success">预留</van-tag>
-            <van-tag v-if="item.lockStatus === 1" type="warning">锁定</van-tag>
+            <van-tag v-if="item.reservationStatusLabel" type="success">{{ item.reservationStatusLabel }}</van-tag>
           </div>
         </div>
         <div class="card-subtitle-text">
@@ -76,8 +75,7 @@
             :loading="generatePdiLoading"
             @click="generatePdiClick(item)"
             v-show="
-              resourceBtnList.includes('AISMC-storeInventoryLedger-generatePdi') &&
-              item.vechicleStatus === 12
+              resourceBtnList.includes('AISMC-storeInventoryLedger-generatePdi')
             "
             >生成在库 PDI 单</ais-button
           >
@@ -95,7 +93,7 @@ import RefreshList from '@/libs/components/RefreshList.vue'
 import AisButton from '@/components/AisButton.vue'
 
 import { getList, generatePdi } from '@/api/inventoryLedger'
-import { getVehicleSeriesList, getVehicleModelList, getOwnerTree, storePage } from '@/libs/api/common'
+import { getVehicleSeriesList, getVehicleModelList, getOwnerTree } from '@/libs/api/common'
 import { showFailToast } from 'vant'
 
 defineOptions({
@@ -107,21 +105,21 @@ const route = useRoute()
 const filterHeaderRef = ref(null)
 const headerPlaceholder = ref('搜索 VIN/车架号')
 const searchList = ref([
-  {
-    title: '库存状态',
-    key: 'vechicleStatus',
-    default: '',
-    nodeType: 'single',
-    options: [
-      { label: '在途', value: '11' },
-      { label: '待提交 PDI', value: '20' },
-      { label: 'PDI 待修复', value: '25' },
-      { label: '已入门店库', value: '12' },
-      { label: '销售出库', value: '13' },
-      { label: '调拨在途', value: '16' },
-      { label: '作废', value: '99' }
-    ]
-  },
+  // {
+  //   title: 'PDI类型',
+  //   key: 'vechicleStatus',
+  //   default: '',
+  //   nodeType: 'single',
+  //   options: [
+  //     { label: '在途', value: '11' },
+  //     { label: '待提交 PDI', value: '20' },
+  //     { label: 'PDI 待修复', value: '25' },
+  //     { label: '已入门店库', value: '12' },
+  //     { label: '销售出库', value: '13' },
+  //     { label: '调拨在途', value: '16' },
+  //     { label: '作废', value: '99' }
+  //   ]
+  // },
   {
     title: '车系',
     key: 'seriesIdList',
@@ -145,22 +143,22 @@ const searchList = ref([
     nodeType: 'day',
     columnsType: ['year', 'month', 'day'],
     list: []
-  },
-  {
-    title: '销售门店',
-    key: 'saleOrgId',
-    default: [],
-    nodeType: 'search',
-    options: [],
-    placeholder: '请输入门店名称搜索'
   }
+  // {
+  //   title: '销售门店',
+  //   key: 'saleOrgId',
+  //   default: [],
+  //   nodeType: 'search',
+  //   options: [],
+  //   placeholder: '请输入门店名称搜索'
+  // }
 ])
-const tabList = ['全部车辆', '在途', '已入门店库', '销售出库', '异常车辆']
-const statusList = ['', 11, 12, 13, 25]
+const tabList = ['全部车辆', '在库无单车辆', '在途车辆', '异常车辆', '长库存车辆']
+const statusList = [10, 20, 30, 40, 50]
 const dataList = ref([])
 const requestData = reactive({
   data: {
-    vechicleStatus: '',
+    storeInventoryLedgerTab: '',
     vinLike: '',
     seriesIdList: [],
     modelIdList: [],
@@ -233,7 +231,7 @@ onDeactivated(() => {
 onMounted(() => {
   getOwnerTreeList()
   getVehicle()
-  storePage1()
+  // storePage1()
 })
 
 // 检查路由参数并处理（从 vehicleInventory 跳转过来）
@@ -241,7 +239,7 @@ const checkRouteParams = () => {
   const { seriesId, modelName } = route.query
   if (seriesId) {
     // 设置车系筛选
-    requestData.data.seriesIds = [seriesId]
+    requestData.data.seriesIdList = [seriesId]
     requestData.data.pageNum = 1
     dataList.value = []
     // 触发车系变更回调以加载车型列表
@@ -258,9 +256,9 @@ const headerSearch = (row) => {
 
 const resetFilterConditions = () => {
   requestData.data.vinLike = ''
-  requestData.data.vechicleStatus = ''
-  requestData.data.seriesIds = []
-  requestData.data.modelIds = []
+  requestData.data.storeInventoryLedgerTab = ''
+  requestData.data.seriesIdList = []
+  requestData.data.modelIdList = []
   requestData.data.saleOrgId = ''
   requestData.data.createTimeStart = ''
   requestData.data.createTimeEnd = ''
@@ -275,10 +273,10 @@ const resetFilterConditions = () => {
 }
 
 const filterSearch = (obj) => {
-  requestData.data.vechicleStatus = obj.vechicleStatus
-  requestData.data.seriesIds = obj.seriesIdList
-  const _arr = obj.modelIds.filter((item) => tempModelIdList.value.includes(item))
-  requestData.data.modelIds = _arr
+  requestData.data.storeInventoryLedgerTab = obj.vechicleStatus
+  requestData.data.seriesIdList = obj.seriesIdList
+  const _arr = (obj.modelIdList || []).filter((item) => tempModelIdList.value.includes(item))
+  requestData.data.modelIdList = _arr
   requestData.data.saleOrgId = obj.saleOrgId
 
   if (obj.createTime && obj.createTime.length) {
@@ -293,31 +291,31 @@ const filterSearch = (obj) => {
   dataList.value = []
   requestData.data = { ...requestData.data }
 }
-const storePage1 = (storeName) => {
-  storePage({ isWholesaleSale: true, storeName }).then(res => {
-    if (res.code === 200) {
-      const arr = []
-      res.data.records.map((item) => {
-        arr.push({
-          label: item.storeName,
-          value: item.storeId
-        })
-      })
-      searchList.value[4].options = arr
-    } else {
-      searchList.value[4].options = []
-    }
-  }).catch(() => {
-    searchList.value[4].options = []
-  })
-}
+// const storePage1 = (storeName) => {
+//   storePage({ isWholesaleSale: true, storeName }).then(res => {
+//     if (res.code === 200) {
+//       const arr = []
+//       res.data.records.map((item) => {
+//         arr.push({
+//           label: item.storeName,
+//           value: item.storeId
+//         })
+//       })
+//       searchList.value[4].options = arr
+//     } else {
+//       searchList.value[4].options = []
+//     }
+//   }).catch(() => {
+//     searchList.value[4].options = []
+//   })
+// }
 
 // 处理搜索框输入事件（销售门店搜索）
-const handleSearchChange = (obj) => {
-  if (obj.key === 'saleOrgId') {
-    storePage1(obj.keyword)
-  }
-}
+// const handleSearchChange = (obj) => {
+//   if (obj.key === 'saleOrgId') {
+//     storePage1(obj.keyword)
+//   }
+// }
 // 查询当前用户拥有的所有资源列表
 const getOwnerTreeList = () => {
   getOwnerTree({ resourceTag: 'AISVS100005', resourceType: 'APP_SIDE' })
@@ -341,15 +339,15 @@ const getVehicle = () => {
             value: item.id
           })
         })
-        searchList.value[1].options = arr
+        searchList.value[0].options = arr
         // 车系列表加载完成后，检查路由参数
         checkRouteParams()
       } else {
-        searchList.value[1].options = []
+        searchList.value[0].options = []
       }
     })
     .catch(() => {
-      searchList.value[1].options = []
+      searchList.value[0].options = []
     })
 }
 
@@ -371,7 +369,7 @@ const changeList = (res, modelName) => {
             })
             tempModelIdList.value.push(item.id)
           })
-          searchList.value[2].options = arr
+          searchList.value[1].options = arr
 
           // 如果有 modelName 参数，查找并设置车型筛选
           if (modelName && arr.length > 0) {
@@ -397,10 +395,10 @@ const changeList = (res, modelName) => {
         }
       })
       .catch(() => {
-        searchList.value[2].options = []
+        searchList.value[1].options = []
       })
   } else {
-    searchList.value[2].options = []
+    searchList.value[1].options = []
   }
 }
 
@@ -443,7 +441,7 @@ const generatePdiClick = (item) => {
 watch(
   () => active.value,
   (newVal) => {
-    requestData.data.vechicleStatus = statusList[newVal]
+    requestData.data.storeInventoryLedgerTab = statusList[newVal]
     requestData.data.pageNum = 1
   }
 )
@@ -453,11 +451,27 @@ watch(
 .common-scroll-content {
   flex: 1;
   overflow-y: auto;
-  .tab-content {
-    width: 100%;
-    overflow-x: auto;
-    height: 42px;
-    overflow-y: hidden;
+  height: calc(100% - 42px);
+}
+.tab-content {
+  width: 100%;
+  overflow-x: auto;
+  height: 42px;
+  overflow-y: hidden;
+
+  :deep(.van-tabs__wrap) {
+    height: 42px !important;
+  }
+
+  :deep(.van-tab) {
+    flex: none !important;
+    width: auto !important;
+    padding: 0 18px !important;
+  }
+
+  :deep(.van-tabs__nav) {
+    overflow-x: auto !important;
+    flex-wrap: nowrap !important;
   }
 }
 .list-item-content {
