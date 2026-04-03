@@ -526,7 +526,7 @@ const getResourceClass = (type) => {
   display: flex;
   align-items: center;
   padding: 12px 16px;
-  background: #fff;
+  background: #f7f8fa;
   border-bottom: 1px solid #ebedf0;
 
   .header-materials {

@@ -44,19 +44,19 @@
               <div class="resource-item">
                 <div class="resource-content">
                   <span class="dot-badge" :style="{ backgroundColor: getResourceColor(item.inventoryResource) }"></span>
-                  <span class="resource-desc" :class="getResourceClass(item.inventoryResource)">{{ getResourceDesc(item.inventoryResource) }}</span>
+                  <span class="resource-desc" :class="getResourceClass(item.inventoryResource)">{{ item.inventoryResourceLabel }}</span>
                 </div>
               </div>
               <div class="resource-item">
                 <div class="resource-content">
                   <span class="dot-badge" :style="{ backgroundColor: getResourceColor(item.productionInProgressResource) }"></span>
-                  <span class="resource-desc" :class="getResourceClass(item.productionInProgressResource)">{{ getResourceDesc(item.productionInProgressResource) }}</span>
+                  <span class="resource-desc" :class="getResourceClass(item.productionInProgressResource)">{{ item.productionInProgressResourceLabel }}</span>
                 </div>
               </div>
               <div class="resource-item">
                 <div class="resource-content">
                   <span class="dot-badge" :style="{ backgroundColor: getResourceColor(item.productionScheduledResource) }"></span>
-                  <span class="resource-desc" :class="getResourceClass(item.productionScheduledResource)">{{ getResourceDesc(item.productionScheduledResource) }}</span>
+                  <span class="resource-desc" :class="getResourceClass(item.productionScheduledResource)">{{ item.productionScheduledResourceLabel }}</span>
                 </div>
               </div>
             </div>
@@ -163,7 +163,7 @@ const handleSearch = async(keyword) => {
 
     const res = await getList(searchParams)
     if (res.code === 200) {
-      searchResults.value = res.data.records || []
+      searchResults.value = res.data || []
     } else {
       searchResults.value = []
     }
@@ -179,45 +179,29 @@ const handleSearch = async(keyword) => {
 // 获取资源颜色
 const getResourceColor = (type) => {
   switch (type) {
-    case 10: // 无
+    case 1010: // 无
       return '#ccc'
-    case 20: // 极少
+    case 1020: // 极少
       return '#E30808'
-    case 30: // 少量
+    case 1030: // 少量
       return '#FFA400'
-    case 40: // 充足
+    case 1040: // 充足
       return '#00AA00'
     default:
       return '#ccc'
   }
 }
 
-// 获取资源描述
-const getResourceDesc = (type) => {
-  switch (type) {
-    case 10:
-      return '无'
-    case 20:
-      return '极少'
-    case 30:
-      return '少量'
-    case 40:
-      return '充足'
-    default:
-      return '-'
-  }
-}
-
 // 获取资源样式类
 const getResourceClass = (type) => {
   switch (type) {
-    case 40:
+    case 1040:
       return 'sufficient' // 充足
-    case 30:
+    case 1030:
       return 'low' // 少量
-    case 20:
+    case 1020:
       return 'scarce' // 极少
-    case 10:
+    case 1010:
       return 'none' // 无
     default:
       return ''
@@ -295,12 +279,14 @@ const getResourceClass = (type) => {
 }
 
 .search-full-page {
-  width: 100%;
-  min-height: 100%;
+  position: fixed;
+  top: 44px;
+  left: 0;
+  right: 0;
+  bottom: 0;
   background-color: #f7f7f7;
   display: flex;
   flex-direction: column;
-  padding-top: 44px;
 }
 
 // 搜索加载状态
@@ -322,6 +308,7 @@ const getResourceClass = (type) => {
 .common-scroll-content {
   flex: 1;
   overflow-y: auto;
+  padding-bottom: 16px;
 }
 
 .inventory-list {
@@ -336,7 +323,7 @@ const getResourceClass = (type) => {
   background: #f7f8fa;
   border-bottom: 1px solid #ebedf0;
   position: sticky;
-  top: 44px;
+  top: 0;
   z-index: 100;
 
   .header-materials {
