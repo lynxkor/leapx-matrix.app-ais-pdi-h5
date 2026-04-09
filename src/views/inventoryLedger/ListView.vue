@@ -75,7 +75,7 @@
             :loading="generatePdiLoading"
             @click="generatePdiClick(item)"
             v-show="
-              resourceBtnList.includes('AISMC-storeInventoryLedger-generatePdi')
+              resourceBtnList.includes('AISVS-storeInventoryLedger-generatePdi')
             "
             >生成在库 PDI 单</ais-button
           >

@@ -35,7 +35,7 @@
             plain
             round
             @click.stop="generatePdiClick(item)"
-            v-show="resourceBtnList.includes('AISMC-storeInventoryLedger-generatePdi') && item.vechicleStatus === 12"
+            v-show="resourceBtnList.includes('AISVS-storeInventoryLedger-generatePdi') && item.vechicleStatus === 12"
           >
             生成在库 PDI 单
           </ais-button>
@@ -115,7 +115,7 @@ onUnmounted(() => {
 
 // 获取权限列表
 const getOwnerTreeList = () => {
-  getOwnerTree({ resourceTag: 'AISMC-storeInventoryLedger', resourceType: 'APP_SIDE' })
+  getOwnerTree({ resourceTag: 'AISVS-storeInventoryLedger', resourceType: 'APP_SIDE' })
     .then((res) => {
       res.data.forEach((item) => {
         resourceBtnList.value.push(item.resourceTag)
