@@ -2,11 +2,11 @@
   <div class="list-item-content">
     <div class="card-header">
       <div class="card-title-text">{{ dataItem.vin }}</div>
-      <div class="card-tags">
+      <!-- <div class="card-tags">
         <van-tag v-if="dataItem.vechicleStatusLabel" type="primary">{{ dataItem.vechicleStatusLabel }}</van-tag>
         <van-tag v-if="dataItem.reserved === 1" type="success">预留</van-tag>
         <van-tag v-if="dataItem.lockStatus === 1" type="warning">锁定</van-tag>
-      </div>
+      </div> -->
     </div>
     <div class="card-subtitle-text">
       {{ dataItem.materialsDesc || dataItem.modelName }} | {{ dataItem.exteriorName }} | {{ dataItem.interiorName }}
