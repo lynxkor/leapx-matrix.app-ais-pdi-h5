@@ -143,7 +143,7 @@ const fetchData = () => {
       }
     })
     .catch((err) => {
-      console.log(err)
+      console.log('err:', err)
       loading.value = false
       refreshing.value = false
     })
@@ -178,8 +178,9 @@ const onRowClick = (detail, seriesItem) => {
   router.push({
     path: '/inventoryLedger/list',
     query: {
-      seriesId: seriesItem.id,
-      seriesName: seriesItem.seriesName,
+      seriesId: detail.seriesId,
+      seriesName: detail.seriesName,
+      modelId: detail.modelId,
       modelName: detail.modelName
     }
   })

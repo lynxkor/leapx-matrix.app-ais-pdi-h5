@@ -14,7 +14,7 @@
         <div class="title-row">
           <div class="card-title-text">{{ item.vin }}</div>
           <div class="battery-tag-row">
-            <span class="battery-tag">
+            <span class="battery-tag" :class="`battery-tag--${getBatteryColorStatus(item.electricity)}`">
               <span class="battery-icon" :style="{ '--battery-level': getBatteryLevel(item.electricity) }">
                 <svg class="battery-outline" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <rect x="3" y="6" width="14" height="12" rx="2"/>
@@ -37,7 +37,7 @@
             <p class="card-info-des">{{ item.abnormalRecordTime }}</p>
           </van-col>
           <van-col span="12" class="card-info-col">
-            <p class="card-info-title">是否锁定：</p>
+            <p class="card-info-title">是否匹配订单：</p>
             <p class="card-info-des">{{ item.lockStatusLabel }}</p>
           </van-col>
           <van-col span="12" class="card-info-col">
@@ -124,10 +124,17 @@ const formatElectricity = (electricity) => {
 // 获取电池电量百分比（用于样式）
 const getBatteryLevel = (electricity) => {
   if (electricity === null || electricity === undefined) return 0
-  // 如果电量值 >= 1，说明是百分比形式（如 100 表示 100%）
-  // 如果电量值 < 1，说明是小数形式（如 1.00 表示 100%）
   const percent = electricity >= 1 ? electricity : electricity * 100
   return percent
+}
+
+// 获取电池标签颜色状态：<5 红色，<15 橙色，其他绿色
+const getBatteryColorStatus = (electricity) => {
+  if (electricity === null || electricity === undefined) return 'danger'
+  const percent = electricity >= 1 ? electricity : electricity * 100
+  if (percent < 5) return 'danger'
+  if (percent < 15) return 'warning'
+  return 'success'
 }
 
 onMounted(() => {
@@ -168,8 +175,30 @@ onMounted(() => {
         padding: 3px 6px;
         border-radius: 3px;
         font-size: 11px;
-        background: #F8E8E8;
-        color: var(--leap-color-danger);
+
+        &--danger {
+          background: #F8E8E8;
+          color: var(--leap-color-danger);
+          .battery-outline { color: var(--leap-color-danger); }
+          &::before { background: var(--leap-color-danger); }
+          .days { color: var(--leap-color-danger); }
+        }
+
+        &--warning {
+          background: #F8E9E2;
+          color: #E6A23C;
+          .battery-outline { color: #E6A23C; }
+          &::before { background: #E6A23C; }
+          .days { color: #E6A23C; }
+        }
+
+        &--success {
+          background: #E8F5E8;
+          color: #67C23A;
+          .battery-outline { color: #67C23A; }
+          &::before { background: #67C23A; }
+          .days { color: #67C23A; }
+        }
 
         .battery-icon {
           position: relative;
@@ -181,10 +210,8 @@ onMounted(() => {
           .battery-outline {
             width: 100%;
             height: 100%;
-            color: var(--leap-color-danger);
           }
 
-          // 使用伪元素填充电池内部
           &::before {
             content: '';
             position: absolute;
@@ -192,7 +219,6 @@ onMounted(() => {
             left: 5px;
             width: calc(var(--battery-level) * 0.1px);
             height: 6px;
-            background: var(--leap-color-danger);
             border-radius: 1px;
             transform: translateY(-50%);
           }
@@ -201,10 +227,6 @@ onMounted(() => {
         .divider {
           margin: 0 4px;
           opacity: 0.4;
-        }
-
-        .days {
-          color: var(--leap-color-danger);
         }
       }
     }

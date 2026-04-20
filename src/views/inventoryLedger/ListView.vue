@@ -17,6 +17,7 @@
   </div>
   <div class="common-scroll-content" ref="scrollEle">
     <refresh-list
+      ref="refreshListRef"
       :requestData="requestData"
       :needRefresh="needRefresh"
       :has-no-data="
@@ -103,6 +104,7 @@ defineOptions({
 const route = useRoute()
 
 const filterHeaderRef = ref(null)
+const refreshListRef = ref(null)
 const headerPlaceholder = ref('搜索 VIN/车架号')
 const searchList = ref([
   // {
@@ -236,14 +238,14 @@ onMounted(() => {
 
 // 检查路由参数并处理（从 vehicleInventory 跳转过来）
 const checkRouteParams = () => {
-  const { seriesId, modelName } = route.query
+  const { seriesId, modelId, modelName } = route.query
   if (seriesId) {
     // 设置车系筛选
     requestData.data.seriesIdList = [seriesId]
     requestData.data.pageNum = 1
     dataList.value = []
     // 触发车系变更回调以加载车型列表
-    changeList([seriesId], modelName)
+    changeList([seriesId], modelId, modelName)
   }
 }
 
@@ -351,7 +353,7 @@ const getVehicle = () => {
     })
 }
 
-const changeList = (res, modelName) => {
+const changeList = (res, modelId, modelName) => {
   if (res.length) {
     const data = {
       seriesIdList: res,
@@ -371,16 +373,21 @@ const changeList = (res, modelName) => {
           })
           searchList.value[1].options = arr
 
-          // 如果有 modelName 参数，查找并设置车型筛选
-          if (modelName && arr.length > 0) {
-            const targetModel = arr.find((item) => item.label === modelName)
-            if (targetModel) {
-              // 设置车型筛选
-              if (filterHeaderRef.value) {
-                filterHeaderRef.value.setFilterValue('modelIdList', [targetModel.value])
-              }
-              requestData.data.modelIdList = [targetModel.value]
+          // 优先用 modelId 匹配，其次用 modelName
+          let targetModel = null
+          if (modelId) {
+            targetModel = arr.find((item) => item.value === modelId)
+          }
+          if (!targetModel && modelName) {
+            targetModel = arr.find((item) => item.label === modelName)
+          }
+
+          if (targetModel) {
+            // 设置车型筛选
+            if (filterHeaderRef.value) {
+              filterHeaderRef.value.setFilterValue('modelIdList', [targetModel.value])
             }
+            requestData.data.modelIdList = [targetModel.value]
           }
 
           // 设置车系筛选
@@ -388,10 +395,14 @@ const changeList = (res, modelName) => {
             filterHeaderRef.value.setFilterValue('seriesIdList', res)
           }
 
-          // 触发查询
-          requestData.data.pageNum = 1
-          dataList.value = []
-          requestData.data = { ...requestData.data }
+          // 触发查询 - 使用 refreshListRef.search() 确保立即执行
+          if (refreshListRef.value) {
+            refreshListRef.value.search(requestData.data)
+          } else {
+            requestData.data.pageNum = 1
+            dataList.value = []
+            requestData.data = { ...requestData.data }
+          }
         }
       })
       .catch(() => {
