@@ -7,6 +7,6 @@ const prefix = 'vehstock/app/store/storeVehicleInventory'
  * @param {Object} data
  * @param {number} timeout - 超时时间(ms)，默认10秒
  */
-export function getList(data, timeout = 1000000) {
+export function getList(data, timeout = 100000) {
   return post(prefix + '/report', data, timeout)
 }
