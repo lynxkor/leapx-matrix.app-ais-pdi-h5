@@ -327,13 +327,13 @@ onMounted(() => {
 
   .table-header {
     display: grid;
-    grid-template-columns: 1.5fr 1fr 1fr 1fr 1fr 1fr;
+    grid-template-columns: 2.5fr 0.8fr 0.8fr 0.8fr 0.8fr 1fr;
     padding: 8px 0;
     border-bottom: 1px solid var(--leap-color-default-light-4);
 
     .th {
 
-      font-size: 12px;
+      font-size: 11px;
       color: var(--leap-color-primary);
       text-align: center;
 
@@ -364,7 +364,7 @@ onMounted(() => {
 
   .table-row {
     display: grid;
-    grid-template-columns: 1.5fr 1fr 1fr 1fr 1fr 1fr;
+    grid-template-columns: 2.5fr 0.8fr 0.8fr 0.8fr 0.8fr 1fr;
     padding: 10px 0;
     border-bottom: 1px solid var(--leap-color-default-light-4);
 
@@ -377,6 +377,8 @@ onMounted(() => {
       font-size: 12px;
       color: var(--leap-color-default-light-1);
       text-align: center;
+      overflow: hidden;
+      white-space: nowrap;
 
       &.model-name {
         text-align: left;

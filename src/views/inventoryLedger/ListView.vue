@@ -155,12 +155,12 @@ const searchList = ref([
   //   placeholder: '请输入门店名称搜索'
   // }
 ])
-const tabList = ['全部车辆', '未匹配订单车辆', '在途车辆', '异常车辆', '长库存车辆']
+const tabList = ['全部车辆', '未匹配订单车辆', '在途车辆', '异常车辆', '长库龄车辆']
 const statusList = [10, 20, 30, 40, 50]
 const dataList = ref([])
 const requestData = reactive({
   data: {
-    storeInventoryLedgerTab: '',
+    storeInventoryLedgerTab: 10,
     vinLike: '',
     seriesIdList: [],
     modelIdList: [],

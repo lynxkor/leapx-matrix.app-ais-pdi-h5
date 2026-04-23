@@ -20,6 +20,12 @@
       </van-search>
     </div>
 
+    <div class="tab-content tab-content-ledger">
+      <van-tabs v-model:active="active" sticky scrollable>
+        <van-tab v-for="(item, index) in tabList" :title="item" :key="index"></van-tab>
+      </van-tabs>
+    </div>
+
     <div class="search-full-page">
       <!-- 搜索加载状态 -->
       <div class="search-loading-wrapper" v-if="searchLoading">
@@ -78,6 +84,15 @@ const searchResults = ref([])
 const searchLoading = ref(false)
 const hasSearched = ref(false)
 const resourceBtnList = ref([])
+const tabList = ['全部车辆', '未匹配订单车辆', '在途车辆', '异常车辆', '长库龄车辆']
+const statusList = [10, 20, 30, 40, 50]
+const active = ref(0)
+const searchParams = ref({
+  storeInventoryLedgerTab: 10,
+  vinLike: '',
+  pageNum: 1,
+  pageSize: 100
+})
 
 // 页面加载时
 onMounted(async() => {
@@ -142,13 +157,10 @@ const handleSearch = async(keyword) => {
   hasSearched.value = true
 
   try {
-    const searchParams = {
-      vinLike: keyword,
-      pageNum: 1,
-      pageSize: 100
-    }
+    searchParams.value.vinLike = keyword
+    searchParams.value.pageNum = 1
 
-    const res = await getList(searchParams)
+    const res = await getList(searchParams.value)
     if (res.code === 200) {
       searchResults.value = res.data.records || []
     } else {
@@ -173,6 +185,17 @@ const generatePdiClick = (item) => {
     }
   })
 }
+
+// 监听 tab 切换
+watch(
+  () => active.value,
+  (newVal) => {
+    searchParams.value.storeInventoryLedgerTab = statusList[newVal]
+    if (localSearchValue.value) {
+      handleSearch(localSearchValue.value)
+    }
+  }
+)
 </script>
 
 <style lang="scss" scoped>
@@ -250,7 +273,34 @@ const generatePdiClick = (item) => {
   background-color: #f7f7f7;
   display: flex;
   flex-direction: column;
-  padding-top: 44px;
+  padding-top: 86px; // 44px header + 42px tabs
+}
+
+.tab-content {
+  width: 100%;
+  overflow-x: auto;
+  height: 42px;
+  overflow-y: hidden;
+  position: fixed;
+  top: 44px;
+  left: 0;
+  z-index: 5999;
+  background: #fff;
+
+  :deep(.van-tabs__wrap) {
+    height: 42px !important;
+  }
+
+  :deep(.van-tab) {
+    flex: none !important;
+    width: auto !important;
+    padding: 0 18px !important;
+  }
+
+  :deep(.van-tabs__nav) {
+    overflow-x: auto !important;
+    flex-wrap: nowrap !important;
+  }
 }
 
 // 搜索加载状态
