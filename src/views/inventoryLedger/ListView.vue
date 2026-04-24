@@ -216,12 +216,17 @@ onActivated(() => {
       filterHeaderRef.value.resetFilters()
     }
     requestData.data.vinLike = ''
+    requestData.data.seriesIdList = []
+    requestData.data.modelIdList = []
     requestData.data.pageNum = 1
     dataList.value = []
     requestData.data = { ...requestData.data }
+    sessionStorage.removeItem('needRefresh')
   } else {
     restoreScrollPosition()
   }
+  // 每次激活时都检查路由参数，确保从其他页面跳转过来时能正确设置筛选条件
+  checkRouteParams()
 })
 
 // 组件失活时（进入缓存）调用
@@ -244,6 +249,10 @@ const checkRouteParams = () => {
     requestData.data.seriesIdList = [seriesId]
     requestData.data.pageNum = 1
     dataList.value = []
+    // 先设置 FilterHeader 的车系值（确保在加载车型列表之前设置）
+    if (filterHeaderRef.value) {
+      filterHeaderRef.value.setFilterValue('seriesIdList', [seriesId])
+    }
     // 触发车系变更回调以加载车型列表
     changeList([seriesId], modelId, modelName)
   }
@@ -360,11 +369,13 @@ const changeList = (res, modelId, modelName) => {
       pageSize: 200
     }
     tempModelIdList.value = []
+    // 保存外层的 res 参数（车系 ID 数组），避免被回调中的 res 遮蔽
+    const seriesIdList = res
     getVehicleModelList(data)
-      .then((res) => {
-        if (res.code === 200) {
+      .then((apiRes) => {
+        if (apiRes.code === 200) {
           const arr = []
-          res.data.map((item) => {
+          apiRes.data.map((item) => {
             arr.push({
               label: item.name,
               value: item.id
@@ -376,7 +387,8 @@ const changeList = (res, modelId, modelName) => {
           // 优先用 modelId 匹配，其次用 modelName
           let targetModel = null
           if (modelId) {
-            targetModel = arr.find((item) => item.value === modelId)
+            // 字符串与数字类型转换后匹配
+            targetModel = arr.find((item) => String(item.value) === String(modelId))
           }
           if (!targetModel && modelName) {
             targetModel = arr.find((item) => item.label === modelName)
@@ -390,9 +402,9 @@ const changeList = (res, modelId, modelName) => {
             requestData.data.modelIdList = [targetModel.value]
           }
 
-          // 设置车系筛选
+          // 设置车系筛选 - 使用保存的 seriesIdList
           if (filterHeaderRef.value) {
-            filterHeaderRef.value.setFilterValue('seriesIdList', res)
+            filterHeaderRef.value.setFilterValue('seriesIdList', seriesIdList)
           }
 
           // 触发查询 - 使用 refreshListRef.search() 确保立即执行
