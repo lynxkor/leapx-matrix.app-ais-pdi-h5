@@ -1,9 +1,9 @@
 <template>
   <div class="detail-view-content">
-    <van-loading color="#00AA00" class="loading-area" v-if="isFetch"/>
+    <van-loading color="#00AA00" class="loading-area" v-if="isFetch" />
     <template v-else>
       <div class="detail-view-header">
-        <ais-header-tab :tabList="tabList" :currentIndex="currentIndex"/>
+        <ais-header-tab :tabList="tabList" :currentIndex="currentIndex" />
       </div>
       <div class="detail-view-center" v-if="type === 'detail'">
         <div class="center-info-content">
@@ -15,30 +15,73 @@
             <p>无异常，请直接点击下一步。</p>
           </div>
         </div>
-        <appearance v-if="currentIndexName === '外观检查' || currentIndexName === '玻璃检查'" :checkItems="pdiItem?.checkItems[currentIndex]" :api="addPdiEntry" :version="pdiItem?.version" :id="pdiItem?.id" @reload="reload"></appearance>
-        <inner v-if="currentIndexName === '车内检查'" :checkItems="pdiItem?.checkItems[currentIndex]" :needSubmit="needSubmit" :version="pdiItem?.version" :id="pdiItem?.id" @submitInner="submitInner"></inner>
-        <function v-if="currentIndexName === '功能检查'" :checkItems="pdiItem?.checkItems[currentIndex]" :version="pdiItem?.version" :id="pdiItem?.id" @submitFunction="submitFunction" :lastSubmit="lastSubmit"></function>
+        <appearance
+          v-if="currentIndexName === '外观检查' || currentIndexName === '玻璃检查'"
+          :checkItems="pdiItem?.checkItems[currentIndex]"
+          :api="addPdiEntry"
+          :version="pdiItem?.version"
+          :id="pdiItem?.id"
+          @reload="reload"
+        ></appearance>
+        <inner
+          v-if="currentIndexName === '车内检查'"
+          :checkItems="pdiItem?.checkItems[currentIndex]"
+          :needSubmit="needSubmit"
+          :version="pdiItem?.version"
+          :id="pdiItem?.id"
+          @submitInner="submitInner"
+        ></inner>
+        <function
+          v-if="currentIndexName === '功能检查'"
+          :checkItems="pdiItem?.checkItems[currentIndex]"
+          :version="pdiItem?.version"
+          :id="pdiItem?.id"
+          @submitFunction="submitFunction"
+          :lastSubmit="lastSubmit"
+        ></function>
       </div>
       <div class="detail-view-center" v-if="type !== 'detail'">
-        <repair :checkItems="pdiItem?.checkItems[currentIndex]" :version="pdiItem?.version" :id="pdiItem?.id" :currentIndexName="currentIndexName" :repairClick="repairClick" @repairSubmit="repairSubmit"></repair>
+        <repair
+          :checkItems="pdiItem?.checkItems[currentIndex]"
+          :version="pdiItem?.version"
+          :id="pdiItem?.id"
+          :currentIndexName="currentIndexName"
+          :repairClick="repairClick"
+          @repairSubmit="repairSubmit"
+        ></repair>
       </div>
       <footer class="detail-view-footer">
-        <ais-button class="footer-btn" style="width: 130px;" v-if="currentIndex != 0" plain @click="toFormer()">上一步</ais-button>
-        <ais-button class="footer-btn" style="flex: 1;" v-if="currentIndex < pdiItem?.checkItems.length - 1" @click="toNext()" :loading="submitLoading">下一步，{{ pdiItem?.checkItems[currentIndex+1].name }}</ais-button>
-        <ais-button class="footer-btn" style="flex: 1;" v-if="currentIndex === pdiItem?.checkItems.length - 1" @click="toSubmit()" :loading="submitLoading">完成提交</ais-button>
+        <ais-button
+          class="footer-btn"
+          style="width: 130px"
+          v-if="currentIndex != 0"
+          plain
+          @click="toFormer()"
+          >上一步</ais-button
+        >
+        <ais-button
+          class="footer-btn"
+          style="flex: 1"
+          v-if="currentIndex < pdiItem?.checkItems.length - 1"
+          @click="toNext()"
+          :loading="submitLoading"
+          >下一步，{{ pdiItem?.checkItems[currentIndex + 1].name }}</ais-button
+        >
+        <ais-button
+          class="footer-btn"
+          style="flex: 1"
+          v-if="currentIndex === pdiItem?.checkItems.length - 1"
+          @click="toSubmit()"
+          :loading="submitLoading"
+          >完成提交</ais-button
+        >
       </footer>
     </template>
   </div>
 </template>
 
 <script setup>
-import { defineOptions, reactive } from 'vue'
-
-defineOptions({
-  name: 'PdiDetailView'
-})
-
-import { ref, onMounted, watch } from 'vue'
+import { ref, reactive, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { showFailToast } from 'vant'
 import { useGlobalStore } from '@/stores/global'
@@ -48,8 +91,11 @@ import Appearance from '@/components/DetailCard/Appearance.vue'
 import Inner from '@/components/DetailCard/Inner.vue'
 import Function from '@/components/DetailCard/Function.vue'
 import Repair from '@/components/DetailCard/Repair.vue'
-
 import { getPdiDetails, getPdiRepairDetails, addPdiEntry, addRepairConfirm } from '@/api/pdi'
+
+defineOptions({
+  name: 'PdiDetailView',
+})
 
 const globalStore = useGlobalStore()
 const route = useRoute()
@@ -83,25 +129,28 @@ onMounted(() => {
 
 const getDetail = (api, id) => {
   isFetch.value = true
-  api(id).then(res => {
-    if (res.code === 200) {
-      const data = res.data
-      console.log(data)
-      tabList.value = data.checkItems.map(item => item.name)
-      currentIndexName.value = tabList.value[currentIndex.value]
-      Object.assign(pdiItem, { ...data })
+  api(id)
+    .then((res) => {
+      if (res.code === 200) {
+        const data = res.data
+        console.log(data)
+        tabList.value = data.checkItems.map((item) => item.name)
+        currentIndexName.value = tabList.value[currentIndex.value]
+        Object.assign(pdiItem, { ...data })
+        isFetch.value = false
+      } else {
+        showFailToast(res.msg)
+        setTimeout(() => {
+          router.go(-1)
+        }, 300)
+      }
+    })
+    .catch((err) => {
+      console.log(err)
+    })
+    .finally(() => {
       isFetch.value = false
-    } else {
-      showFailToast(res.msg)
-      setTimeout(() => {
-        router.go(-1)
-      }, 300)
-    }
-  }).catch(err => {
-    console.log(err)
-  }).finally(() => {
-    isFetch.value = false
-  })
+    })
 }
 
 const reload = () => {
@@ -111,7 +160,7 @@ const reload = () => {
 const submitInner = (isSubmit, data) => {
   if (isSubmit) {
     submitLoading.value = true
-    addPdiEntry(data).then(res => {
+    addPdiEntry(data).then((res) => {
       if (res.code === 200) {
         needSubmit.value = false
         submitLoading.value = false
@@ -131,7 +180,7 @@ const submitFunction = (isLastSubmit, data) => {
   if (isLastSubmit) {
     console.log(data)
     submitLoading.value = true
-    addPdiEntry(data).then(res => {
+    addPdiEntry(data).then((res) => {
       lastSubmit.value = false
       submitLoading.value = false
       if (res.code === 200) {
@@ -184,7 +233,7 @@ const toSubmit = () => {
 const repairSubmit = (isSubmit, data) => {
   if (isSubmit) {
     submitLoading.value = true
-    addRepairConfirm(data).then(res => {
+    addRepairConfirm(data).then((res) => {
       repairClick.value = false
       submitLoading.value = false
       if (res.code === 200) {
@@ -209,50 +258,49 @@ const repairSubmit = (isSubmit, data) => {
 
 watch(
   () => currentIndex.value,
-  newVal => {
+  (newVal) => {
     currentIndexName.value = tabList.value[newVal]
-  }
+  },
 )
-
 </script>
 
 <style lang="scss" scoped>
-.detail-view-content{
+.detail-view-content {
   height: 100%;
   overflow-y: hidden;
   display: flex;
   flex-direction: column;
 }
-.detail-view-header{
+.detail-view-header {
   width: 100%;
   height: 40px;
   box-sizing: border-box;
   padding: 0 12px;
   background: #ffffff;
 }
-.detail-view-center{
+.detail-view-center {
   flex: 1;
   height: 0;
   display: flex;
   flex-direction: column;
-  .center-info-content{
+  .center-info-content {
     padding: 8px 12px;
     background: rgba(237, 139, 61, 0.1);
     display: flex;
     align-items: flex-start;
-    .center-info-img{
+    .center-info-img {
       width: 16px;
       height: 16px;
       margin-right: 4px;
       margin-top: 2px;
     }
-    .center-info-text{
+    .center-info-text {
       font-size: 12px;
-      color: #ED8B3D;
+      color: #ed8b3d;
     }
   }
 }
-.detail-view-footer{
+.detail-view-footer {
   height: 54px;
   padding: 7px 3.5vw;
   box-sizing: border-box;
@@ -261,12 +309,12 @@ watch(
   align-items: center;
   justify-content: center;
   gap: 12px;
-  .footer-btn{
+  .footer-btn {
     height: 40px;
     margin: 0 auto;
   }
 }
-.loading-area{
+.loading-area {
   display: flex;
   align-items: center;
   justify-content: center;

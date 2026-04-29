@@ -1,6 +1,8 @@
 <template>
   <filter-header
+    ref="filterHeaderRef"
     :placeholder="headerPlaceholder"
+    :search-page-route="'PdiSearch'"
     @search="headerSearch"
     :filterList="searchList"
     @filterSearch="filterSearch"
@@ -12,11 +14,38 @@
     </van-tabs>
   </div>
   <div class="common-scroll-content" ref="scrollEle">
-    <refresh-list :requestData="requestData" :needRefresh="needRefresh" @setData="setData">
+    <refresh-list
+      :requestData="requestData"
+      :needRefresh="needRefresh"
+      :has-no-data="
+        dataList.length === 0 &&
+        requestData.data &&
+        (requestData.data.vehPdiType ||
+          requestData.data.seriesIdList?.length ||
+          requestData.data.modelIdList?.length ||
+          requestData.data.createTimeStart ||
+          requestData.data.createTimeEnd ||
+          requestData.data.vinLastSix)
+      "
+      @setData="setData"
+      @resetFilters="resetFilterConditions"
+    >
       <list-item v-for="(item, index) in dataList" :key="index" :dataItem="item">
-        <ais-button type="primary" plain round @click="PDIBtnClick(item)" v-show="(active !== 1 && resourceBtnList.includes('app:store:storeVehiclePdi:addPdiEntry')) || (active === 1 && resourceBtnList.includes('app:store:storeVehiclePdi:addRepairConfirm'))">{{
-          active === 1 ? '异常修复确认' : 'PDI录入'
-        }}</ais-button>
+        <ais-button
+          type="primary"
+          plain
+          round
+          @click="PDIBtnClick(item)"
+          v-show="
+            (active !== 1 &&
+              resourceBtnList.includes('AISVS-storeVehiclePdi-addPdiEntry') &&
+              resourceBtnList.includes('AISVS-storeVehiclePdi-getPdiEntryDetails')) ||
+            (active === 1 &&
+              resourceBtnList.includes('AISVS-storeVehiclePdi-addRepairConfirm') &&
+              resourceBtnList.includes('AISVS-storeVehiclePdi-getRepairConfirmDetails'))
+          "
+          >{{ active === 1 ? '异常修复确认' : 'PDI录入' }}</ais-button
+        >
       </list-item>
     </refresh-list>
   </div>
@@ -31,7 +60,7 @@
 </template>
 
 <script setup>
-import { defineOptions, onActivated, onDeactivated, reactive, nextTick } from 'vue'
+import { onActivated, onDeactivated, reactive, nextTick } from 'vue'
 
 defineOptions({
   name: 'PdiListView'
@@ -49,6 +78,7 @@ import { getPdiList, getVehicleModelList, getVehicleSeriesList, getOwnerTree } f
 
 const router = useRouter()
 
+const filterHeaderRef = ref(null)
 const headerPlaceholder = ref('搜索')
 const searchList = ref([
   {
@@ -200,6 +230,33 @@ const headerSearch = (row) => {
   requestData.data = { ...requestData.data }
 }
 
+const resetFilterConditions = () => {
+  // 重置搜索条件
+  requestData.data.vinLastSix = ''
+
+  // 重置筛选条件
+  requestData.data.vehPdiType = ''
+  requestData.data.seriesIdList = []
+  requestData.data.modelIdList = []
+  requestData.data.createTimeStart = ''
+  requestData.data.createTimeEnd = ''
+
+  // 重置 FilterHeader 组件的状态
+  if (filterHeaderRef.value) {
+    filterHeaderRef.value.resetFilters()
+  }
+
+  // 重置分页
+  requestData.data.pageNum = 1
+  dataList.value = []
+
+  // 强制触发刷新
+  requestData.data = { ...requestData.data }
+
+  // 触发一次搜索以刷新数据
+  headerSearch({ searchValue: '', sortOrder: false })
+}
+
 const filterSearch = (obj) => {
   requestData.data.vehPdiType = obj.vehPdiType
   requestData.data.seriesIdList = obj.seriesIdList
@@ -230,7 +287,7 @@ const getOwnerTreeList = () => {
         resourceBtnList.value.push(item.resourceTag)
       })
     })
-    .catch(() => { })
+    .catch(() => {})
 }
 const getVehicle = () => {
   getVehicleSeriesList({ pageSize: 200 })

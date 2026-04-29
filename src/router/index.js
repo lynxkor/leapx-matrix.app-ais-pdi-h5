@@ -46,6 +46,7 @@ const router = createRouter({
           component: () => import('../views/pdi/ListView.vue'),
           meta: {
             title: '门店整车PDI',
+            hideHeader: false,
             keepAlive: true
           }
         },
@@ -55,6 +56,92 @@ const router = createRouter({
           component: () => import('../views/pdi/DetailView.vue'),
           meta: {
             title: '门店整车PDI',
+            hideHeader: false,
+            keepAlive: false
+          }
+        },
+        {
+          path: '/pdi/search',
+          name: 'PdiSearch',
+          component: () => import('../views/pdi/SearchPage.vue'),
+          meta: {
+            title: 'PDI搜索',
+            hideHeader: true, // 隐藏默认导航栏，使用自定义头部
+            keepAlive: false
+          }
+        },
+        {
+          path: '/abnormalRecord/list',
+          name: 'AbnormalRecordListView',
+          component: () => import('../views/abnormalRecord/ListView.vue'),
+          meta: {
+            title: '低电量车',
+            keepAlive: true
+          }
+        },
+        {
+          path: '/abnormalRecord/search',
+          name: 'AbnormalRecordSearch',
+          component: () => import('../views/abnormalRecord/SearchPage.vue'),
+          meta: {
+            title: '搜索',
+            hideHeader: true,
+            keepAlive: false
+          }
+        },
+        {
+          path: '/vehicleInventory/list',
+          name: 'VehicleInventoryListView',
+          component: () => import('../views/vehicleInventory/ListView.vue'),
+          meta: {
+            title: '门店整车库存',
+            keepAlive: true
+          }
+        },
+        {
+          path: '/vehicleInventory/search',
+          name: 'VehicleInventorySearch',
+          component: () => import('../views/vehicleInventory/SearchPage.vue'),
+          meta: {
+            title: '搜索',
+            hideHeader: true,
+            keepAlive: false
+          }
+        },
+        {
+          path: '/inventoryLedger/list',
+          name: 'InventoryLedgerListView',
+          component: () => import('../views/inventoryLedger/ListView.vue'),
+          meta: {
+            title: '门店整车台账',
+            keepAlive: true
+          }
+        },
+        {
+          path: '/inventoryLedger/search',
+          name: 'InventoryLedgerSearch',
+          component: () => import('../views/inventoryLedger/SearchPage.vue'),
+          meta: {
+            title: '搜索',
+            hideHeader: true,
+            keepAlive: false
+          }
+        },
+        {
+          path: '/vdcInventory/list',
+          name: 'VdcInventoryListView',
+          component: () => import('../views/vdcInventory/ListView.vue'),
+          meta: {
+            title: '厂端整车库存',
+            keepAlive: true
+          }
+        },
+        {
+          path: '/vdcInventory/search',
+          name: 'VdcInventorySearch',
+          component: () => import('../views/vdcInventory/SearchPage.vue'),
+          meta: {
+            title: '搜索',
             keepAlive: false
           }
         }
@@ -66,8 +153,15 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const globalStore = useGlobalStore()
   // 优先使用路由元信息中的标题
-  globalStore.setTitle(to.meta.title || '')
-  document.title = to.meta.title || ''
+  // 注意：如果 hideHeader 为 true，则不设置标题（由页面自行处理，如搜索页面）
+  if (!to.meta?.hideHeader) {
+    globalStore.setTitle(to.meta.title || '')
+    document.title = to.meta.title || ''
+  } else {
+    // 隐藏头部的页面（如搜索页）清空标题
+    globalStore.setTitle('')
+    document.title = to.meta.title || ''
+  }
 
   next()
 })

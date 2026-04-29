@@ -1,14 +1,33 @@
 <template>
   <div class="inner-content">
     <van-collapse v-model="activeNames">
-      <van-collapse-item v-for="(checkItemItem, checkItemIndex) in innerObj.checkItems" :key="checkItemIndex" :title="checkItemItem.name" :name="index" :value="checkItemItem.isUnusual ? '异常' : ''" value-class="error-text" class="collapse-content">
+      <van-collapse-item
+        v-for="(checkItemItem, checkItemIndex) in innerObj.checkItems"
+        :key="checkItemIndex"
+        :title="checkItemItem.name"
+        :name="index"
+        :value="checkItemItem.isUnusual ? '异常' : ''"
+        value-class="error-text"
+        class="collapse-content"
+      >
         <div class="switch-content">
           <van-row>
-            <van-col class="check-item" v-for="(inspectItem, inspectIndex) in checkItemItem.checkItems" :key="inspectIndex" span="24">
+            <van-col
+              class="check-item"
+              v-for="(inspectItem, inspectIndex) in checkItemItem.checkItems"
+              :key="inspectIndex"
+              span="24"
+            >
               <span class="check-item-text">{{ inspectItem.name }}</span>
               <div class="switch-inner">
                 <span v-if="inspectItem.isUnusual">异常</span>
-                <van-switch v-model="inspectItem.isUnusual" size="20px" inactive-color="#00AA00" active-color="#E43122" @change="switchChange(checkItemItem, checkItemIndex)"/>
+                <van-switch
+                  v-model="inspectItem.isUnusual"
+                  size="20px"
+                  inactive-color="#00AA00"
+                  active-color="#E43122"
+                  @change="switchChange(checkItemItem, checkItemIndex)"
+                />
               </div>
             </van-col>
             <div class="file-content">
@@ -16,19 +35,37 @@
               <van-field
                 class="textarea-content"
                 v-model="checkItemItem.abnormalDesc"
-                :disabled="checkItemItem.isInputDisabled"
+                :class="{ 'disabled-upload': checkItemItem.isInputDisabled }"
                 rows="1"
                 autosize
                 type="textarea"
                 placeholder="请输入异常说明，不少于10个字"
               />
-              <p class="file-title">上传图片<span class="grey-text"></span><span class="require-text">*</span></p>
+              <p class="file-title">
+                上传图片<span class="grey-text"></span><span class="require-text">*</span>
+              </p>
               <div class="upload-content">
-                <div class="upload-item" v-for="(img, imgIndex) in checkItemItem.abnormalUrlList" :key="imgIndex">
-                  <img style="width: 100%; height: 100%; margin-bottom: 0" :src="img" @click="showImg(img)"/>
-                  <img class="delete_icon" src="../../assets/img/delete_icon.png" @click="deleteImg(checkItemIndex, imgIndex)"/>
+                <div
+                  class="upload-item"
+                  v-for="(img, imgIndex) in checkItemItem.abnormalUrlList"
+                  :key="imgIndex"
+                >
+                  <img
+                    style="width: 100%; height: 100%; margin-bottom: 0"
+                    :src="img"
+                    @click="showImg(img)"
+                  />
+                  <img
+                    class="delete_icon"
+                    src="../../assets/img/delete_icon.png"
+                    @click="deleteImg(checkItemIndex, imgIndex)"
+                  />
                 </div>
-                <div class="upload-item" @click="uploadClick(checkItemIndex)">
+                <div
+                  class="upload-item"
+                  @click="uploadClick(checkItemIndex)"
+                  :class="{ 'disabled-upload': checkItemItem.isInputDisabled }"
+                >
                   <svg class="icon upload-img" aria-hidden="true">
                     <use xlink:href="#icon-lxp-h5upload-mob"></use>
                   </svg>
@@ -44,7 +81,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, defineProps, defineEmits, watch, onMounted } from 'vue'
+import { ref, reactive, watch, onMounted } from 'vue'
 import { showFailToast, showImagePreview } from 'vant'
 import { getAppImg } from '@/libs/utils/nativeFn'
 
@@ -85,19 +122,13 @@ const activeNames = ref(['1'])
 const clickIndex = ref()
 
 const switchChange = (_secondCheckItemItem, _firstIndex) => {
-  const _obj = innerObj.checkItems[_firstIndex].checkItems
-  const _temp = tempObj.checkItems[_firstIndex].checkItems
-  for (let index = 0; index < _obj.length; index++) {
-    if (Number(_obj[index].isUnusual) === _temp[index].isUnusual) {
-      _secondCheckItemItem.isInputDisabled = true
-    } else {
-      _secondCheckItemItem.isInputDisabled = false
-      break
-    }
-  }
+  // 检查该组下是否有任何子项为异常
+  const hasUnusual = _secondCheckItemItem.checkItems.some(item => item.isUnusual)
+  // 如果有异常或已有异常说明或已有异常图片，则允许编辑
+  _secondCheckItemItem.isInputDisabled = !(hasUnusual || _secondCheckItemItem.abnormalDesc || (_secondCheckItemItem.abnormalUrlList && _secondCheckItemItem.abnormalUrlList.length > 0))
 }
 
-const showImg = url => {
+const showImg = (url) => {
   showImagePreview([url])
 }
 
@@ -109,9 +140,10 @@ const deleteImg = (_firstIndex, index) => {
 }
 
 const uploadClick = (_firstIndex) => {
-  // if (innerObj.checkItems[_firstIndex].isInputDisabled) {
-  //   return false
-  // }
+  const checkItem = innerObj.checkItems[_firstIndex]
+  if (checkItem.isInputDisabled) {
+    return false
+  }
   clickIndex.value = _firstIndex
   getAppImg()
 }
@@ -124,10 +156,13 @@ watch(
       ...deepClone(newVal)
     })
     Object.assign(tempObj, deepClone(newVal))
-    innerObj.checkItems.map(checkItem => {
-      checkItem.isInputDisabled = true
-      checkItem.abnormalUrlList = checkItem.abnormalUrl && checkItem.abnormalUrl.length ? checkItem.abnormalUrl.split(',') : []
-      checkItem.checkItems.map(thirdItem => {
+    innerObj.checkItems.map((checkItem) => {
+      checkItem.isInputDisabled = !(checkItem.isUnusual === 1 || checkItem.abnormalDesc || (checkItem.abnormalUrlList && checkItem.abnormalUrlList.length > 0))
+      checkItem.abnormalUrlList =
+        checkItem.abnormalUrl && checkItem.abnormalUrl.length
+          ? checkItem.abnormalUrl.split(',')
+          : []
+      checkItem.checkItems.map((thirdItem) => {
         thirdItem.isUnusual = Boolean(thirdItem.isUnusual)
         if (thirdItem.isUnusual) {
           checkItem.isUnusual = 1
@@ -142,14 +177,14 @@ watch(
 
 watch(
   () => props.needSubmit,
-  newVal => {
+  (newVal) => {
     if (newVal) {
       const obj = { ...deepClone(innerObj) }
       let isSubmit = true
       // 备注和图片必填
       for (const checkItem of obj.checkItems) {
         let count = 0
-        checkItem.checkItems.map(thirdItem => {
+        checkItem.checkItems.map((thirdItem) => {
           if (thirdItem.isUnusual) {
             count++
           }
@@ -168,13 +203,19 @@ watch(
             break
           }
         } else {
+          // 没有勾选异常，但如果有异常说明或异常图片，则清空相关内容
+          if (checkItem.abnormalDesc || (checkItem.abnormalUrlList && checkItem.abnormalUrlList.length > 0)) {
+            // 清空异常说明和图片
+            checkItem.abnormalDesc = ''
+            checkItem.abnormalUrlList = []
+          }
           checkItem.isUnusual = 0
         }
       }
       if (isSubmit) {
-        obj.checkItems.map(checkItem => {
+        obj.checkItems.map((checkItem) => {
           checkItem.abnormalUrl = checkItem.abnormalUrlList.join(',')
-          checkItem.checkItems.map(thirdItem => {
+          checkItem.checkItems.map((thirdItem) => {
             thirdItem.isUnusual = Number(thirdItem.isUnusual)
           })
         })
@@ -191,62 +232,60 @@ watch(
     }
   }
 )
-
 </script>
 
 <style lang="scss" scoped>
-.inner-content{
+.inner-content {
   flex: 1;
   overflow-y: auto;
 }
-
 </style>
 
 <style style="scss" scoped>
-.collapse-content{
+.collapse-content {
   margin: 12px;
   border-radius: 6px;
   overflow: hidden;
-  .check-item{
+  .check-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 8px 12px;
-    .check-item-text{
+    .check-item-text {
       font-family: PingFang SC;
       font-size: 14px;
-      color: #191A1B;
+      color: #191a1b;
     }
   }
-  .switch-inner{
+  .switch-inner {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    span{
+    span {
       font-family: PingFang SC;
       font-size: 12px;
-      color: #E43122;
+      color: #e43122;
       margin-right: 4px;
     }
   }
 
-  .file-content{
-    border-top: 1px solid #E6E6E5;
+  .file-content {
+    border-top: 1px solid #e6e6e5;
     width: 100%;
     padding-top: 12px;
-    .file-title{
+    .file-title {
       font-size: 14px;
       letter-spacing: 0.7px;
-      color: #191A1B;
+      color: #191a1b;
       margin-bottom: 8px;
-      .require-text{
-        color: #E43122;
+      .require-text {
+        color: #e43122;
       }
-      .grey-text{
+      .grey-text {
         color: #888888;
       }
     }
-    .textarea-content{
+    .textarea-content {
       width: 100%;
       height: 80px;
       box-sizing: border-box;
@@ -255,32 +294,32 @@ watch(
       border-radius: 7px;
       margin-bottom: 16px;
     }
-    .upload-content{
+    .upload-content {
       display: flex;
       align-items: center;
       justify-content: flex-start;
       flex-wrap: wrap;
       gap: 2.13vw;
-      .upload-item{
+      .upload-item {
         width: 21.3vw;
         height: 21.3vw;
         border-radius: 7px;
-        background: #F5F5F5;
+        background: #f5f5f5;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
         position: relative;
-        .upload-img{
+        .upload-img {
           width: 24px;
           height: 24px;
           margin-bottom: 12px;
         }
-        .upload-text{
+        .upload-text {
           font-size: 12px;
           color: #888888;
         }
-        .delete_icon{
+        .delete_icon {
           position: absolute;
           top: 0;
           right: 0;
@@ -291,15 +330,20 @@ watch(
     }
   }
 }
+
+.disabled-upload {
+  opacity: 0.5;
+  pointer-events: none;
+}
 </style>
 <style>
-.inner-content .error-text{
+.inner-content .error-text {
   font-size: 12px;
-  color: #E43122;
+  color: #e43122;
   margin-right: 12px;
 }
 
-.switch-content .van-col{
+.switch-content .van-col {
   padding-left: 0 !important;
 }
 </style>
