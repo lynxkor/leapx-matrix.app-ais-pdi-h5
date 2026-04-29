@@ -51,12 +51,13 @@ service.interceptors.response.use(
   }
 )
 
-export function post(url, data) {
+export function post(url, data, timeout = 10000) {
   return service({
     url,
     headers: { 'Content-Type': 'application/json' },
     method: 'post',
-    data
+    data,
+    timeout
   })
 }
 

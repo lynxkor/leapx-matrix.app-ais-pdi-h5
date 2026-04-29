@@ -2,7 +2,7 @@
   <filter-header
     ref="filterHeaderRef"
     :placeholder="headerPlaceholder"
-    :search-page-route="'VehicleVdcInventorySearch'"
+    :search-page-route="'VdcInventorySearch'"
     @search="headerSearch"
     :filterList="searchList"
     @filterSearch="filterSearch"
@@ -25,13 +25,13 @@
       :has-no-data="
         dataList.length === 0 &&
         requestData.data &&
-        (requestData.data.seriesIdList?.length ||
-          requestData.data.modelIdList?.length ||
-          requestData.data.yearTypeList?.length ||
-          requestData.data.exteriorList?.length ||
-          requestData.data.interiorList?.length ||
-          requestData.data.wheelHubList?.length ||
-          requestData.data.optionPackageList?.length ||
+        (requestData.data.seriesIds?.length ||
+          requestData.data.modelIds?.length ||
+          requestData.data.yearTypeIds?.length ||
+          requestData.data.exteriorIds?.length ||
+          requestData.data.interiorIds?.length ||
+          requestData.data.wheelHubIds?.length ||
+          requestData.data.optionPackageIds?.length ||
           requestData.data.materialsDescLike ||
           requestData.data.materialsCodeLike)
       "
@@ -45,19 +45,19 @@
             <div class="resource-item">
               <div class="resource-content">
                 <span class="dot-badge" :style="{ backgroundColor: getResourceColor(item.inventoryResource) }"></span>
-                <span class="resource-desc" :class="getResourceClass(item.inventoryResource)">{{ getResourceDesc(item.inventoryResource) }}</span>
+                <span class="resource-desc" :class="getResourceClass(item.inventoryResource)">{{ item.inventoryResourceLabel}}</span>
               </div>
             </div>
             <div class="resource-item">
               <div class="resource-content">
                 <span class="dot-badge" :style="{ backgroundColor: getResourceColor(item.productionInProgressResource) }"></span>
-                <span class="resource-desc" :class="getResourceClass(item.productionInProgressResource)">{{ getResourceDesc(item.productionInProgressResource) }}</span>
+                <span class="resource-desc" :class="getResourceClass(item.productionInProgressResource)">{{ item.productionInProgressResourceLabel }}</span>
               </div>
             </div>
             <div class="resource-item">
               <div class="resource-content">
                 <span class="dot-badge" :style="{ backgroundColor: getResourceColor(item.productionScheduledResource) }"></span>
-                <span class="resource-desc" :class="getResourceClass(item.productionScheduledResource)">{{ getResourceDesc(item.productionScheduledResource) }}</span>
+                <span class="resource-desc" :class="getResourceClass(item.productionScheduledResource)">{{ item.productionScheduledResourceLabel }}</span>
               </div>
             </div>
           </div>
@@ -72,7 +72,7 @@ import { reactive, ref, onMounted, onActivated, onDeactivated, nextTick } from '
 import FilterHeader from '@/libs/components/FilterHeader.vue'
 import RefreshList from '@/libs/components/RefreshList.vue'
 
-import { getList } from '@/api/vehicleVdcInventoryStatistics'
+import { getList } from '@/api/vdcInventory'
 import {
   getVehicleSeriesList,
   getVehicleModelList,
@@ -108,7 +108,7 @@ const searchList = ref([
   },
   {
     title: '年款',
-    key: 'yearTypeList',
+    key: 'yearTypeIdList',
     default: [],
     nodeType: 'multiple',
     options: [],
@@ -116,7 +116,7 @@ const searchList = ref([
   },
   {
     title: '外观',
-    key: 'exteriorList',
+    key: 'exteriorIdList',
     default: [],
     nodeType: 'multiple',
     options: [],
@@ -124,7 +124,7 @@ const searchList = ref([
   },
   {
     title: '内饰',
-    key: 'interiorList',
+    key: 'interiorIdList',
     default: [],
     nodeType: 'multiple',
     options: [],
@@ -132,7 +132,7 @@ const searchList = ref([
   },
   {
     title: '轮毂',
-    key: 'wheelHubList',
+    key: 'wheelHubIdList',
     default: [],
     nodeType: 'multiple',
     options: [],
@@ -140,7 +140,7 @@ const searchList = ref([
   },
   {
     title: '选装包',
-    key: 'optionPackageList',
+    key: 'optionPackageIdList',
     default: [],
     nodeType: 'multiple',
     options: [],
@@ -150,13 +150,15 @@ const searchList = ref([
 const dataList = ref([])
 const requestData = reactive({
   data: {
-    seriesIdList: [],
-    modelIdList: [],
-    yearTypeList: [],
-    exteriorList: [],
-    interiorList: [],
-    wheelHubList: [],
-    optionPackageList: [],
+    pageNum: 1,
+    pageSize: 20,
+    seriesIds: [],
+    modelIds: [],
+    yearTypeIds: [],
+    exteriorIds: [],
+    interiorIds: [],
+    wheelHubIds: [],
+    optionPackageIds: [],
     materialsDescLike: '',
     materialsCodeLike: ''
   },
@@ -245,13 +247,13 @@ const headerSearch = (row) => {
 const resetFilterConditions = () => {
   requestData.data.materialsDescLike = ''
   requestData.data.materialsCodeLike = ''
-  requestData.data.seriesIdList = []
-  requestData.data.modelIdList = []
-  requestData.data.yearTypeList = []
-  requestData.data.exteriorList = []
-  requestData.data.interiorList = []
-  requestData.data.wheelHubList = []
-  requestData.data.optionPackageList = []
+  requestData.data.seriesIds = []
+  requestData.data.modelIds = []
+  requestData.data.yearTypeIds = []
+  requestData.data.exteriorIds = []
+  requestData.data.interiorIds = []
+  requestData.data.wheelHubIds = []
+  requestData.data.optionPackageIds = []
 
   if (filterHeaderRef.value) {
     filterHeaderRef.value.resetFilters()
@@ -263,13 +265,13 @@ const resetFilterConditions = () => {
 }
 
 const filterSearch = (obj) => {
-  requestData.data.seriesIdList = obj.seriesIdList
-  requestData.data.modelIdList = obj.modelIdList || []
-  requestData.data.yearTypeList = obj.yearTypeList || []
-  requestData.data.exteriorList = obj.exteriorList || []
-  requestData.data.interiorList = obj.interiorList || []
-  requestData.data.wheelHubList = obj.wheelHubList || []
-  requestData.data.optionPackageList = obj.optionPackageList || []
+  requestData.data.seriesIds = obj.seriesIdList
+  requestData.data.modelIds = obj.modelIdList || []
+  requestData.data.yearTypeIds = obj.yearTypeIdList || []
+  requestData.data.exteriorIds = obj.exteriorIdList || []
+  requestData.data.interiorIds = obj.interiorIdList || []
+  requestData.data.wheelHubIds = obj.wheelHubIdList || []
+  requestData.data.optionPackageIds = obj.optionPackageIdList || []
 
   requestData.data.pageNum = 1
   dataList.value = []
@@ -297,13 +299,13 @@ const getVehicle = () => {
     })
 }
 
-const loadVehicleModels = (seriesIds) => {
-  if (!seriesIds || !seriesIds.length) {
+const loadVehicleModels = (seriesIdList) => {
+  if (!seriesIdList || !seriesIdList.length) {
     searchList.value[1].options = []
     return
   }
   const data = {
-    seriesIdList: seriesIds,
+    seriesIdList: seriesIdList,
     pageSize: 200
   }
   getVehicleModelList(data)
@@ -396,6 +398,7 @@ const loadInteriors = () => {
 const loadWheelHubs = () => {
   getVehicleWheelHub({ pageSize: 200 })
     .then((res) => {
+      console.log('轮毂 API 响应:', res)
       if (res.code === 200) {
         const arr = []
         res.data.map((item) => {
@@ -404,12 +407,15 @@ const loadWheelHubs = () => {
             value: item.id
           })
         })
+        console.log('轮毂数据:', arr)
         searchList.value[5].options = arr
       } else {
+        console.log('轮毂 API 返回错误:', res)
         searchList.value[5].options = []
       }
     })
-    .catch(() => {
+    .catch((err) => {
+      console.log('轮毂 API 请求失败:', err)
       searchList.value[5].options = []
     })
 }
@@ -452,7 +458,14 @@ const setData = (res) => {
     list = res.list
   }
 
-  dataList.value = [...list]
+  // 根据是否刷新决定是替换还是累加数据
+  if (res.isRefresh) {
+    // 刷新时替换数据
+    dataList.value = [...list]
+  } else {
+    // 加载更多时累加数据
+    dataList.value = [...dataList.value, ...list]
+  }
   needRefresh.value = false
   console.log('dataList:', dataList.value)
 }
@@ -460,45 +473,29 @@ const setData = (res) => {
 // 获取资源颜色
 const getResourceColor = (type) => {
   switch (type) {
-    case 10: // 无
+    case 1010: // 无
       return '#ccc'
-    case 20: // 极少
+    case 1020: // 极少
       return '#E30808'
-    case 30: // 少量
+    case 1030: // 少量
       return '#FFA400'
-    case 40: // 充足
+    case 1040: // 充足
       return '#00AA00'
     default:
       return '#ccc'
   }
 }
 
-// 获取资源描述
-const getResourceDesc = (type) => {
-  switch (type) {
-    case 10:
-      return '无'
-    case 20:
-      return '极少'
-    case 30:
-      return '少量'
-    case 40:
-      return '充足'
-    default:
-      return '-'
-  }
-}
-
 // 获取资源样式类
 const getResourceClass = (type) => {
   switch (type) {
-    case 40:
+    case 1040:
       return 'sufficient' // 充足
-    case 30:
+    case 1030:
       return 'low' // 少量
-    case 20:
+    case 1020:
       return 'scarce' // 极少
-    case 10:
+    case 1010:
       return 'none' // 无
     default:
       return ''
@@ -529,7 +526,7 @@ const getResourceClass = (type) => {
   display: flex;
   align-items: center;
   padding: 12px 16px;
-  background: #fff;
+  background: #f7f8fa;
   border-bottom: 1px solid #ebedf0;
 
   .header-materials {

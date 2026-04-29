@@ -27,7 +27,7 @@
             <van-field
               class="textarea-content"
               v-model="checkItem.abnormalDesc"
-              :disabled="!checkItem.isUnusual"
+              :class="{ 'disabled-upload': !checkItem.isUnusual }"
               rows="1"
               autosize
               type="textarea"

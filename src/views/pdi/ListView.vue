@@ -38,11 +38,11 @@
           @click="PDIBtnClick(item)"
           v-show="
             (active !== 1 &&
-              resourceBtnList.includes('AISMC-storeVehiclePdi-addPdiEntry') &&
-              resourceBtnList.includes('AISMC-storeVehiclePdi-getPdiEntryDetails')) ||
+              resourceBtnList.includes('AISVS-storeVehiclePdi-addPdiEntry') &&
+              resourceBtnList.includes('AISVS-storeVehiclePdi-getPdiEntryDetails')) ||
             (active === 1 &&
-              resourceBtnList.includes('AISMC-storeVehiclePdi-addRepairConfirm') &&
-              resourceBtnList.includes('AISMC-storeVehiclePdi-getRepairConfirmDetails'))
+              resourceBtnList.includes('AISVS-storeVehiclePdi-addRepairConfirm') &&
+              resourceBtnList.includes('AISVS-storeVehiclePdi-getRepairConfirmDetails'))
           "
           >{{ active === 1 ? '异常修复确认' : 'PDI录入' }}</ais-button
         >

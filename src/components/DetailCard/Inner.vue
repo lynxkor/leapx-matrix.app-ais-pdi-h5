@@ -35,7 +35,7 @@
               <van-field
                 class="textarea-content"
                 v-model="checkItemItem.abnormalDesc"
-                :disabled="checkItemItem.isInputDisabled"
+                :class="{ 'disabled-upload': checkItemItem.isInputDisabled }"
                 rows="1"
                 autosize
                 type="textarea"
