@@ -4,6 +4,7 @@ import { List, Cell, Search, NavBar, PullRefresh, Image as VanImage, Lazyload, S
 
 import App from './App.vue'
 import router from './router'
+import { mountWithToken } from '@/libs/utils/tokenWaiter'
 // 引入组件样式
 import 'vant/lib/index.css'
 // 必须写在vant样式后，覆盖vant样式
@@ -65,4 +66,4 @@ if (import.meta.env.DEV) {
   })
 }
 
-app.mount('#app')
+mountWithToken(app)
