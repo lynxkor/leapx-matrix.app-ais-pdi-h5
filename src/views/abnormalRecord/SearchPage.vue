@@ -161,7 +161,7 @@ const handleSearch = async(keyword) => {
 
   try {
     const searchParams = {
-      vin: keyword,
+      vinLastSix: keyword,
       pageNum: 1,
       pageSize: 100
     }

@@ -7,7 +7,7 @@ import { applyAuthHeaders } from '@/utils/authToken'
 
 // 创建axios实例
 const service = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL, // 从环境变量读取基础URL
+  baseURL: window.APP_AIS_H5_CONFIG?.VITE_API_BASE_URL || import.meta.env.VITE_API_BASE_URL, // 从环境变量读取基础URL
   timeout: 10000 // 超时时间
 })
 
@@ -45,12 +45,13 @@ service.interceptors.response.use(
   }
 )
 
-export function post(url, data) {
+export function post(url, data, timeout = 10000) {
   return service({
     url,
     headers: { 'Content-Type': 'application/json' },
     method: 'post',
-    data
+    data,
+    timeout
   })
 }
 

@@ -1,10 +1,10 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
-import { mountWithToken } from '@/libs/utils/tokenWaiter'
-import { List, Cell, Search, NavBar, PullRefresh, Image as VanImage, Lazyload, Swipe, SwipeItem, ActionSheet, ActionBar, ActionBarButton, Button, Form, Field, CellGroup, Icon, Dialog, Popup, DatePicker, TimePicker, Col, Row, Tab, Tabs, Switch, Collapse, CollapseItem, Loading } from 'vant'
+import { List, Cell, Search, NavBar, PullRefresh, Image as VanImage, Lazyload, Swipe, SwipeItem, ActionSheet, ActionBar, ActionBarButton, Button, Form, Field, CellGroup, Icon, Dialog, Popup, DatePicker, TimePicker, Col, Row, Tab, Tabs, Switch, Collapse, CollapseItem, Loading, Tag } from 'vant'
 
 import App from './App.vue'
 import router from './router'
+import { mountWithToken } from '@/libs/utils/tokenWaiter'
 // 引入组件样式
 import 'vant/lib/index.css'
 // 必须写在vant样式后，覆盖vant样式
@@ -53,6 +53,7 @@ app.use(Switch)
 app.use(Collapse)
 app.use(CollapseItem)
 app.use(Loading)
+app.use(Tag)
 
 // 注册时可以配置额外的选项
 app.use(Lazyload, {

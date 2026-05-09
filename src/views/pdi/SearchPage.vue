@@ -226,14 +226,14 @@ const showPdiButton = (item) => {
   // 异常修复确认 - 需要满足条件且有对应权限
   if (item.isPdiSubmit === 1 && item.isUnusual === 1 && item.isRepaired === 0) {
     return (
-      resourceBtnList.value.includes('AISMC-storeVehiclePdi-addRepairConfirm') &&
-      resourceBtnList.value.includes('AISMC-storeVehiclePdi-getRepairConfirmDetails')
+      resourceBtnList.value.includes('AISVS-storeVehiclePdi-addRepairConfirm') &&
+      resourceBtnList.value.includes('AISVS-storeVehiclePdi-getRepairConfirmDetails')
     )
   } else if (item.isPdiSubmit === 0) {
     // PDI录入 - 需要有对应权限
     return (
-      resourceBtnList.value.includes('AISMC-storeVehiclePdi-addPdiEntry') &&
-      resourceBtnList.value.includes('AISMC-storeVehiclePdi-getPdiEntryDetails')
+      resourceBtnList.value.includes('AISVS-storeVehiclePdi-addPdiEntry') &&
+      resourceBtnList.value.includes('AISVS-storeVehiclePdi-getPdiEntryDetails')
     )
   }
   // 其他情况不显示按钮
