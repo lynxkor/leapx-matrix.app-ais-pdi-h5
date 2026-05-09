@@ -1,5 +1,6 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
+import { mountWithToken } from '@/libs/utils/tokenWaiter'
 import { List, Cell, Search, NavBar, PullRefresh, Image as VanImage, Lazyload, Swipe, SwipeItem, ActionSheet, ActionBar, ActionBarButton, Button, Form, Field, CellGroup, Icon, Dialog, Popup, DatePicker, TimePicker, Col, Row, Tab, Tabs, Switch, Collapse, CollapseItem, Loading } from 'vant'
 
 import App from './App.vue'
@@ -64,4 +65,4 @@ if (import.meta.env.DEV) {
   })
 }
 
-app.mount('#app')
+mountWithToken(app)

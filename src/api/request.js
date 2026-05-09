@@ -3,6 +3,7 @@ import axios from 'axios'
 import { showConfirmDialog } from 'vant'
 import { useUserStore } from '@/stores/user'
 import { outWebview } from '@/libs/utils/app'
+import { applyAuthHeaders } from '@/utils/authToken'
 
 // 创建axios实例
 const service = axios.create({
@@ -14,14 +15,7 @@ const service = axios.create({
 service.interceptors.request.use(
   (config) => {
     const userStore = useUserStore()
-    // 从Pinia store获取token
-    const token = userStore.token
-    // 添加Authorization头
-    if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`
-      config.headers['platform'] = 'leapx'
-    }
-    return config
+    return applyAuthHeaders(config, userStore.token)
   },
   (error) => {
     // 请求错误处理
