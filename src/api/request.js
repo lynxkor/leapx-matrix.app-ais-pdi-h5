@@ -5,9 +5,8 @@ import { useUserStore } from '@/stores/user'
 import { outWebview } from '@/libs/utils/app'
 import { applyAuthHeaders } from '@/utils/authToken'
 
-const root = window.APP_AIS_H5_CONFIG.VUE_APP_WORK_ORDER_URL
 const leapx = window.APP_AIS_H5_CONFIG.VITE_LEAPX_URL
-const ais = window.APP_AIS_H5_CONFIG.VITE_AIS_URL
+const ais = window.APP_AIS_H5_CONFIG.VITE_API_BASE_URL
 
 // 路由到 ais 后端的 URL 前缀列表，新增前缀只需在此添加一行
 const AIS_PREFIXES = [
@@ -26,7 +25,7 @@ const AIS_PREFIXES = [
 function resolveBaseURL (url, sign) {
   if (sign) return leapx
   const target = url.startsWith('/') ? url : '/' + url
-  return AIS_PREFIXES.some((p) => target.startsWith(p)) ? ais : root
+  return AIS_PREFIXES.some((p) => target.startsWith(p)) ? ais : leapx
 }
 
 // 创建axios实例
