@@ -73,9 +73,8 @@ import RefreshList from '@/libs/components/RefreshList.vue'
 import ListItem from '@/components/ListItem.vue'
 import AisButton from '@/components/AisButton.vue'
 import AisDialog from '@/libs/components/AisDialog.vue'
-
-import { getPdiList, getVehicleModelList, getVehicleSeriesList, getOwnerTree } from '@/api/pdi'
-
+import { getPdiList, getVehicleModelList, getVehicleSeriesList } from '@/api/pdi'
+import { getOwnerTree } from '@/libs/api/common'
 const router = useRouter()
 
 const filterHeaderRef = ref(null)
@@ -282,7 +281,6 @@ const filterSearch = (obj) => {
 const getOwnerTreeList = () => {
   getOwnerTree({ resourceTag: 'AISVS100001', resourceType: 'APP_SIDE' })
     .then((res) => {
-      console.log('res666', res)
       res.data.forEach((item) => {
         resourceBtnList.value.push(item.resourceTag)
       })
