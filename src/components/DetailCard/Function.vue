@@ -17,6 +17,7 @@
                 size="20px"
                 inactive-color="#00AA00"
                 active-color="#E43122"
+                @change="(val) => onSwitchChange(val, checkItemIndex)"
               />
             </div>
           </div>
@@ -116,6 +117,14 @@ const clickIndex = ref()
 
 const showImg = (url) => {
   showImagePreview([url])
+}
+
+const onSwitchChange = (val, index) => {
+  if (val) {
+    if (!activeNames.value.includes(index)) {
+      activeNames.value.push(index)
+    }
+  }
 }
 
 const deleteImg = (_firstIndex, index) => {

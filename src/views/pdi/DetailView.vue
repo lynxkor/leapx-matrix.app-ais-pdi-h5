@@ -94,7 +94,7 @@ import Repair from '@/components/DetailCard/Repair.vue'
 import { getPdiDetails, getPdiRepairDetails, addPdiEntry, addRepairConfirm } from '@/api/pdi'
 
 defineOptions({
-  name: 'PdiDetailView',
+  name: 'PdiDetailView'
 })
 
 const globalStore = useGlobalStore()
@@ -260,7 +260,7 @@ watch(
   () => currentIndex.value,
   (newVal) => {
     currentIndexName.value = tabList.value[newVal]
-  },
+  }
 )
 </script>
 
