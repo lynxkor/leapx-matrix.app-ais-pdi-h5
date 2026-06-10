@@ -15,6 +15,7 @@
   </div>
   <div class="common-scroll-content" ref="scrollEle">
     <refresh-list
+      ref="refreshListRef"
       :requestData="requestData"
       :needRefresh="needRefresh"
       :has-no-data="
@@ -78,6 +79,7 @@ import { getOwnerTree } from '@/libs/api/common'
 const router = useRouter()
 
 const filterHeaderRef = ref(null)
+const refreshListRef = ref(null)
 const headerPlaceholder = ref('搜索')
 const searchList = ref([
   {
@@ -195,11 +197,9 @@ onActivated(() => {
     dialogKey.value += 1
     const needRefresh = sessionStorage.getItem('needRefresh')
     if (needRefresh) {
-      requestData.data.vinLastSix = ''
-      requestData.data.pageNum = 1
-      dataList.value = []
-      // 强制触发刷新，通过创建新的data对象来确保响应式更新
-      requestData.data = { ...requestData.data }
+      sessionStorage.removeItem('needRefresh')
+      // 直接调 RefreshList 的 reset() 强制刷新，绕开 isSearchParamsEqual 的相等性短路
+      refreshListRef.value?.reset()
     } else {
       // 如果不需要刷新数据，则恢复滚动位置
       restoreScrollPosition()
