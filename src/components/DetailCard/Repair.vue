@@ -10,7 +10,7 @@
               </div>
               <div class="reason-text">异常说明：{{ checkItem.abnormalDesc }}</div>
               <div class="img-content">
-                <img class="reason-img" v-for="(imgItem, imgIndex) in checkItem.abnormalUrl.length && checkItem.abnormalUrl?.split(',')" :key="imgIndex" :src="imgItem" @click="showImg(imgItem)"/>
+                <img class="reason-img" v-for="(imgItem, imgIndex) in checkItem.abnormalUrl?.length && checkItem.abnormalUrl?.split(',')" :key="imgIndex" :src="imgItem" @click="showImg(imgItem)"/>
               </div>
             </div>
           </van-row>
@@ -71,7 +71,7 @@ const props = defineProps({
 
 const emit = defineEmits(['repairSubmit'])
 
-const activeNames = ref([0])
+const activeNames = ref([])
 const innerObj = reactive({})
 const deepClone = (obj) => JSON.parse(JSON.stringify(obj))
 const isRepairedFlag = ref(false)
@@ -112,6 +112,7 @@ watch(
     })
     isRepairedFlag.value = Boolean(innerObj.checkItems[0].isRepaired)
     repairedDesc.value = innerObj.checkItems[0].repairedDesc
+    activeNames.value = innerObj.checkItems.map((_, index) => index)
   },
   {
     immediate: true
