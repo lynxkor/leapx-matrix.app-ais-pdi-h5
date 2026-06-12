@@ -40,7 +40,7 @@
     "@leapmotor/design-v3-h5": "0.0.1"
   },
   "dependencies": {
-    "axios": "^1.16.0",
+    "axios": "1.16.0",
     "js-yaml": "^4.1.1",
     "pinia": "^3.0.3",
     "vant": "^4.9.21",
