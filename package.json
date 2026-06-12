@@ -59,6 +59,7 @@
     "husky": "^9.1.7",
     "lint-staged": "^16.1.6",
     "prettier": "^3.6.3",
+    "rollup": "4.59.1",
     "sass": "^1.89.2",
     "stylelint": "^16.6.1",
     "stylelint-config-html": "^1.1.0",
