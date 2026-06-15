@@ -60,7 +60,9 @@ app.use(Lazyload, {
   lazyComponent: true
 })
 
-if (import.meta.env.DEV) {
+const environment = window.APP_AIS_H5_CONFIG?.VITE_SENTRY_ENV
+if (environment && environment !== 'production') {
+  // 非生产环境启用 vConsole
   import('vconsole').then(({ default: VConsole }) => {
     new VConsole()
   })
