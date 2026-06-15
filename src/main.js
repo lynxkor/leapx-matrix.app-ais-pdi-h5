@@ -11,6 +11,7 @@ import 'vant/lib/index.css'
 import './assets/main.css'
 // 引入全局样式变量（包含 CSS 自定义属性）
 import '@/libs/assets/styles/index.scss'
+import './assets/js/vconsole.js'
 
 const setHtmlFontsize = () => {
   var htmlWidth = document.documentElement.clientWidth || document.body.clientWidth
@@ -60,7 +61,9 @@ app.use(Lazyload, {
   lazyComponent: true
 })
 
-if (import.meta.env.DEV) {
+const environment = window.APP_AIS_H5_CONFIG?.VITE_SENTRY_ENV
+if (environment && environment !== 'production') {
+  // 非生产环境启用 vConsole
   import('vconsole').then(({ default: VConsole }) => {
     new VConsole()
   })
