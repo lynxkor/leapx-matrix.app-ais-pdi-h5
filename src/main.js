@@ -11,6 +11,7 @@ import 'vant/lib/index.css'
 import './assets/main.css'
 // 引入全局样式变量（包含 CSS 自定义属性）
 import '@/libs/assets/styles/index.scss'
+import './assets/js/vconsole.js'
 
 const setHtmlFontsize = () => {
   var htmlWidth = document.documentElement.clientWidth || document.body.clientWidth
