@@ -248,7 +248,7 @@ const getBatteryLevel = (electricity) => {
 
     .search-inner-btn {
       background-color: #009100;
-      color: #ffffff;
+      color: #fff;
       height: 26px;
       width: 52px;
       font-size: 12px;
@@ -296,7 +296,7 @@ const getBatteryLevel = (electricity) => {
 }
 
 .list-item-content {
-  background: #ffffff;
+  background: #fff;
   padding: 12px;
   border-radius: 7px;
   margin-bottom: 12px;
@@ -307,7 +307,7 @@ const getBatteryLevel = (electricity) => {
     align-items: flex-start;
 
     .card-title-text {
-      font-family: PingFang SC;
+      font-family: "PingFang SC", sans-serif;
       font-size: 15px;
       font-weight: 500;
       color: var(--leap-color-default);
@@ -363,7 +363,7 @@ const getBatteryLevel = (electricity) => {
   }
 
   .card-subtitle-text {
-    font-family: PingFang SC;
+    font-family: "PingFang SC", sans-serif;
     font-size: 13px;
     color: var(--leap-color-default-light-1);
     margin-top: 4px;
@@ -377,7 +377,7 @@ const getBatteryLevel = (electricity) => {
     border-radius: 4px;
 
     .card-info-col {
-      font-family: PingFang SC;
+      font-family: "PingFang SC", sans-serif;
       font-size: 12px;
       padding: 8px;
       padding-bottom: 0;

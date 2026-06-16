@@ -87,7 +87,7 @@ const renderText = () => {
 <style lang="scss" scoped>
   .btn-item{
     padding: 0 18px;
-    font-family: PingFang SC;
+    font-family: "PingFang SC", sans-serif;
     font-size: 12px;
     min-width: 60px;
     height: 28px;

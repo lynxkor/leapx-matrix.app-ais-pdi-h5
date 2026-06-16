@@ -55,13 +55,17 @@ watch(() => props.tabList, () => {
   align-items: center;
   justify-content: flex-start;
   overflow-x: auto;
+
   &::-webkit-scrollbar {
     display: none;
   }
+
   scrollbar-width: none;
+
   &.center-tabs {
     justify-content: center;
   }
+
   .header-item{
     overflow-x: auto;
     display: flex;
@@ -69,15 +73,16 @@ watch(() => props.tabList, () => {
     flex: 0 0 auto;
     min-width: auto;
     flex-wrap: nowrap;
+
     .header-item-text{
-      font-family: PingFang SC;
+      font-family: "PingFang SC", sans-serif;
       font-size: 14px;
-      color: #888888;
+      color: #888;
       margin: 0 4px;
     }
 
     .header-item-text-hl{
-      color: #00AA00;
+      color: #0A0;
     }
 
     .header-item-img{

@@ -476,6 +476,7 @@ watch(
   overflow-y: auto;
   height: calc(100% - 42px);
 }
+
 .tab-content {
   width: 100%;
   overflow-x: auto;
@@ -497,51 +498,61 @@ watch(
     flex-wrap: nowrap !important;
   }
 }
+
 .list-item-content {
-  background: #ffffff;
+  background: #fff;
   padding: 12px;
   border-radius: 7px;
   margin-top: 12px;
+
   .card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 4px;
   }
+
   .card-title-text {
-    font-family: PingFang SC;
+    font-family: "PingFang SC", sans-serif;
     font-size: 16px;
     font-weight: 500;
     color: #191a1b;
   }
+
   .card-tags {
     display: flex;
     gap: 4px;
   }
+
   .card-subtitle-text {
-    font-family: PingFang SC;
+    font-family: "PingFang SC", sans-serif;
     font-size: 13px;
     color: #545454;
   }
+
   .card-info {
     box-sizing: border-box;
     background: #fcfbfb;
     margin-top: 8px;
     padding-bottom: 8px;
+
     .card-info-col {
-      font-family: PingFang SC;
+      font-family: "PingFang SC", sans-serif;
       font-size: 12px;
       padding: 8px;
       padding-bottom: 0;
+
       .card-info-title {
-        color: #888888;
+        color: #888;
         margin-bottom: 2px;
       }
+
       .card-info-des {
         color: #545454;
       }
     }
   }
+
   .btn-content {
     margin-top: 12px;
     display: flex;
