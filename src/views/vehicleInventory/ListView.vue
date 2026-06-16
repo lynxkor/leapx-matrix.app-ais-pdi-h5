@@ -248,7 +248,6 @@ onMounted(() => {
     padding: 4px 12px;
     background: transparent;
     border: none;
-
     font-size: 14px;
     color: var(--leap-color-default-light-2);
     cursor: pointer;
@@ -293,7 +292,7 @@ onMounted(() => {
 }
 
 .series-card {
-  background: #ffffff;
+  background: #fff;
   border-radius: 7px;
   padding: 12px;
   margin-bottom: 12px;
@@ -304,14 +303,12 @@ onMounted(() => {
     margin-bottom: 12px;
 
     .series-name {
-
       font-size: 15px;
       font-weight: 600;
       color: var(--leap-color-primary);
     }
 
     .series-total {
-
       font-size: 14px;
       font-weight: 600;
       color: var(--leap-color-primary);
@@ -332,7 +329,6 @@ onMounted(() => {
     border-bottom: 1px solid var(--leap-color-default-light-4);
 
     .th {
-
       font-size: 11px;
       color: var(--leap-color-primary);
       text-align: center;
@@ -373,7 +369,6 @@ onMounted(() => {
     }
 
     .td {
-
       font-size: 12px;
       color: var(--leap-color-default-light-1);
       text-align: center;

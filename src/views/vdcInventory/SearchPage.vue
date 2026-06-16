@@ -262,7 +262,7 @@ const getResourceClass = (type) => {
 
     .search-inner-btn {
       background-color: #009100;
-      color: #ffffff;
+      color: #fff;
       height: 26px;
       width: 52px;
       font-size: 12px;

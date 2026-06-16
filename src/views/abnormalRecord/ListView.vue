@@ -151,7 +151,7 @@ onMounted(() => {
 }
 
 .list-item-content {
-  background: #ffffff;
+  background: #fff;
   padding: 12px;
   border-radius: 7px;
   margin-bottom: 12px;
@@ -162,7 +162,7 @@ onMounted(() => {
     align-items: flex-start;
 
     .card-title-text {
-      font-family: PingFang SC;
+      font-family: "PingFang SC", sans-serif;
       font-size: 15px;
       font-weight: 500;
       color: var(--leap-color-default);
@@ -233,7 +233,7 @@ onMounted(() => {
   }
 
   .card-subtitle-text {
-    font-family: PingFang SC;
+    font-family: "PingFang SC", sans-serif;
     font-size: 13px;
     color: var(--leap-color-default-light-1);
     margin-top: 4px;
@@ -247,7 +247,7 @@ onMounted(() => {
     border-radius: 4px;
 
     .card-info-col {
-      font-family: PingFang SC;
+      font-family: "PingFang SC", sans-serif;
       font-size: 12px;
       padding: 8px;
       padding-bottom: 0;

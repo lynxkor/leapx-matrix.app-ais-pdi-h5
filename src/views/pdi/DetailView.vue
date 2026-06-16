@@ -271,49 +271,57 @@ watch(
   display: flex;
   flex-direction: column;
 }
+
 .detail-view-header {
   width: 100%;
   height: 40px;
   box-sizing: border-box;
   padding: 0 12px;
-  background: #ffffff;
+  background: #fff;
 }
+
 .detail-view-center {
   flex: 1;
   height: 0;
   display: flex;
   flex-direction: column;
+
   .center-info-content {
     padding: 8px 12px;
     background: rgba(237, 139, 61, 0.1);
     display: flex;
     align-items: flex-start;
+
     .center-info-img {
       width: 16px;
       height: 16px;
       margin-right: 4px;
       margin-top: 2px;
     }
+
     .center-info-text {
       font-size: 12px;
       color: #ed8b3d;
     }
   }
 }
+
 .detail-view-footer {
   height: 54px;
   padding: 7px 3.5vw;
   box-sizing: border-box;
-  background: #ffffff;
+  background: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 12px;
+
   .footer-btn {
     height: 40px;
     margin: 0 auto;
   }
 }
+
 .loading-area {
   display: flex;
   align-items: center;
