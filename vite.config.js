@@ -13,8 +13,7 @@ export default defineConfig({
   ],
   base: '/vehstock/',
   server: {
-    // https: true
-    port: 5173
+    port: 5174
   },
   resolve: {
     alias: {

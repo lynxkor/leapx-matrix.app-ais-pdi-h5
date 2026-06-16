@@ -9,7 +9,7 @@
   "scripts": {
     "prepare": "husky",
     "dev": "vite --host",
-    "local": "vite --mode dev",
+    "local": "vite --host --mode dev",
     "sit": "vite build --mode sit",
     "uat": "vite build --mode uat",
     "pre": "vite build --mode pre",

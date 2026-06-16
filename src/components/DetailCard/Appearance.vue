@@ -385,30 +385,37 @@ const switchChange = () => {
   width: 100%;
   border-top: 1px dashed #6c6e6c;
   border-bottom: 1px dashed #6c6e6c;
+
   .car-content-inner {
     width: 375px;
-    max-width: 100%;
     height: 546px;
-    margin: 0 auto;
+    max-width: 100%;
+    margin: 2rem auto;
     position: relative;
+    overflow: hidden;
+
     .car-bg-img {
-      width: 100%;
+      width: 90%;
+      display: block;
+      margin: 0 auto;
     }
+
     .inspect-item-content {
       box-sizing: border-box;
       border: 1px solid #191a1b;
       padding: 2px 4px;
       display: inline-block;
       position: absolute;
-      font-family: PingFang SC;
+      font-family: "PingFang SC", sans-serif;
       font-size: 12px;
       color: #191a1b;
       white-space: nowrap;
     }
+
     .inspect-item-content-error {
       border: 0.5px solid #b91919;
       background: #b91919;
-      color: #ffffff;
+      color: #fff;
     }
   }
 }
@@ -420,6 +427,7 @@ const switchChange = () => {
   overflow-y: hidden;
   display: flex;
   flex-direction: column;
+
   .popup-title {
     font-size: 14px;
     font-weight: 500;
@@ -427,6 +435,7 @@ const switchChange = () => {
     color: #191a1b;
     padding: 12px 0;
   }
+
   .state-content {
     border-radius: 7px;
     margin-bottom: 12px;
@@ -435,17 +444,19 @@ const switchChange = () => {
     display: flex;
     flex-direction: column;
     align-items: center;
+
     .switch-content {
       border-radius: 6px;
-      background: #ffffff;
+      background: #fff;
       margin-bottom: 8px;
       width: 100%;
       padding: 12px;
       box-sizing: border-box;
     }
+
     .file-content {
       border-radius: 6px;
-      background: #ffffff;
+      background: #fff;
       margin-bottom: 8px;
       width: 100%;
       padding: 12px;
@@ -462,14 +473,17 @@ const switchChange = () => {
   padding: 8px 12px;
   border-bottom: 1px solid #e6e6e5;
   border-right: 1px solid #e6e6e5;
+
   &:nth-last-of-type(1) {
     border-bottom: 0;
   }
+
   &:nth-of-type(even) {
     border-right: 0;
   }
+
   .check-item-text {
-    font-family: PingFang SC;
+    font-family: "PingFang SC", sans-serif;
     font-size: 14px;
     color: #191a1b;
     padding-left: 8px;
@@ -480,8 +494,9 @@ const switchChange = () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
+
   span {
-    font-family: PingFang SC;
+    font-family: "PingFang SC", sans-serif;
     font-size: 12px;
     color: #e43122;
     margin-right: 4px;
@@ -494,13 +509,16 @@ const switchChange = () => {
     letter-spacing: 0.7px;
     color: #191a1b;
     margin-bottom: 8px;
+
     .require-text {
       color: #e43122;
     }
+
     .grey-text {
-      color: #888888;
+      color: #888;
     }
   }
+
   .textarea-content {
     width: 100%;
     height: 80px;
@@ -510,11 +528,13 @@ const switchChange = () => {
     border-radius: 7px;
     margin-bottom: 16px;
   }
+
   .upload-content {
     display: flex;
     align-items: center;
     justify-content: flex-start;
     gap: 8px;
+
     .upload-item {
       width: 80px;
       height: 80px;
@@ -525,15 +545,18 @@ const switchChange = () => {
       align-items: center;
       justify-content: center;
       position: relative;
+
       .upload-img {
         width: 24px;
         height: 24px;
         margin-bottom: 12px;
       }
+
       .upload-text {
         font-size: 12px;
-        color: #888888;
+        color: #888;
       }
+
       .delete_icon {
         position: absolute;
         top: 0;
@@ -555,6 +578,7 @@ const switchChange = () => {
   letter-spacing: 0.43px;
   color: #545454;
 }
+
 .disabled-upload {
   opacity: 0.5;
   pointer-events: none;
