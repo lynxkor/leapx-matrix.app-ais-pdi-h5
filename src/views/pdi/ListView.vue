@@ -51,12 +51,10 @@
     </refresh-list>
   </div>
   <ais-dialog :key="dialogKey" :showDialog="showDialog" :dialogObj="dialogObj">
-    <p class="dialog-line-text">1、检查时请不要插拔任何高压线束；</p>
-    <p class="dialog-line-text">2、对"制动性"和"行驶性"的检查可以在车辆移动中进行；</p>
-    <p class="dialog-line-text">
-      3、车辆到店需检查是否需要更新车机版本，如需升级，先完成OTA再入库；
-    </p>
-    <p class="dialog-line-text">4、车辆PDI过程中需通过诊断仪完成"交付模式"退出</p>
+    <p class="dialog-line-text">近期PDI重点关注，漏检产生投诉与损失由门店自担。</p>
+    <p class="dialog-line-text">1、车辆网络是否正常必检，播放视频检查网络状态；</p>
+    <p class="dialog-line-text">2、座椅皮面是否破损必检，掀开保护套检查后复原；</p>
+    <p class="dialog-line-text">3、玻璃表面是否完好必检，检查全车玻璃及屏幕表面；</p>
   </ais-dialog>
 </template>
 
@@ -390,6 +388,7 @@ watch(
 .common-scroll-content {
   flex: 1;
   overflow-y: auto;
+
   .tab-content {
     width: 100%;
     overflow-x: auto;
@@ -397,8 +396,9 @@ watch(
     overflow-y: hidden;
   }
 }
+
 .dialog-line-text {
-  font-family: PingFang SC;
+  font-family: "PingFang SC", sans-serif;
   font-size: 14px;
   letter-spacing: 0.43px;
   color: #545454;
