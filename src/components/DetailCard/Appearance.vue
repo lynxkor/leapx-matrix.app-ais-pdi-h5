@@ -410,6 +410,7 @@ const switchChange = () => {
       font-size: 12px;
       color: #191a1b;
       white-space: nowrap;
+      background-color: #fff;
     }
 
     .inspect-item-content-error {
