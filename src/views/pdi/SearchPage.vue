@@ -202,6 +202,7 @@ const dialogSubmitFn = async() => {
   showDialog.value = false
   // 根据 isPdiSubmit / isUnusual / isRepaired 判断跳转类型
   const currentItem = searchResults.value.find((item) => item.id === dialogObj.id)
+  if (!currentItem) return
   const type =
     currentItem?.isPdiSubmit === 1 &&
     currentItem?.isUnusual === 1 &&
