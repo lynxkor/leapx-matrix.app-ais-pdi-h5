@@ -77,7 +77,8 @@ const requestData = reactive({
   data: {
     vin: '',
     pageNum: 1,
-    pageSize: 20
+    pageSize: 20,
+    sortColumns: [{ column: 'create_time', sort: 'DESC' }]
   },
   api: getList
 })
