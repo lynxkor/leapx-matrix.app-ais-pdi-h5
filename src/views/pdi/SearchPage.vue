@@ -200,9 +200,15 @@ const PDIBtnClick = (item) => {
 // 对话框确认 - 与 ListView.vue 一致
 const dialogSubmitFn = async() => {
   showDialog.value = false
-  // 根据 vehPdiType 判断跳转类型
+  // 根据 isPdiSubmit / isUnusual / isRepaired 判断跳转类型
   const currentItem = searchResults.value.find((item) => item.id === dialogObj.id)
-  const type = currentItem?.vehPdiType === 20 ? 'repair' : 'detail'
+  if (!currentItem) return
+  const type =
+    currentItem?.isPdiSubmit === 1 &&
+    currentItem?.isUnusual === 1 &&
+    currentItem?.isRepaired === 0
+      ? 'repair'
+      : 'detail'
   router.push({
     path: '/pdi/detail',
     query: {

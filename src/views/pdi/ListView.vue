@@ -129,7 +129,8 @@ const requestData = reactive({
     createTimeStart: '',
     createTimeEnd: '',
     pageNum: 1,
-    pageSize: 10
+    pageSize: 10,
+    sortColumns: [{ column: 'create_time', sort: 'DESC' }]
   },
   api: getPdiList
 })
