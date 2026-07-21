@@ -130,7 +130,7 @@ onUnmounted(() => {
 
 // 获取权限列表
 const getOwnerTreeList = () => {
-  getOwnerTree({ resourceTag: 'AISVS-storeInventoryLedger', resourceType: 'APP_SIDE' })
+  getOwnerTree({ resourceTag: 'AISVS100005', resourceType: 'APP_SIDE' })
     .then((res) => {
       res.data.forEach((item) => {
         resourceBtnList.value.push(item.resourceTag)
