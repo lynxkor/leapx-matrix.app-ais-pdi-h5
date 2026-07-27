@@ -347,18 +347,10 @@ const setData = (res) => {
   console.log(dataList.value)
 }
 
-const PDIBtnClick = (item) => {
-  dialogObj.id = item.id
-  dialogObj.vin = item.vin
-  dialogObj.code = item.code
-  showDialog.value = true
-}
-
-const dialogSubmitFn = async() => {
+// 跳转到详情页
+const goToDetail = async() => {
   await saveScrollPosition()
   setTimeout(() => {
-    // 跳转到详情页
-    showDialog.value = false
     const type = active.value === 1 ? 'repair' : 'detail'
     router.push({
       path: '/pdi/detail',
@@ -370,6 +362,23 @@ const dialogSubmitFn = async() => {
       }
     })
   }, 200)
+}
+
+const PDIBtnClick = (item) => {
+  dialogObj.id = item.id
+  dialogObj.vin = item.vin
+  dialogObj.code = item.code
+  // PDI异常车辆（active === 1）直接进入详情页，不展示弹框
+  if (active.value === 1) {
+    goToDetail()
+  } else {
+    showDialog.value = true
+  }
+}
+
+const dialogSubmitFn = async() => {
+  showDialog.value = false
+  await goToDetail()
 }
 
 const dialogCancelFn = () => {
