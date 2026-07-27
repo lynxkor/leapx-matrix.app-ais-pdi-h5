@@ -29,8 +29,8 @@
         <p class="card-info-des">{{ dataItem.deliveryDealerName || '-' }}</p>
       </van-col>
       <van-col span="12" class="card-info-col">
-        <p class="card-info-title">是否锁定：</p>
-        <p class="card-info-des">{{ dataItem.lockStatus === 1 ? '未锁定' : '锁定' }}</p>
+        <p class="card-info-title">是否匹配订单：</p>
+        <p class="card-info-des">{{ dataItem.lockStatus === 1 ? '是' : '否' }}</p>
       </van-col>
       <van-col span="12" class="card-info-col">
         <p class="card-info-title">入库仓库：</p>
