@@ -43,6 +43,10 @@
           {{ item.materialsDesc || item.modelName }} | {{ item.exteriorName }} | {{ item.interiorName }}
         </div>
         <van-row class="card-info">
+          <van-col span="12" class="card-info-col" v-if="active === 4">
+            <p class="card-info-title">库龄：</p>
+            <p class="card-info-des">{{ calculateInventoryAge(item.poentryOn) }}</p>
+          </van-col>
           <van-col span="12" class="card-info-col">
             <p class="card-info-title">基本车型：</p>
             <p class="card-info-des">{{ item.modelName || '-' }}</p>
@@ -441,6 +445,15 @@ const setData = (res) => {
 }
 
 const generatePdiLoading = ref(false)
+
+// 计算库龄（天）：当前时间 - 采购入库时间（poentryOn）
+const calculateInventoryAge = (poentryOn) => {
+  if (!poentryOn) return '0 天'
+  const start = new Date(poentryOn).getTime()
+  if (Number.isNaN(start)) return '0 天'
+  const diffDays = Math.floor((Date.now() - start) / (1000 * 60 * 60 * 24))
+  return `${Math.max(diffDays, 0)} 天`
+}
 
 const generatePdiClick = (item) => {
   if (generatePdiLoading.value) return
