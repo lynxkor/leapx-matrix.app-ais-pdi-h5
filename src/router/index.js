@@ -95,7 +95,7 @@ const router = createRouter({
           component: () => import('../views/vehicleInventory/ListView.vue'),
           meta: {
             title: '门店整车库存',
-            keepAlive: true
+            keepAlive: false
           }
         },
         {
@@ -114,7 +114,7 @@ const router = createRouter({
           component: () => import('../views/inventoryLedger/ListView.vue'),
           meta: {
             title: '门店整车台账',
-            keepAlive: true
+            keepAlive: false
           }
         },
         {
