@@ -372,13 +372,12 @@ onMounted(() => {
       font-size: 12px;
       color: var(--leap-color-default-light-1);
       text-align: center;
-      overflow: hidden;
-      white-space: nowrap;
 
       &.model-name {
         text-align: left;
         color: var(--leap-color-default);
         font-weight: 500;
+        max-width: 150px;
       }
 
       &.available {

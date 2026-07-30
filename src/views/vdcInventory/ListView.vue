@@ -538,7 +538,7 @@ const getResourceClass = (type) => {
 
   .header-resource {
     display: flex;
-    width: 180px;
+    width: 160px;
     justify-content: space-around;
 
     .header-item {
@@ -552,7 +552,7 @@ const getResourceClass = (type) => {
 .inventory-item {
   display: flex;
   align-items: center;
-  padding: 16px;
+  padding: 12px;
   border-bottom: 1px solid #ebedf0;
 
   &:last-child {
@@ -564,17 +564,11 @@ const getResourceClass = (type) => {
     font-size: 14px;
     color: #323233;
     line-height: 1.6;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3;
-    line-clamp: 3;
-    overflow: hidden;
-    padding-right: 16px;
   }
 
   .resource-row {
     display: flex;
-    width: 180px;
+    width: 160px;
     justify-content: space-around;
 
     .resource-item {
