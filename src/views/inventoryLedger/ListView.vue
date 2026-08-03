@@ -85,7 +85,8 @@
             @click="generatePdiClick(item)"
             v-show="
               resourceBtnList.includes('AISVS-storeInventoryLedger-generatePdi') &&
-              active === 0
+              active === 0 &&
+              item.vechicleStatus === 12
             "
             >生成在库 PDI 单</ais-button
           >
