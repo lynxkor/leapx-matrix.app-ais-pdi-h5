@@ -46,6 +46,7 @@ const router = createRouter({
           component: () => import('../views/pdi/ListView.vue'),
           meta: {
             title: '门店整车PDI',
+            closeWindow: 1,
             hideHeader: false,
             keepAlive: true
           }
@@ -55,7 +56,7 @@ const router = createRouter({
           name: 'PdiDetailView',
           component: () => import('../views/pdi/DetailView.vue'),
           meta: {
-            title: '门店整车PDI',
+            title: '门店整车PDI详情',
             hideHeader: false,
             keepAlive: false
           }
