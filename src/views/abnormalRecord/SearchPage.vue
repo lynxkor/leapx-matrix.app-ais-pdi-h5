@@ -162,6 +162,7 @@ const handleSearch = async(keyword) => {
   try {
     const searchParams = {
       vinLastSix: keyword,
+      fenceCrossedType: 50,
       pageNum: 1,
       pageSize: 100
     }
