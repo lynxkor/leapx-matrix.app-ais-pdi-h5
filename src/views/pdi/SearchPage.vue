@@ -29,7 +29,7 @@
 
       <!-- 搜索结果列表 -->
       <div class="common-scroll-content" v-else-if="searchResults.length > 0">
-        <list-item v-for="(item, index) in searchResults" :key="index" :dataItem="item">
+        <list-item v-for="(item, index) in searchResults" :key="index" :dataItem="item" :active="0">
           <ais-button
             type="primary"
             plain

@@ -36,7 +36,7 @@
         <p class="card-info-title">入库仓库：</p>
         <p class="card-info-des">{{ dataItem.dealerWarehouseName || '-' }}</p>
       </van-col>
-      <van-col span="12" class="card-info-col" v-show="active === 0">
+      <van-col span="12" class="card-info-col" v-show="dataItem.vehPdiType === 10 && active === 0">
         <p class="card-info-title">PDI提交截止时间：</p>
         <p class="card-info-des">{{ dataItem.pdiLatestDate || '-' }}</p>
       </van-col>
