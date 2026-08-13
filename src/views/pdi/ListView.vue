@@ -31,7 +31,7 @@
       @setData="setData"
       @resetFilters="resetFilterConditions"
     >
-      <list-item v-for="(item, index) in dataList" :key="index" :dataItem="item">
+      <list-item v-for="(item, index) in dataList" :key="index" :dataItem="item" :active="active">
         <ais-button
           type="primary"
           plain
