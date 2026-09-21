@@ -40,6 +40,7 @@
             type="primary"
             plain
             round
+            :loading="generatePdiLoading"
             @click.stop="generatePdiClick(item)"
             v-show="resourceBtnList.includes('AISVS-storeInventoryLedger-generatePdi') && item.vechicleStatus === 12"
           >
@@ -63,8 +64,8 @@
 import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useGlobalStore } from '@/stores/global'
-import { getList } from '@/api/inventoryLedger'
-import { showToast } from 'vant'
+import { getList, generatePdi } from '@/api/inventoryLedger'
+import { showFailToast, showToast } from 'vant'
 import ListItem from '@/components/ListItem.vue'
 import AisButton from '@/components/AisButton.vue'
 import { getOwnerTree } from '@/libs/api/common'
@@ -176,14 +177,30 @@ const handleSearch = async(keyword) => {
 }
 
 // 生成 PDI 点击
+const generatePdiLoading = ref(false)
+
 const generatePdiClick = (item) => {
-  router.push({
-    path: '/inventoryLedger/detail',
-    query: {
-      id: item.id,
-      vin: item.vin
-    }
-  })
+  if (generatePdiLoading.value) return
+  generatePdiLoading.value = true
+  generatePdi(item.id)
+    .then((res) => {
+      generatePdiLoading.value = false
+      if (res.code === 200) {
+        showFailToast('PDI执行成功')
+        setTimeout(() => {
+          // 成功后重新执行当前搜索以刷新列表
+          if (localSearchValue.value) {
+            handleSearch(localSearchValue.value)
+          }
+        }, 500)
+      } else {
+        showFailToast(res.message)
+      }
+    })
+    .catch((err) => {
+      console.error(err)
+      generatePdiLoading.value = false
+    })
 }
 
 // 监听 tab 切换
