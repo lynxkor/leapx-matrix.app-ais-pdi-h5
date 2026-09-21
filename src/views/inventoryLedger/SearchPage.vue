@@ -184,17 +184,19 @@ const generatePdiClick = (item) => {
   generatePdiLoading.value = true
   generatePdi(item.id)
     .then((res) => {
-      generatePdiLoading.value = false
       if (res.code === 200) {
-        showFailToast('PDI执行成功')
+        showToast('PDI执行成功')
         setTimeout(() => {
           // 成功后重新执行当前搜索以刷新列表
           if (localSearchValue.value) {
             handleSearch(localSearchValue.value)
           }
+          // 刷新完成后再复位 loading，避免 500ms 窗口内重复提交
+          generatePdiLoading.value = false
         }, 500)
       } else {
-        showFailToast(res.message)
+        showFailToast(res.message || res.msg)
+        generatePdiLoading.value = false
       }
     })
     .catch((err) => {
