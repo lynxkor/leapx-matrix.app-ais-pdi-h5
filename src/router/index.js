@@ -146,6 +146,33 @@ const router = createRouter({
             title: '搜索',
             keepAlive: false
           }
+        },
+        {
+          path: '/riskCheck/taskList',
+          name: 'RiskCheckTaskListView',
+          component: () => import('../views/riskCheck/TaskListView.vue'),
+          meta: {
+            title: '车辆排查任务',
+            keepAlive: true
+          }
+        },
+        {
+          path: '/riskCheck/taskDetail',
+          name: 'RiskCheckTaskDetailView',
+          component: () => import('../views/riskCheck/TaskDetailView.vue'),
+          meta: {
+            title: '排查任务详情',
+            keepAlive: false
+          }
+        },
+        {
+          path: '/riskCheck/auditList',
+          name: 'RiskCheckAuditListView',
+          component: () => import('../views/riskCheck/AuditListView.vue'),
+          meta: {
+            title: '排查审核记录',
+            keepAlive: true
+          }
         }
       ]
     }

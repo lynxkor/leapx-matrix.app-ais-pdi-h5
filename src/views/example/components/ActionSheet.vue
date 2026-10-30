@@ -7,8 +7,8 @@ import { closeToast, showLoadingToast } from 'vant'
 const props = defineProps({
   show: {
     type: Boolean,
-    required: true,
-  },
+    required: true
+  }
 })
 
 // ========== 事件定义 ==========
@@ -21,7 +21,7 @@ const formData = ref({
   value2: '',
   value3: 'abc',
   value4: '',
-  value5: '静态文本',
+  value5: '静态文本'
 })
 const pattern = /\d{6}/
 
@@ -31,7 +31,7 @@ const innerShow = computed({
   set: (val) => {
     console.log('set')
     emit('update:show', val)
-  },
+  }
 })
 
 // ========== 表单校验逻辑 ==========
@@ -50,7 +50,7 @@ const validators = {
         closeToast()
         resolve(val === '1234')
       }, 1000)
-    }),
+    })
 }
 
 // ========== 事件处理 ==========
