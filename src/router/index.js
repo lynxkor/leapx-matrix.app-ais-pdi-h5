@@ -173,6 +173,24 @@ const router = createRouter({
             title: '排查审核记录',
             keepAlive: true
           }
+        },
+        {
+          path: '/riskCheck/auditDetail',
+          name: 'RiskCheckAuditDetailView',
+          component: () => import('../views/riskCheck/AuditDetailView.vue'),
+          meta: {
+            title: '审核详情',
+            keepAlive: false
+          }
+        },
+        {
+          path: '/riskCheck/vehicleDetail',
+          name: 'RiskCheckVehicleDetailView',
+          component: () => import('../views/riskCheck/VehicleDetailView.vue'),
+          meta: {
+            title: '车辆排查详情',
+            keepAlive: false
+          }
         }
       ]
     }

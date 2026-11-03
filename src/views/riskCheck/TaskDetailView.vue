@@ -2,28 +2,58 @@
   <div class="detail-view-content">
     <van-loading color="#00AA00" class="loading-area" v-if="isFetch" />
     <template v-else>
-      <!-- 任务信息 -->
+      <!-- VIN 搜索栏：输入 VIN 查询车辆（后端 detail/page vinLike 模糊匹配） -->
+      <div class="search-area">
+        <van-search
+          v-model="vinKeyword"
+          placeholder="输入VIN查询车辆"
+          @search="onVinSearch"
+          @clear="onVinClear"
+        />
+      </div>
+
+      <!-- 任务信息卡 -->
       <div class="task-info-card">
-        <div class="info-row">
-          <span class="label">任务状态</span>
-          <span class="value">{{ task.taskStatusDesc || '-' }}</span>
+        <div class="task-name-row">
+          <div class="task-name">{{ task.taskName || '-' }}</div>
+          <!-- 是否截车：1锁定=红字 0不锁定=绿字，文案取后端 lockVehicleFlagLabel -->
+          <span v-if="task.lockVehicleFlag === 1" class="lock-label lock-red">{{ task.lockVehicleFlagLabel || '锁定' }}</span>
+          <span v-else-if="task.lockVehicleFlag === 0" class="lock-label lock-green">{{ task.lockVehicleFlagLabel || '不锁定' }}</span>
         </div>
         <div class="info-row">
-          <span class="label">门店进度</span>
-          <span class="value highlight">{{ task.progress || '0.00' }}%</span>
-          <span class="value sub">{{ task.storeFinishedCount || 0 }}/{{ task.storeTotalCount || 0 }}</span>
+          <span class="label">排查原因</span>
+          <span class="value">{{ task.checkReason || '-' }}</span>
         </div>
         <div class="info-row">
-          <span class="label">排查车辆版本</span>
-          <span class="value">{{ task.vehicleSystemVersion || '-' }}</span>
+          <span class="label">排查方法</span>
+          <span class="value method-text">{{ task.checkMethod || '-' }}</span>
+          <span class="method-link" @click="openMethodPopup">查看说明</span>
         </div>
         <div class="info-row">
-          <span class="label">关联门店类别</span>
-          <span class="value">{{ storeCategoryText }}</span>
+          <span class="label">任务要求</span>
+          <span class="value">{{ task.taskRequirement || '-' }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">审核方式</span>
+          <span class="value">{{ task.auditTypeLabel || '-' }}</span>
+        </div>
+        <div class="progress-block">
+          <div class="progress-text-row">
+            <span class="progress-count">完成 {{ finishedCount }}/{{ totalCount }} 辆</span>
+            <!-- 完成进度 = 完成数量/车辆数量*100%，四舍五入保留整数（前端重算，不依赖后端两位小数 progress） -->
+            <span class="progress-rate">{{ progressPercent }}%</span>
+          </div>
+          <van-progress
+            class="progress-bar"
+            :percentage="progressPercent"
+            color="#00AA00"
+            track-color="#e5e5e5"
+            :show-pivot="false"
+          />
         </div>
       </div>
 
-      <!-- 车辆清单 -->
+      <!-- 车辆清单状态页签（排查状态 5 态 + 全部） -->
       <div class="tab-content">
         <van-tabs v-model:active="active" sticky>
           <van-tab v-for="(item, index) in tabList" :title="item" :key="index"></van-tab>
@@ -35,96 +65,111 @@
           :requestData="requestData"
           :needRefresh="needRefresh"
           :has-no-data="vehicleList.length === 0"
+          :show-reset-button="!!requestData.data.vinLike"
           @setData="setData"
+          @resetFilters="resetFilterConditions"
         >
-          <list-item v-for="(item, index) in vehicleList" :key="index" :dataItem="item" :active="active">
-            <div class="vehicle-status">
-              <span :class="['status-dot', item.checkStatus === 110 ? 'done' : (item.checkStatus === 160 ? 'reject' : 'pending')]"></span>
-              <span class="status-text">{{ item.checkStatusDesc }}</span>
-              <span v-if="item.lockStatus === 10" class="lock-tag">已锁定</span>
+          <div
+            class="vehicle-card"
+            v-for="item in vehicleList"
+            :key="item.id"
+            @click="goVehicleDetail(item)"
+          >
+            <div class="card-header">
+              <div class="card-vin">{{ item.vin }}</div>
+              <span :class="['status-tag', statusClass(item.checkStatus)]">
+                {{ item.checkStatusLabel || statusText(item.checkStatus) }}
+              </span>
             </div>
-            <ais-button
-              v-if="item.checkStatus === 10 || item.checkStatus === 160"
-              type="primary" plain round
-              @click="openSubmit(item)"
-            >提交排查</ais-button>
-          </list-item>
+            <div class="card-subtitle">{{ item.modelName || '-'}}•{{ item.yearTypeName || '-'}}•{{ item.exteriorName}}•{{ item.interiorName || '-'}}•{{ item.vehicleTypeLabel || '-' }}</div>
+          </div>
         </refresh-list>
       </div>
     </template>
 
-    <!-- 提交排查结果弹窗 -->
-    <van-popup v-model:show="showSubmit" position="bottom" round :style="{ height: '60%' }">
-      <div class="submit-popup">
-        <div class="popup-title">提交排查结果</div>
-        <div class="popup-vin">{{ currentVehicle.vin }}</div>
-        <van-field
-          v-model="submitForm.checkResultNote"
-          label="排查说明"
-          type="textarea"
-          rows="3"
-          autosize
-          placeholder="请填写门店排查补充说明"
-        />
-        <div class="attachment-tip">
-          📎 附件上传（G18 要求必填）：
-          <span class="pending">组件待平台 AisAttachment 接入（#122）</span>
-        </div>
+    <!-- 排查方法说明弹窗：文本 + 附件（word/PDF/MP4 可查看） -->
+    <van-popup v-model:show="showMethod" position="bottom" round :style="{ height: '70%' }">
+      <div class="method-popup">
+        <div class="popup-title">排查方法</div>
+        <div class="method-content">{{ task.checkMethod || '-' }}</div>
+        <template v-if="methodFiles.length">
+          <div class="attach-title">附件（{{ methodFiles.length }}）</div>
+          <div class="file-item" v-for="(f, index) in methodFiles" :key="index" @click="previewFile(f)">
+            <span :class="['file-icon', fileKind(f)]">{{ fileKindText(f) }}</span>
+            <span class="file-name">{{ f.name }}</span>
+            <span class="file-action">查看</span>
+          </div>
+        </template>
         <div class="popup-footer">
-          <ais-button plain @click="showSubmit = false">取消</ais-button>
-          <ais-button @click="doSubmit" :loading="submitLoading">提交</ais-button>
+          <ais-button type="primary" round block @click="showMethod = false">关闭</ais-button>
         </div>
       </div>
+    </van-popup>
+
+    <!-- 视频预览 -->
+    <van-popup v-model:show="showVideo" position="center" round class="video-popup">
+      <video v-if="showVideo" :src="videoUrl" controls autoplay class="video-player"></video>
     </van-popup>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, watch, computed } from 'vue'
-import { useRoute } from 'vue-router'
-import { showSuccessToast, showFailToast } from 'vant'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { showFailToast, showImagePreview } from 'vant'
 import RefreshList from '@/libs/components/RefreshList.vue'
-import ListItem from '@/components/ListItem.vue'
 import AisButton from '@/components/AisButton.vue'
-import { getRiskCheckTaskDetail, getRiskCheckVehiclePage, submitRiskCheckResult } from '@/api/riskCheck'
+import { getRiskCheckTaskDetail, getRiskCheckVehiclePage } from '@/api/riskCheck'
+import { getFileList } from '@/libs/api/fileConfig'
 
 defineOptions({
   name: 'RiskCheckTaskDetailView'
 })
 
+const router = useRouter()
 const route = useRoute()
+
 const taskId = ref(route.query.id || '')
 const isFetch = ref(true)
 const task = ref({})
 const active = ref(0)
 const needRefresh = ref(false)
 const vehicleList = ref([])
+const vinKeyword = ref('')
+// 🔑 明细表 check_child_task_id 才是门店子任务ID（发布时 detailedRelatedChildTask 回填），
+//    check_task_id 存父任务ID —— 必须用 checkChildTaskId 查，传 checkTaskId 会串任务
 const requestData = reactive({
   data: {
-    checkTaskId: taskId.value,
+    checkChildTaskId: taskId.value,
+    // 🔑 VIN 模糊搜索走后端 vinLike（vin 为精确匹配，段码查询用）
+    vinLike: '',
     checkStatusList: [],
     pageNum: 1,
     pageSize: 10
   },
   api: getRiskCheckVehiclePage
 })
-const tabList = ['全部', '待排查', '已排查', '已驳回']
-// 全部=空；待排查=10；已排查=110；已驳回=160
-const statusByTab = ['', '10', '110', '160']
+
+// 排查状态：10待排查 60审核中 110已排查 160已驳回 210取消排查（RiskCheckStatusEnum，code 间隔 50）
+const tabList = ['全部', '待排查', '审核中', '已排查', '已驳回', '取消排查']
+const statusByTab = ['', 10, 60, 110, 160, 210]
+const statusClassMap = { 10: 'pending', 60: 'auditing', 110: 'done', 160: 'reject', 210: 'cancel' }
+const statusTextMap = { 10: '待排查', 60: '审核中', 110: '已排查', 160: '已驳回', 210: '取消排查' }
 
 const scrollEle = ref(null)
 const refreshListRef = ref(null)
 
-const showSubmit = ref(false)
-const submitLoading = ref(false)
-const currentVehicle = ref({})
-const submitForm = reactive({ detailId: '', checkResultNote: '' })
+// ==================== 排查方法说明弹窗 ====================
+const showMethod = ref(false)
+const methodFiles = ref([])
+const showVideo = ref(false)
+const videoUrl = ref('')
 
-const storeCategoryText = computed(() => {
-  // store_category: 10=仅销售门店 60=仅交付门店
-  if (task.value.storeCategory === 10) return '仅销售门店'
-  if (task.value.storeCategory === 60) return '仅交付门店'
-  return '全部门店'
+const finishedCount = computed(() => task.value.finishedVehicleCount || 0)
+const totalCount = computed(() => task.value.totalVehicleCount || 0)
+const progressPercent = computed(() => {
+  if (totalCount.value <= 0) return 0
+  return Math.min(100, Math.max(0, Math.round((finishedCount.value * 100) / totalCount.value)))
 })
 
 onMounted(() => {
@@ -156,37 +201,82 @@ const setData = (res) => {
   needRefresh.value = false
 }
 
-const openSubmit = (item) => {
-  currentVehicle.value = item
-  submitForm.detailId = item.id
-  submitForm.checkResultNote = ''
-  showSubmit.value = true
+const onVinSearch = () => {
+  requestData.data.vinLike = vinKeyword.value.trim()
+  requestData.data.pageNum = 1
+  vehicleList.value = []
+  requestData.data = { ...requestData.data }
 }
 
-const doSubmit = () => {
-  submitLoading.value = true
-  submitRiskCheckResult({
-    detailId: submitForm.detailId,
-    checkResultNote: submitForm.checkResultNote,
-    vehicleSystemVersion: task.value.vehicleSystemVersion
+const onVinClear = () => {
+  requestData.data.vinLike = ''
+  requestData.data.pageNum = 1
+  vehicleList.value = []
+  requestData.data = { ...requestData.data }
+}
+
+const resetFilterConditions = () => {
+  vinKeyword.value = ''
+  onVinClear()
+}
+
+const goVehicleDetail = (item) => {
+  router.push({
+    path: '/riskCheck/vehicleDetail',
+    query: { id: item.id, taskId: taskId.value, vin: item.vin || '' }
   })
+}
+
+const statusClass = (code) => statusClassMap[code] || 'pending'
+const statusText = (code) => statusTextMap[code] || '-'
+
+// ==================== 附件查看 ====================
+const fileKind = (f) => {
+  const ext = String(f.fileType || '').toLowerCase()
+  if (['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp'].includes(ext)) return 'image'
+  if (['mp4', 'mov', 'avi'].includes(ext)) return 'video'
+  if (ext === 'pdf') return 'pdf'
+  if (['doc', 'docx'].includes(ext)) return 'word'
+  return 'other'
+}
+
+const fileKindText = (f) => {
+  const kind = fileKind(f)
+  return { image: '图片', video: '视频', pdf: 'PDF', word: 'Word', other: '文件' }[kind]
+}
+
+// 附件列表响应字段对齐 sales-front AisAttachment：id/fileName/fileUrl/fileType/fileSize
+const loadMethodFiles = () => {
+  // 排查方法附件：businessId = 任务ID；attachType 后端未约定，先仅按 businessId 查（待确认）
+  return getFileList({ businessId: taskId.value })
     .then((res) => {
-      if (res.code === 200) {
-        showSuccessToast('提交成功')
-        showSubmit.value = false
-        // 刷新车辆列表
-        vehicleList.value = []
-        requestData.data.pageNum = 1
-        requestData.data = { ...requestData.data }
-        getDetail()
-      } else {
-        showFailToast(res.msg || '提交失败')
-      }
+      const list = Array.isArray(res) ? res : (res.code === 200 ? res.data || [] : [])
+      methodFiles.value = list.map((f) => ({
+        ...f,
+        name: f.fileName || (f.fileUrl || '').split('/').pop()?.split('?')[0] || '未命名文件'
+      }))
     })
-    .catch(() => {})
-    .finally(() => {
-      submitLoading.value = false
+    .catch(() => {
+      methodFiles.value = []
     })
+}
+
+const openMethodPopup = () => {
+  showMethod.value = true
+  loadMethodFiles()
+}
+
+const previewFile = (f) => {
+  const kind = fileKind(f)
+  if (kind === 'image') {
+    showImagePreview([f.url || f.fileUrl])
+  } else if (kind === 'video') {
+    videoUrl.value = f.url || f.fileUrl
+    showVideo.value = true
+  } else {
+    // PDF / Word / 其他：新窗口打开原文件
+    window.open(f.url || f.fileUrl)
+  }
 }
 
 watch(
@@ -208,35 +298,105 @@ watch(
   background: #f5f5f5;
 }
 
+.search-area {
+  background: #fff;
+
+  :deep(.van-search) {
+    padding: 8px 12px;
+  }
+}
+
 .task-info-card {
   background: #fff;
   padding: 12px;
   margin: 8px;
   border-radius: 8px;
 
+  .task-name-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+
+    .task-name {
+      flex: 1;
+      font-size: 16px;
+      font-weight: 500;
+      color: #191a1b;
+    }
+
+    .lock-label {
+      flex-shrink: 0;
+      font-size: 13px;
+      font-weight: 500;
+
+      &.lock-red {
+        color: #ee0a24;
+      }
+
+      &.lock-green {
+        color: #0a0;
+      }
+    }
+  }
+
   .info-row {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     padding: 4px 0;
     font-size: 13px;
+    line-height: 18px;
 
     .label {
       color: #888;
-      width: 96px;
+      width: 64px;
+      flex-shrink: 0;
     }
 
     .value {
       color: #191a1b;
+      flex: 1;
 
-      &.highlight {
-        color: #ed8b3d;
+      &.method-text {
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        overflow: hidden;
+      }
+    }
+
+    .method-link {
+      flex-shrink: 0;
+      margin-left: 8px;
+      color: #0a0;
+    }
+  }
+
+  .progress-block {
+    margin-top: 8px;
+
+    .progress-text-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+
+      .progress-count {
+        font-size: 12px;
+        color: #191a1b;
+      }
+
+      .progress-rate {
+        font-size: 14px;
         font-weight: 500;
+        color: #0a0;
       }
+    }
 
-      &.sub {
-        margin-left: 8px;
-        color: #888;
-      }
+    .progress-bar {
+      height: 6px;
+      border-radius: 3px;
     }
   }
 }
@@ -252,37 +412,93 @@ watch(
   padding: 0 8px;
 }
 
-.vehicle-status {
-  display: flex;
-  align-items: center;
-  font-size: 12px;
-  color: #888;
+.vehicle-card {
+  background: #fff;
+  padding: 12px;
+  border-radius: 7px;
+  margin-top: 12px;
 
-  .status-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    margin-right: 6px;
-    &.pending { background: #ed8b3d; }
-    &.done { background: #0a0; }
-    &.reject { background: #ee0a24; }
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+
+    .card-vin {
+      flex: 1;
+      font-size: 16px;
+      font-weight: 500;
+      color: #191a1b;
+    }
+
+    .status-tag {
+      flex-shrink: 0;
+      font-size: 12px;
+      padding: 1px 8px;
+      border-radius: 4px;
+
+      &.pending {
+        color: #ed8b3d;
+        background: #fdf3ea;
+      }
+
+      &.auditing {
+        color: #1989fa;
+        background: #e8f3fd;
+      }
+
+      &.done {
+        color: #0a0;
+        background: #eaf7ea;
+      }
+
+      &.reject {
+        color: #ee0a24;
+        background: #fdeaea;
+      }
+
+      &.cancel {
+        color: #969799;
+        background: #f2f3f5;
+      }
+    }
   }
 
-  .lock-tag {
-    margin-left: 8px;
-    color: #ee0a24;
-    border: 1px solid #ee0a24;
-    border-radius: 4px;
-    padding: 0 4px;
-    font-size: 11px;
+  .card-subtitle {
+    margin-top: 4px;
+    font-size: 13px;
+    color: #545454;
+  }
+
+  .card-info {
+    box-sizing: border-box;
+    background: #fcfbfb;
+    margin-top: 8px;
+    padding-bottom: 8px;
+
+    .card-info-col {
+      font-size: 12px;
+      padding: 8px;
+      padding-bottom: 0;
+
+      .card-info-title {
+        color: #888;
+        margin-bottom: 2px;
+      }
+
+      .card-info-des {
+        color: #545454;
+      }
+    }
   }
 }
 
-.submit-popup {
+.method-popup {
   padding: 16px;
   height: 100%;
   display: flex;
   flex-direction: column;
+  box-sizing: border-box;
 
   .popup-title {
     font-size: 16px;
@@ -290,31 +506,88 @@ watch(
     text-align: center;
   }
 
-  .popup-vin {
-    font-size: 13px;
-    color: #888;
-    text-align: center;
-    margin: 8px 0;
+  .method-content {
+    flex: 1;
+    overflow-y: auto;
+    margin-top: 12px;
+    font-size: 14px;
+    color: #191a1b;
+    line-height: 22px;
+    white-space: pre-wrap;
+    word-break: break-all;
   }
 
-  .attachment-tip {
-    font-size: 12px;
-    color: #888;
-    margin: 12px 0;
+  .attach-title {
+    margin-top: 12px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #191a1b;
+  }
 
-    .pending {
-      color: #ed8b3d;
+  .file-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 0;
+
+    .file-icon {
+      flex-shrink: 0;
+      width: 44px;
+      text-align: center;
+      font-size: 11px;
+      color: #fff;
+      border-radius: 4px;
+      padding: 4px 0;
+      margin-right: 8px;
+
+      &.image {
+        background: #1989fa;
+      }
+
+      &.video {
+        background: #ed8b3d;
+      }
+
+      &.pdf {
+        background: #ee0a24;
+      }
+
+      &.word {
+        background: #1989fa;
+      }
+
+      &.other {
+        background: #969799;
+      }
+    }
+
+    .file-name {
+      flex: 1;
+      font-size: 13px;
+      color: #191a1b;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .file-action {
+      flex-shrink: 0;
+      margin-left: 8px;
+      font-size: 13px;
+      color: #0a0;
     }
   }
 
   .popup-footer {
-    margin-top: auto;
-    display: flex;
-    gap: 12px;
+    margin-top: 12px;
+  }
+}
 
-    :deep(.footer-btn) {
-      flex: 1;
-    }
+.video-popup {
+  width: 90%;
+
+  .video-player {
+    width: 100%;
+    display: block;
   }
 }
 
