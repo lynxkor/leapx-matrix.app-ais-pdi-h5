@@ -45,7 +45,7 @@ console.log(id)
   .m-content {
     position: relative;
     height: 70vh;
-    
+
     .g-btns {
       position: absolute;
       width: 100%;
