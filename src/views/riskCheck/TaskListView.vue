@@ -36,7 +36,11 @@
         @click="goDetail(item)"
       >
         <div class="card-header">
-          <div class="card-title">{{ item.taskName }}</div>
+          <div class="title-wrap">
+            <div class="card-title">{{ item.taskName }}</div>
+            <!-- 门店名称：子任务 dealerName（发布时按门店回填） -->
+            <div class="card-dealer">门店名称：{{ item.dealerName || '-' }}</div>
+          </div>
           <!-- 锁车标识：1锁定=红字，0不锁定=绿字，文案取后端 lockVehicleFlagLabel -->
           <span
             v-if="item.lockVehicleFlag === 1"
@@ -204,12 +208,25 @@ watch(
     align-items: center;
     gap: 8px;
 
-    .card-title {
+    .title-wrap {
       flex: 1;
+      min-width: 0;
+    }
+
+    .card-title {
       font-family: 'PingFang SC', sans-serif;
       font-size: 16px;
       font-weight: 500;
       color: #191a1b;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .card-dealer {
+      margin-top: 4px;
+      font-size: 12px;
+      color: #545454;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;

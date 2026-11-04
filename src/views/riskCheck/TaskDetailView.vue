@@ -20,6 +20,11 @@
           <span v-if="task.lockVehicleFlag === 1" class="lock-label lock-red">{{ task.lockVehicleFlagLabel || '锁定' }}</span>
           <span v-else-if="task.lockVehicleFlag === 0" class="lock-label lock-green">{{ task.lockVehicleFlagLabel || '不锁定' }}</span>
         </div>
+        <!-- 门店名称：子任务 dealerName（发布时按门店回填） -->
+        <div class="info-row">
+          <span class="label">门店名称</span>
+          <span class="value">{{ task.dealerName || '-' }}</span>
+        </div>
         <div class="info-row">
           <span class="label">排查原因</span>
           <span class="value">{{ task.checkReason || '-' }}</span>

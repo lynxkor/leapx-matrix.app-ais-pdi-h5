@@ -9,6 +9,10 @@
           <span class="info-value">{{ detail.vin || '-' }}</span>
         </div>
         <div class="info-row">
+          <span class="info-label">门店名称</span>
+          <span class="info-value">{{ detail.storeName || '-' }}</span>
+        </div>
+        <div class="info-row">
           <span class="info-label">车型名称</span>
           <span class="info-value">{{ detail.modelName || '-' }}</span>
         </div>

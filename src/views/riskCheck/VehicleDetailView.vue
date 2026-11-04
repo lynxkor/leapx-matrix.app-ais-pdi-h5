@@ -71,10 +71,46 @@
           <div class="attach-header">
             <!-- G18：提交排查结果附件必填 -->
             <span class="attach-label"><i class="required-star">*</i>排查附件</span>
-            <van-uploader :after-read="afterRead" multiple>
+            <van-uploader
+              v-if="!isAndroid"
+              :after-read="afterRead"
+              :before-read="beforeRead"
+              :accept="acceptAttr"
+              multiple
+            >
               <ais-button plain size="small" :loading="uploading">上传附件</ais-button>
             </van-uploader>
+            <!-- 安卓原生容器：vant uploader 的 opacity:0 隐藏 input 在安卓 WebView 上点击不派发
+                 （选择器不弹，iOS 正常），故安卓走原生桥唤起原生选择器 -->
+            <ais-button
+              v-else-if="hasNativePicker"
+              plain
+              size="small"
+              :loading="uploading"
+              @click="openNativePicker"
+            >
+              上传附件
+            </ais-button>
+            <!-- 安卓兜底：无原生选择器能力时，用自绘隐藏 input 触发系统文件选择器 -->
+            <ais-button
+              v-else
+              plain
+              size="small"
+              :loading="uploading"
+              @click="openFallbackPicker"
+            >
+              上传附件
+            </ais-button>
           </div>
+          <!-- 安卓原生选择器回调由原生直接落库并回传 URL，无需 H5 再传流 -->
+          <input
+            ref="fileInputRef"
+            type="file"
+            class="hidden-file-input"
+            :accept="acceptAttr"
+            multiple
+            @change="onNativeFileChange"
+          />
           <div class="file-item" v-for="(f, index) in fileList" :key="f.id || index">
             <span :class="['file-icon', fileKind(f)]">{{ fileKindText(f) }}</span>
             <span class="file-name">{{ f.name }}</span>
@@ -106,12 +142,15 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { showFailToast, showSuccessToast, showImagePreview } from 'vant'
 import AisButton from '@/components/AisButton.vue'
 import { getRiskCheckVehicleDetail, submitRiskCheckResult } from '@/api/riskCheck'
-import { getFileList, uploadFile, bindFile, deleteAttachmentConfig } from '@/libs/api/fileConfig'
+import { getFileList, uploadFile, bindFile, deleteAttachmentConfig, getUploadConfig, uploadFileByUrl } from '@/libs/api/fileConfig'
+import { getNavigatorType } from '@/libs/utils/index'
+import { NAVIGATOR_TYPE_ANDROID } from '@/libs/utils/constants'
+import { getAppImgLimit } from '@/libs/utils/nativeFn'
 
 defineOptions({
   name: 'RiskCheckVehicleDetailView'
@@ -126,15 +165,54 @@ const childTaskId = ref(route.query.taskId || '')
 const isFetch = ref(true)
 const detail = ref({})
 
-// 🔧 待确认：排查提交附件的 attachType 编码后端/文件服务未约定，先用固定值占位，
-// 若文件服务要求走配置（attachmentConfig），改为 getUploadConfig(code) 拉取
-const RISK_CHECK_ATTACH_TYPE = 'riskCheckResult'
+// 🔑 风险排查附件的统一业务标识，后端附件配置（attachmentConfig）已建好：
+//   - 作为 configCode 拉配置（getUploadConfig），配置内含数量/格式/大小限制
+//   - 作为 attachType 落库绑定（bindFile / uploadFileByUrl）
+// 单一常量：两处口径必须一致，改动只改这里
+const RISK_CHECK_ATTACH_CODE = 'vehicle_risk_task'
+// 安卓原生容器判定：原生 App 内嵌 WebView 才有 window.Android；
+// vant uploader 的 opacity:0 隐藏 input 在安卓 WebView 上点击不派发 → 选择器不弹（iOS 正常）
+const isAndroid = getNavigatorType() === NAVIGATOR_TYPE_ANDROID
+const hasNativePicker = !!(window.Android && window.Android.selectImageLimit)
 const fileList = ref([])
 const uploading = ref(false)
 const submitLoading = ref(false)
 const checkResultNote = ref('')
 const showVideo = ref(false)
 const videoUrl = ref('')
+const fileInputRef = ref(null)
+// 附件上传配置：maxNum 数量上限、maxSize 单文件大小上限(MB)、acceptSuffix 允许后缀
+const uploadConfig = ref({})
+// 允许的附件后缀（来自后端 attachmentConfig）；拉取失败时回落 PRD 7.1.2.4 的 14 种格式
+const DEFAULT_ACCEPT_SUFFIX = '.png,.jpg,.jpeg,.gif,.pdf,.ppt,.pptx,.xlsx,.xls,.docx,.doc,.rar,.zip,.mp4'
+// 后缀 → MIME 映射：安卓 WebView 的文件选择器按 MIME 过滤，
+// 只给后缀（.pdf,.docx）时安卓常只列图片类目，故 accept 同时给出 MIME
+const EXT_MIME_MAP = {
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.gif': 'image/gif',
+  '.pdf': 'application/pdf',
+  '.ppt': 'application/vnd.ms-powerpoint',
+  '.pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  '.xls': 'application/vnd.ms-excel',
+  '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  '.doc': 'application/msword',
+  '.rar': 'application/vnd.rar',
+  '.zip': 'application/zip',
+  '.mp4': 'video/mp4'
+}
+// 后缀白名单（用于前端校验）
+const acceptSuffix = computed(() => uploadConfig.value.acceptSuffix || DEFAULT_ACCEPT_SUFFIX)
+// HTML accept 属性值：后缀 + MIME 组合，双端都能唤起正确的文件类型
+const acceptAttr = computed(() => {
+  const exts = acceptSuffix.value.split(',').map((s) => s.trim().toLowerCase()).filter(Boolean)
+  const mimes = exts.map((ext) => EXT_MIME_MAP[ext]).filter(Boolean)
+  return [...new Set([...exts, ...mimes])].join(',')
+})
+const maxFileNum = computed(() => Number(uploadConfig.value.maxNum) || 0) // 0 = 不限制
+const maxFileSize = computed(() => Number(uploadConfig.value.maxSize) || 0) // 0 = 不限制，单位 MB
 
 // 排查状态：10待排查 60审核中 110已排查 160已驳回 210取消排查
 const statusTextMap = { 10: '待排查', 60: '审核中', 110: '已排查', 160: '已驳回', 210: '取消排查' }
@@ -143,8 +221,26 @@ const statusClassMap = { 10: 'pending', 60: 'auditing', 110: 'done', 160: 'rejec
 const canSubmit = computed(() => detail.value.checkStatus === 10 || detail.value.checkStatus === 160)
 const statusClass = computed(() => statusClassMap[detail.value.checkStatus] || 'pending')
 
+// 原生桥回调处理函数（具名常量：卸载时需比对还原 window.getImage）
+const nativeImageHandler = async(url) => {
+  if (!url) return
+  await bindNativeFile(url)
+}
+
 onMounted(() => {
   getDetail()
+  fetchUploadConfig()
+  // 原生桥回调：安卓原生选择器选完文件后，由原生回传已上传的 URL
+  // （协议与 DetailCard/Inner.vue 一致：window.getImage(url)）
+  window.getImage = nativeImageHandler
+})
+
+// window.getImage 是全局单槽（DetailCard/Inner.vue 等也在用），
+// 本页卸载时还原，避免 keepAlive 场景下残留回调把文件错绑到已卸载页面
+onBeforeUnmount(() => {
+  if (window.getImage === nativeImageHandler) {
+    delete window.getImage
+  }
 })
 
 // 详情走后端 detailVin 专用接口：子任务ID + 明细ID 定位（不再借分页接口按 VIN 兜圈）
@@ -187,6 +283,73 @@ const loadAttachments = () => {
     })
 }
 
+// ==================== 附件配置（数量/格式/大小限制来自后端 attachmentConfig） ====================
+// getUploadConfig({configCode, businessData}) → res.data.detailList[]，
+// 按 attachType 匹配出本单据的明细项（协议同 vehretail-h5 vehicleLicenseInfo.vue）
+const fetchUploadConfig = () => {
+  return getUploadConfig({
+    configCode: RISK_CHECK_ATTACH_CODE,
+    businessData: JSON.stringify({ businessId: detailId.value })
+  })
+    .then((res) => {
+      if (res.code !== 200 || !res.data) return
+      const detailList = res.data.detailList || []
+      // 按 attachType 精确匹配；匹配不到则取第一项作为兜底
+      const matched = detailList.find((item) => item.attachType === RISK_CHECK_ATTACH_CODE) || detailList[0] || {}
+      uploadConfig.value = {
+        acceptSuffix: matched.acceptSuffix || '',
+        maxNum: matched.maxNum || 0,
+        maxSize: matched.maxSize || 0,
+        required: matched.required || '0'
+      }
+    })
+    .catch(() => {
+      // 配置拉取失败不阻断上传，回落到 PRD 14 种格式 + 不限数量
+      uploadConfig.value = {}
+    })
+}
+
+// 上传前校验：数量上限、单文件大小上限、后缀白名单
+const validateFiles = (files) => {
+  const list = Array.isArray(files) ? files : [files]
+  // 数量上限（maxNum 为 0 表示不限制）
+  if (maxFileNum.value > 0 && fileList.value.length + list.length > maxFileNum.value) {
+    showFailToast(`最多上传${maxFileNum.value}个附件`)
+    return false
+  }
+  // 后缀白名单
+  const allowExts = acceptSuffix.value
+    .split(',')
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean)
+  if (allowExts.length) {
+    const bad = list.find((f) => {
+      const name = (f.name || '').toLowerCase()
+      return !allowExts.some((ext) => name.endsWith(ext))
+    })
+    if (bad) {
+      showFailToast(`仅支持${allowExts.join('、')}格式的附件`)
+      return false
+    }
+  }
+  // 单文件大小上限（maxSize 单位 MB，为 0 表示不限制）
+  if (maxFileSize.value > 0) {
+    const limit = maxFileSize.value * 1024 * 1024
+    const big = list.find((f) => f.size && f.size > limit)
+    if (big) {
+      showFailToast(`单个附件不能超过${maxFileSize.value}MB`)
+      return false
+    }
+  }
+  return true
+}
+
+// vant uploader 的上传前钩子：命中数量/格式/大小限制时拦截并提示
+const beforeRead = (file) => {
+  const files = Array.isArray(file) ? file : [file]
+  return validateFiles(files)
+}
+
 // ==================== 附件上传（三步：uploadMultipartFile → addOrUpdate 绑 businessId → 刷新列表） ====================
 const afterRead = async(files) => {
   const items = Array.isArray(files) ? files : [files]
@@ -206,7 +369,7 @@ const afterRead = async(files) => {
         fileUrl: data.url,
         fileSize: data.size,
         fileType: data.ext,
-        attachType: RISK_CHECK_ATTACH_TYPE,
+        attachType: RISK_CHECK_ATTACH_CODE,
         businessId: detailId.value
       })
       item.status = 'done'
@@ -218,6 +381,101 @@ const afterRead = async(files) => {
     }
   }
   uploading.value = false
+}
+
+// ==================== 安卓原生桥上传分支 ====================
+// 安卓原生容器里 vant uploader 的隐藏 input 点击不派发（选择器不弹），
+// 故安卓改走原生桥：getAppImgLimit → 原生选择文件并上传 → 回调 window.getImage(url)
+const openNativePicker = () => {
+  if (uploading.value) return
+  // 数量上限由 H5 拦（原生侧只管单文件大小），maxNum 为 0 表示不限制
+  if (maxFileNum.value > 0 && fileList.value.length >= maxFileNum.value) {
+    showFailToast(`最多上传${maxFileNum.value}个附件`)
+    return
+  }
+  // 原生侧按 limitSize(MB) 限制单文件大小
+  getAppImgLimit(maxFileSize.value || 10, maxFileNum.value || 0)
+}
+
+// 原生回传已上传的 URL → 落库并绑定到当前排查明细
+const bindNativeFile = async(url) => {
+  // 原生侧只按大小限制，格式/数量仍需 H5 兜底校验
+  const fileName = decodeURIComponent(String(url).split('/').pop()?.split('?')[0] || '')
+  const allowExts = acceptSuffix.value.split(',').map((s) => s.trim().toLowerCase()).filter(Boolean)
+  if (allowExts.length && !allowExts.some((ext) => fileName.toLowerCase().endsWith(ext))) {
+    showFailToast(`仅支持${allowExts.join('、')}格式的附件`)
+    return
+  }
+  if (maxFileNum.value > 0 && fileList.value.length >= maxFileNum.value) {
+    showFailToast(`最多上传${maxFileNum.value}个附件`)
+    return
+  }
+  uploading.value = true
+  try {
+    // uploadFileByUrl 入参为数组：{fileUrl, businessId, configCode, attachType}
+    const res = await uploadFileByUrl([{
+      fileUrl: url,
+      businessId: detailId.value,
+      configCode: RISK_CHECK_ATTACH_CODE,
+      attachType: RISK_CHECK_ATTACH_CODE
+    }])
+    if (res.code === 200) {
+      await loadAttachments()
+      showSuccessToast('上传成功')
+    } else {
+      showFailToast(res.msg || '附件上传失败，请重试')
+    }
+  } catch {
+    showFailToast('附件上传失败，请重试')
+  } finally {
+    uploading.value = false
+  }
+}
+
+// 安卓兜底：无原生选择器能力时，用自绘隐藏 input 触发系统文件选择器
+// （隐藏方式用 1px + clip 而非 display:none / opacity:0，后两者在安卓 WebView 上点击不派发）
+const openFallbackPicker = () => {
+  if (uploading.value) return
+  if (maxFileNum.value > 0 && fileList.value.length >= maxFileNum.value) {
+    showFailToast(`最多上传${maxFileNum.value}个附件`)
+    return
+  }
+  if (fileInputRef.value) {
+    fileInputRef.value.click()
+  }
+}
+
+// 隐藏 file input 的 change 回调：安卓 WebView 内置选择器（若可用）走标准流上传
+const onNativeFileChange = async(event) => {
+  const files = Array.isArray(event.target.files) ? Array.from(event.target.files) : []
+  // 清空 value，允许重复选择同一文件
+  event.target.value = ''
+  if (!files.length) return
+  if (!validateFiles(files)) return
+  uploading.value = true
+  try {
+    for (const file of files) {
+      const formData = new FormData()
+      formData.append('file', file)
+      const uploadRes = await uploadFile(formData)
+      const data = (uploadRes && uploadRes.data) || {}
+      await bindFile({
+        fileId: data.id,
+        fileName: data.originalFilename || data.filename,
+        fileUrl: data.url,
+        fileSize: data.size,
+        fileType: data.ext,
+        attachType: RISK_CHECK_ATTACH_CODE,
+        businessId: detailId.value
+      })
+    }
+    await loadAttachments()
+    showSuccessToast('上传成功')
+  } catch {
+    showFailToast('附件上传失败，请重试')
+  } finally {
+    uploading.value = false
+  }
 }
 
 const removeFile = (f, index) => {
@@ -476,6 +734,20 @@ const previewFile = (f) => {
         }
       }
     }
+  }
+
+  // 隐藏的文件选择 input：不能用 display:none（部分安卓 WebView 下点击不唤起选择器），
+  // 也不能用 opacity:0（vant uploader 在安卓上的原症），改为零尺寸移出可视区
+  .hidden-file-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
 
   .file-item {
