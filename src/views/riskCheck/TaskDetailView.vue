@@ -2,15 +2,16 @@
   <div class="detail-view-content">
     <van-loading color="#00AA00" class="loading-area" v-if="isFetch" />
     <template v-else>
-      <!-- VIN 搜索栏：输入 VIN 查询车辆（后端 detail/page vinLike 模糊匹配） -->
-      <div class="search-area">
-        <van-search
-          v-model="vinKeyword"
-          placeholder="输入VIN查询车辆"
-          @search="onVinSearch"
-          @clear="onVinClear"
-        />
-      </div>
+      <!-- VIN 搜索栏：输入 VIN 查询车辆（后端 detail/page vinLike 模糊匹配）；样式对齐任务列表页 FilterHeader -->
+      <filter-header
+        ref="filterHeaderRef"
+        :placeholder="'输入VIN查询车辆'"
+        :show-scan="false"
+        :show-sort="false"
+        :show-filter="false"
+        :filterList="[]"
+        @search="headerSearch"
+      />
 
       <!-- 任务信息卡 -->
       <div class="task-info-card">
@@ -122,6 +123,7 @@
 import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { showFailToast, showImagePreview } from 'vant'
+import FilterHeader from '@/libs/components/FilterHeader.vue'
 import RefreshList from '@/libs/components/RefreshList.vue'
 import AisButton from '@/components/AisButton.vue'
 import { getRiskCheckTaskDetail, getRiskCheckVehiclePage } from '@/api/riskCheck'
@@ -140,7 +142,7 @@ const task = ref({})
 const active = ref(0)
 const needRefresh = ref(false)
 const vehicleList = ref([])
-const vinKeyword = ref('')
+const filterHeaderRef = ref(null)
 // 🔑 明细表 check_child_task_id 才是门店子任务ID（发布时 detailedRelatedChildTask 回填），
 //    check_task_id 存父任务ID —— 必须用 checkChildTaskId 查，传 checkTaskId 会串任务
 const requestData = reactive({
@@ -206,23 +208,22 @@ const setData = (res) => {
   needRefresh.value = false
 }
 
-const onVinSearch = () => {
-  requestData.data.vinLike = vinKeyword.value.trim()
-  requestData.data.pageNum = 1
-  vehicleList.value = []
-  requestData.data = { ...requestData.data }
-}
-
-const onVinClear = () => {
-  requestData.data.vinLike = ''
+// FilterHeader search 事件：搜索与清空共用（清空时 searchValue 为 ''）
+const headerSearch = (row) => {
+  requestData.data.vinLike = (row.searchValue || '').trim()
   requestData.data.pageNum = 1
   vehicleList.value = []
   requestData.data = { ...requestData.data }
 }
 
 const resetFilterConditions = () => {
-  vinKeyword.value = ''
-  onVinClear()
+  requestData.data.vinLike = ''
+  requestData.data.pageNum = 1
+  vehicleList.value = []
+  if (filterHeaderRef.value) {
+    filterHeaderRef.value.resetFilters()
+  }
+  requestData.data = { ...requestData.data }
 }
 
 const goVehicleDetail = (item) => {
@@ -252,8 +253,15 @@ const fileKindText = (f) => {
 
 // 附件列表响应字段对齐 sales-front AisAttachment：id/fileName/fileUrl/fileType/fileSize
 const loadMethodFiles = () => {
-  // 排查方法附件：businessId = 任务ID；attachType 后端未约定，先仅按 businessId 查（待确认）
-  return getFileList({ businessId: taskId.value })
+  // 🔑 排查方法附件 businessId = 父任务ID（PC 下发侧 AisAttachment :businessId=任务ID 绑定），
+  // 本页路由 id 是门店子任务ID，不能直接用；父任务ID由后端 AppResp.checkTaskId 回填
+  // （VehicleRiskCheckChildTaskQryExe#populate 从主任务取 taskDo.getId()）
+  const checkTaskId = task.value.checkTaskId
+  if (!checkTaskId) {
+    methodFiles.value = []
+    return
+  }
+  return getFileList({ businessId: checkTaskId })
     .then((res) => {
       const list = Array.isArray(res) ? res : (res.code === 200 ? res.data || [] : [])
       methodFiles.value = list.map((f) => ({
@@ -321,14 +329,6 @@ watch(
   display: flex;
   flex-direction: column;
   background: #f5f5f5;
-}
-
-.search-area {
-  background: #fff;
-
-  :deep(.van-search) {
-    padding: 8px 12px;
-  }
 }
 
 .task-info-card {
