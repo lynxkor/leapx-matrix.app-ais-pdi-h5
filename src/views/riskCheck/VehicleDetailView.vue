@@ -48,10 +48,18 @@
         </div>
       </div>
 
-      <!-- 排查方法（主任务下发，只读展示） -->
-      <div class="method-card" v-if="detail.checkMethod">
+      <!-- 排查方法（主任务下发，只读展示；文本 + 附件，附件按 checkTaskId 查） -->
+      <div class="method-card" v-if="detail.checkMethod || methodFiles.length">
         <div class="card-title">排查方法</div>
-        <div class="method-content">{{ detail.checkMethod }}</div>
+        <div class="method-content" v-if="detail.checkMethod">{{ detail.checkMethod }}</div>
+        <template v-if="methodFiles.length">
+          <div class="attach-title">排查方法附件（{{ methodFiles.length }}）</div>
+          <div class="file-item" v-for="(f, index) in methodFiles" :key="f.id || index" @click="previewFile(f)">
+            <span :class="['file-icon', fileKind(f)]">{{ fileKindText(f) }}</span>
+            <span class="file-name">{{ f.name }}</span>
+            <span class="file-action">查看</span>
+          </div>
+        </template>
       </div>
 
       <!-- 提交排查结果（仅 待排查10 / 已驳回160 可提交；任务进行中校验由后端 G7 守卫兜底） -->
@@ -221,6 +229,29 @@ const statusClassMap = { 10: 'pending', 60: 'auditing', 110: 'done', 160: 'rejec
 const canSubmit = computed(() => detail.value.checkStatus === 10 || detail.value.checkStatus === 160)
 const statusClass = computed(() => statusClassMap[detail.value.checkStatus] || 'pending')
 
+// ==================== 排查方法附件 ====================
+// PC 端下发排查任务时附件按 businessId = 父任务ID（check_task_id）绑定，
+// 明细详情接口 detailVin 返回的 checkTaskId 即父任务ID（MapStruct 同名自动映射），直接按它查
+const methodFiles = ref([])
+const loadMethodFiles = () => {
+  const checkTaskId = detail.value.checkTaskId
+  if (!checkTaskId) {
+    methodFiles.value = []
+    return
+  }
+  return getFileList({ businessId: checkTaskId })
+    .then((res) => {
+      const list = Array.isArray(res) ? res : (res.code === 200 ? res.data || [] : [])
+      methodFiles.value = list.map((f) => ({
+        ...f,
+        name: f.fileName || (f.fileUrl || '').split('/').pop()?.split('?')[0] || '未命名文件'
+      }))
+    })
+    .catch(() => {
+      methodFiles.value = []
+    })
+}
+
 // 原生桥回调处理函数（具名常量：卸载时需比对还原 window.getImage）
 const nativeImageHandler = async(url) => {
   if (!url) return
@@ -258,6 +289,8 @@ const getDetail = () => {
           checkResultNote.value = detail.value.checkResultNote
         }
         loadAttachments()
+        // 排查方法附件：businessId = checkTaskId（父任务ID），与 TaskDetailView 弹窗同款展示
+        loadMethodFiles()
       } else {
         showFailToast(res.msg || '车辆明细不存在')
       }
@@ -604,6 +637,66 @@ const previewFile = (f) => {
     line-height: 22px;
     white-space: pre-wrap;
     word-break: break-all;
+  }
+
+  .attach-title {
+    font-size: 13px;
+    color: #888;
+    margin-top: 12px;
+    margin-bottom: 4px;
+  }
+
+  .file-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 0;
+
+    .file-icon {
+      flex-shrink: 0;
+      width: 44px;
+      text-align: center;
+      font-size: 11px;
+      color: #fff;
+      border-radius: 4px;
+      padding: 4px 0;
+      margin-right: 8px;
+
+      &.image {
+        background: #1989fa;
+      }
+
+      &.video {
+        background: #ed8b3d;
+      }
+
+      &.pdf {
+        background: #ee0a24;
+      }
+
+      &.word {
+        background: #1989fa;
+      }
+
+      &.other {
+        background: #969799;
+      }
+    }
+
+    .file-name {
+      flex: 1;
+      font-size: 13px;
+      color: #191a1b;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .file-action {
+      flex-shrink: 0;
+      margin-left: 8px;
+      font-size: 13px;
+      color: #0a0;
+    }
   }
 }
 
