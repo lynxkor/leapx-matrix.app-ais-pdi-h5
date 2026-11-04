@@ -107,7 +107,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { showFailToast, showSuccessToast, showImagePreview } from 'vant'
 import AisButton from '@/components/AisButton.vue'
 import { getRiskCheckVehicleDetail, submitRiskCheckResult } from '@/api/riskCheck'
@@ -118,6 +118,7 @@ defineOptions({
 })
 
 const route = useRoute()
+const router = useRouter()
 // 明细ID（附件 businessId 同值）+ 子任务ID（detailVin 详情定位用），VIN 由详情接口回显
 const detailId = ref(route.query.id || '')
 const childTaskId = ref(route.query.taskId || '')
@@ -263,6 +264,27 @@ const doSubmit = () => {
       submitLoading.value = false
     })
 }
+
+// ==================== 返回列表 ====================
+// 顶部导航栏回退修复（安卓/iOS webview）：baseLayout.handleBack 默认依赖 window.history.length 判断，
+// webview 直开/容器重置历史栈时失真，原生桥缺失时静默无响应。这里显式接管回退：
+// SPA 内有上一页（vue-router 4 写入的 history.state.back）→ router.back() 后退到列表页（同 PDI DetailView 的 router.go(-1)）；
+// 直开详情页无历史栈 → replace 到列表页兜底，保证点回退总能回到列表页。
+const goBackList = () => {
+  if (window.history.state?.back) {
+    router.back()
+  } else {
+    // 兜底回任务详情（车辆清单来源页，childTaskId 与入口 query.id 同值）
+    router.replace({ path: '/riskCheck/taskDetail', query: { id: childTaskId.value }})
+  }
+}
+
+// baseLayout.handleBack 约定：页面组件暴露 onBeforeBack 即接管回退，返回 false 跳过 default 行为
+const onBeforeBack = () => {
+  goBackList()
+  return false
+}
+defineExpose({ onBeforeBack })
 
 // ==================== 附件查看 ====================
 const fileKind = (f) => {

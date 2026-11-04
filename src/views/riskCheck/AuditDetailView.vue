@@ -194,6 +194,26 @@ const loadMethodFiles = () => {
     })
 }
 
+// ==================== 返回列表 ====================
+// 顶部导航栏回退修复（安卓/iOS webview）：baseLayout.handleBack 默认依赖 window.history.length 判断，
+// webview 直开/容器重置历史栈时失真，原生桥缺失时静默无响应。这里显式接管回退：
+// SPA 内有上一页（vue-router 写入的 history.state.back）→ router.back() 后退到列表页（同 PDI DetailView 的 router.go(-1)）；
+// 直开详情页无历史栈 → replace 到列表页兜底，保证点回退总能回到列表页。
+const goBackList = () => {
+  if (window.history.state?.back) {
+    router.back()
+  } else {
+    router.replace({ path: '/riskCheck/auditList' })
+  }
+}
+
+// baseLayout.handleBack 约定：页面组件暴露 onBeforeBack 即接管回退，返回 false 跳过默认行为
+const onBeforeBack = () => {
+  goBackList()
+  return false
+}
+defineExpose({ onBeforeBack })
+
 // ==================== 审核动作 ====================
 const onPass = () => {
   doApprove({ auditRecordId: auditRecordId.value, pass: true })
