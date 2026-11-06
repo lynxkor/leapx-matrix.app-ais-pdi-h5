@@ -52,7 +52,8 @@
           >{{ item.lockVehicleFlagLabel }}</span>
         </div>
         <div class="card-desc">
-          {{ item.checkReason }}
+          <!-- 排查原因：内容前加标签，格式同门店名称 -->
+          排查原因：{{ item.checkReason || '-' }}
         </div>
         <div class="card-audit">审核方式：{{ item.auditTypeLabel || '-' }}</div>
         <div class="card-progress">
