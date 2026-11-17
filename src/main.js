@@ -1,6 +1,6 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
-import { List, Cell, Search, NavBar, PullRefresh, Image as VanImage, Lazyload, Swipe, SwipeItem, ActionSheet, ActionBar, ActionBarButton, Button, Form, Field, CellGroup, Icon, Dialog, Popup, DatePicker, TimePicker, Col, Row, Tab, Tabs, Switch, Collapse, CollapseItem, Loading, Tag, Uploader, Progress } from 'vant'
+import { List, Cell, Search, NavBar, PullRefresh, Image as VanImage, Lazyload, Swipe, SwipeItem, ActionSheet, ActionBar, ActionBarButton, Button, Form, Field, CellGroup, Icon, Dialog, Popup, DatePicker, TimePicker, Col, Row, Tab, Tabs, Switch, Collapse, CollapseItem, Loading, Tag, Uploader, Progress, NoticeBar } from 'vant'
 
 import App from './App.vue'
 import router from './router'
@@ -58,6 +58,8 @@ app.use(Tag)
 // 风险车辆排查：附件上传（van-uploader）+ 任务详情进度条（van-progress），缺注册会导致点击上传无反应
 app.use(Uploader)
 app.use(Progress)
+// 低电量车列表：顶部静态提示条（van-notice-bar），缺注册会导致提示条不渲染
+app.use(NoticeBar)
 
 // 注册时可以配置额外的选项
 app.use(Lazyload, {
