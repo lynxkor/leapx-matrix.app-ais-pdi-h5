@@ -7,12 +7,11 @@
     :showFilter="false"
     :showSort="false"
   />
-  <!-- 低电量数据分享提示：PRD 要求始终静态展示，不读取车机数据分享状态、不依赖接口，不可点击/关闭 -->
+  <!-- 低电量数据分享提示：始终展示，不读取车机数据分享状态、不依赖接口，不可点击/关闭；
+       不设 wrapable：溢出走默认跑马灯横向滚动，任何机型都保持单行不换行 -->
   <van-notice-bar
     class="low-power-notice"
     left-icon="info-o"
-    scrollable="false"
-    wrapable
     text="需打开车机数据分享，未打开分享电量数据无法更新"
   />
   <div class="common-scroll-content">
