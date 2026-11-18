@@ -170,7 +170,7 @@ const router = createRouter({
           name: 'RiskCheckAuditListView',
           component: () => import('../views/riskCheck/AuditListView.vue'),
           meta: {
-            title: '排查审核记录',
+            title: '排查任务审核',
             keepAlive: true
           }
         },
