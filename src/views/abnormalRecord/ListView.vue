@@ -7,6 +7,13 @@
     :showFilter="false"
     :showSort="false"
   />
+  <!-- 低电量数据分享提示：始终展示，不读取车机数据分享状态、不依赖接口，不可点击/关闭；
+       不设 wrapable：溢出走默认跑马灯横向滚动，任何机型都保持单行不换行 -->
+  <van-notice-bar
+    class="low-power-notice"
+    left-icon="info-o"
+    text="需打开车机数据分享，未打开分享电量数据无法更新"
+  />
   <div class="common-scroll-content">
     <refresh-list :requestData="requestData" :needRefresh="needRefresh" @setData="setData">
       <div v-for="(item, index) in dataList" :key="index" class="list-item-content">
@@ -145,6 +152,11 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
+// 顶部静态提示条：位于滚动容器外层，不随列表滚动、不影响下拉刷新
+.low-power-notice {
+  flex-shrink: 0;
+}
+
 .common-scroll-content {
   flex: 1;
   overflow-y: auto;
