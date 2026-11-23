@@ -46,6 +46,12 @@
           <p class="card-info-title">排查说明</p>
           <p class="note-content">{{ detail.checkResultNote }}</p>
         </div>
+
+        <!-- 审核说明：审核记录表 audit_opinion，由后端 detail/vin 接口按 任务ID + VIN 补查回显 -->
+        <div class="note-block" v-if="detail.auditOpinion">
+          <p class="card-info-title">审核说明</p>
+          <p class="note-content">{{ detail.auditOpinion }}</p>
+        </div>
       </div>
 
       <!-- 排查方法（主任务下发，只读展示；文本 + 附件，附件按 checkTaskId 查） -->
