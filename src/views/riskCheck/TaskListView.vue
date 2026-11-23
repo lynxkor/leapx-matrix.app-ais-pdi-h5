@@ -1,10 +1,4 @@
 <template>
-  <!-- 列表页被 keepAlive 缓存，跳走后组件不卸载；用路由判断避免入口残留在其他页面头部 -->
-  <Teleport to="#header-right-portal" defer>
-    <span v-if="route.name === 'RiskCheckTaskListView'" class="audit-entry" @click="goAudit">
-      任务审核
-    </span>
-  </Teleport>
   <filter-header
     ref="filterHeaderRef"
     :placeholder="'搜索任务编号/任务名称'"
@@ -78,7 +72,7 @@
 
 <script setup>
 import { ref, reactive, watch } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { useRouter } from 'vue-router'
 import FilterHeader from '@/libs/components/FilterHeader.vue'
 import RefreshList from '@/libs/components/RefreshList.vue'
 import { getRiskCheckTaskList } from '@/api/riskCheck'
@@ -88,7 +82,6 @@ defineOptions({
 })
 
 const router = useRouter()
-const route = useRoute()
 const filterHeaderRef = ref(null)
 const refreshListRef = ref(null)
 const scrollEle = ref(null)
@@ -142,10 +135,6 @@ const goDetail = (item) => {
   })
 }
 
-const goAudit = () => {
-  router.push({ path: '/riskCheck/auditList' })
-}
-
 // progress 后端返回 "75.00%" 字符串；缺省时用完成数/总数兜底
 const progressPercent = (item) => {
   if (item.progress) {
@@ -178,12 +167,6 @@ watch(
 </script>
 
 <style lang="scss" scoped>
-.audit-entry {
-  font-size: 14px;
-  color: #0a0;
-  padding-right: 8px;
-}
-
 .common-scroll-content {
   flex: 1;
   overflow-y: auto;
